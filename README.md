@@ -1,70 +1,61 @@
-# Lovio (`lovio-src`)
+# Pair Buddy
 
-Consolidated master repository for the **Lovio** Android application (`com.fourplex.lovio` / `com.datemateai.app`), including reverse-engineered source code, disassembled bytecode, modified APK packages, build tools, emulator setups, and complete architectural documentation.
+Pair Buddy is a free couples app. Two partners pair their phones and share small daily rituals: a question a day, quizzes, photo memories, doodles, live distance, countdowns, and home-screen widgets.
 
----
+Every feature is free. There is no paywall, no subscription tier, and no premium upsell — the billing code simply does not exist in this codebase.
 
-## Quick Navigation
+## Features
 
-- 📖 **[Master Knowledge Base (KNOWLEDGE.md)](./KNOWLEDGE.md)**: Full encyclopedia covering architecture, credentials, paywall bypass, OAuth patches, and widget specs.
-- 🏗️ **[System Architecture (knowledge/ARCHITECTURE.md)](./knowledge/ARCHITECTURE.md)**: React Native New Architecture, Expo SDK 55, WatermelonDB, and Supabase.
-- 🔓 **[Reverse Engineering & Modifications (knowledge/REVERSE_ENGINEERING_AND_MODS.md)](./knowledge/REVERSE_ENGINEERING_AND_MODS.md)**: How paywalls were bypassed and how Google Sign-In was patched with `OAuthDialogHelper`.
-- 🔑 **[Authentication & Cloud Credentials (knowledge/AUTHENTICATION_AND_SUPABASE.md)](./knowledge/AUTHENTICATION_AND_SUPABASE.md)**: Supabase URLs, keys, Superwall keys, and SQLite schema.
-- 📱 **[Widgets & Native Modules (knowledge/WIDGETS_AND_NATIVE_MODULES.md)](./knowledge/WIDGETS_AND_NATIVE_MODULES.md)**: Native Kotlin/Java AppWidgets (`DaysTogether*`, `DistanceWidget*`, `DrawingWidget`, etc.).
-- 🛠️ **[Build & Emulator Operations Guide (knowledge/BUILD_SIGNING_AND_EMULATOR.md)](./knowledge/BUILD_SIGNING_AND_EMULATOR.md)**: Rebuilding with `apktool.jar`, signing with `debug.keystore`, and running on `lovio_emulator`.
-- 📂 **[Directory Asset Inventory (knowledge/DIRECTORY_INVENTORY.md)](./knowledge/DIRECTORY_INVENTORY.md)**: Full file map.
+- **Onboarding** — guided setup: profile, relationship type, anniversary date
+- **Pairing** — connect two accounts with an invite code or deep link
+- **Daily Spark** — one shared question per day; answer, guess your partner's answer, build a streak
+- **Quizzes** — themed question decks to play together
+- **Memories** — shared photo moments with captions
+- **Drawing** — a shared doodle canvas, synced in real time
+- **Live distance** — how far apart you are right now, km or miles
+- **Countdowns** — days together, anniversaries, milestones
+- **Date ideas** — browse and plan dates; AI-generated itineraries (server-side)
+- **Discussion chat** — lightweight partner messaging
+- **Widgets** — home-screen widgets: days together, distance, memories, drawing, combined
 
----
+## Tech stack
 
-## Directory Layout
+- **Client:** Expo SDK 53, React Native (New Architecture), TypeScript, Expo Router
+- **Backend:** Supabase — Auth, Postgres, Realtime, Storage, Edge Functions
+- **Local data:** offline-first store (planned: WatermelonDB or expo-sqlite with sync)
+- **Widgets (planned):** Android AppWidgets, iOS WidgetKit
+- **Push:** Expo Push + FCM/APNs
+
+## Repository layout
 
 ```
-lovio-src/
-├── apks/               # Original XAPK, splits, and custom builds (gitignored)
-│   ├── original/       # APKPure XAPK and base/config splits
-│   └── builds/         # Premium unlocked, OAuth dialog, and standalone APKs
-├── apktool-workspace/  # Disassembled Smali classes, manifest, and resources
-├── build-tools/        # apktool.jar (signing keystores generated locally)
-├── emulator/           # run_emulator.sh and AVD configurations
-├── reconnaissance/     # Wappalyzer scan of getlovio.app
-├── web_authenticator/  # Web OAuth token extractor (index.html)
-├── sources/            # Decompiled Java/Kotlin source code
-├── resources/          # app.config, Hermes bytecode bundle, and drawables
-├── knowledge/          # Technical documentation library
-├── KNOWLEDGE.md        # Comprehensive technical knowledge base
-└── README.md           # This file
+.
+├── app.json / package.json / tsconfig.json   # Expo app config
+├── app/                                      # Expo Router screens
+├── src/lib/                                  # Supabase client, helpers
+├── supabase/
+│   ├── migrations/                           # SQL schema migrations
+│   └── functions/                            # Edge Functions (planned)
+├── assets/                                   # Brand assets (planned)
+├── docs/                                     # Architecture, branding, schema, workflow
+└── README.md
 ```
 
----
+## Roadmap
 
-## Quickstart Commands
+- **Phase 0** — docs, brand direction, repo setup
+- **Phase 1** — Supabase schema, Expo scaffold, auth, onboarding, pairing
+- **Phase 2** — Daily Spark, quizzes, memories, drawing, distance, countdowns, chat, date ideas
+- **Phase 3** — offline sync, push notifications, AI date planner (edge function)
+- **Phase 4** — Android widgets, iOS widgets, release builds
 
-### 1. Rebuild & Sign APK
-```bash
-# Build from apktool workspace
-java -jar build-tools/apktool.jar b apktool-workspace -o apks/builds/custom.apk
+## Contributing
 
-# Align
-zipalign -p -f -v 4 apks/builds/custom.apk apks/builds/custom-aligned.apk
+See [docs/WORKFLOW.md](docs/WORKFLOW.md). In short: every change ships as a small, reviewable pull request; branch names look like `docs/...`, `feat/...`, `db/...`; nothing is pushed directly to `main`.
 
-# Sign with debug keystore
-apksigner sign \
-  --ks build-tools/debug.keystore \
-  --ks-pass pass:android \
-  --ks-key-alias androiddebugkey \
-  --key-pass pass:android \
-  --out apks/builds/custom-signed.apk \
-  apks/builds/custom-aligned.apk
-```
+## Docs
 
-### 2. Run Emulator & Install
-```bash
-# Launch emulator with camera passthrough
-./emulator/run_emulator.sh lovio_emulator
-
-# Install the pre-built OAuth Dialog package
-adb install -r apks/builds/oauth-dialog/lovio-dialog-signed.apk
-
-# Launch
-adb shell monkey -p com.fourplex.lovio -c android.intent.category.LAUNCHER 1
-```
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design
+- [docs/BRANDING.md](docs/BRANDING.md) — name, package IDs, links, visual identity
+- [docs/SUPABASE_SCHEMA.md](docs/SUPABASE_SCHEMA.md) — data model and access rules
+- [docs/WORKFLOW.md](docs/WORKFLOW.md) — how we work (and how we earn badges honestly)
