@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_days_together_blue_description"
+    android:minWidth="100dp"
+    android:minHeight="100dp"
+    android:updatePeriodMillis="86400000"
+    android:initialLayout="@layout/widget_days_together"
+    android:previewImage="@drawable/preview_memory_placeholder"
+    android:resizeMode="vertical|horizontal"
+    android:minResizeWidth="50dp"
+    android:minResizeHeight="50dp"
+    android:widgetCategory="home_screen"
+    android:previewLayout="@layout/widget_days_together_blue_preview"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"/>

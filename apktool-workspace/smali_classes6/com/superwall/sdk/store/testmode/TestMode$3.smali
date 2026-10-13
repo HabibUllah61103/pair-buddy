@@ -1,0 +1,74 @@
+.class final Lcom/superwall/sdk/store/testmode/TestMode$3;
+.super Ljava/lang/Object;
+.source "TestMode.kt"
+
+# interfaces
+.implements Lkotlin/jvm/functions/Function0;
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingMethod;
+    value = Lcom/superwall/sdk/store/testmode/TestMode;-><init>(Lcom/superwall/sdk/storage/Storage;ZLkotlin/jvm/functions/Function1;Lcom/superwall/sdk/store/Entitlements;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x18
+    name = null
+.end annotation
+
+.annotation runtime Lkotlin/Metadata;
+    k = 0x3
+    mv = {
+        0x2,
+        0x0,
+        0x0
+    }
+    xi = 0x30
+.end annotation
+
+
+# static fields
+.field public static final INSTANCE:Lcom/superwall/sdk/store/testmode/TestMode$3;
+
+
+# direct methods
+.method static constructor <clinit>()V
+    .locals 1
+
+    new-instance v0, Lcom/superwall/sdk/store/testmode/TestMode$3;
+
+    invoke-direct {v0}, Lcom/superwall/sdk/store/testmode/TestMode$3;-><init>()V
+
+    sput-object v0, Lcom/superwall/sdk/store/testmode/TestMode$3;->INSTANCE:Lcom/superwall/sdk/store/testmode/TestMode$3;
+
+    return-void
+.end method
+
+.method constructor <init>()V
+    .locals 0
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public bridge synthetic invoke()Ljava/lang/Object;
+    .locals 1
+
+    .line 52
+    invoke-virtual {p0}, Lcom/superwall/sdk/store/testmode/TestMode$3;->invoke()Ljava/lang/Void;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method public final invoke()Ljava/lang/Void;
+    .locals 1
+
+    const/4 v0, 0x0
+
+    return-object v0
+.end method

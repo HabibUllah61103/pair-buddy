@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="@drawable/rounded_background"
+    android:padding="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginBottom="4dp"
+        android:src="@drawable/ic_heart_blue"
+        android:contentDescription="@string/widget_heart_icon_description"/>
+    <TextView
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#ffffff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:text="365"
+        android:includeFontPadding="false"
+        android:fontFamily="sans-serif-rounded"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="14sp"
+        android:autoSizeMaxTextSize="30sp"/>
+    <TextView
+        android:textSize="11sp"
+        android:textStyle="normal"
+        android:textColor="#00d2d3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="@string/widget_days_together_lock_small_label"
+        android:fontFamily="sans-serif-medium"/>
+</LinearLayout>

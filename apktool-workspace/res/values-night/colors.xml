@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="expoCropBackButtonIconColor">#ffffffff</color>
+    <color name="expoCropBackgroundColor">#ff000000</color>
+    <color name="expoCropToolbarActionTextColor">#ffffffff</color>
+    <color name="expoCropToolbarIconColor">#ffffffff</color>
+</resources>

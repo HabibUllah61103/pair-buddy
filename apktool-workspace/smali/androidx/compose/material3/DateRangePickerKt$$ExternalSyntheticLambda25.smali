@@ -1,0 +1,72 @@
+.class public final synthetic Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;
+.super Ljava/lang/Object;
+.source "D8$$SyntheticClass"
+
+# interfaces
+.implements Lkotlin/jvm/functions/Function2;
+
+
+# instance fields
+.field public final synthetic f$0:Landroidx/compose/material3/DatePickerFormatter;
+
+.field public final synthetic f$1:Landroidx/compose/material3/internal/CalendarMonth;
+
+.field public final synthetic f$2:Landroidx/compose/material3/internal/CalendarModel;
+
+.field public final synthetic f$3:Ljava/util/List;
+
+.field public final synthetic f$4:Landroidx/compose/material3/DatePickerColors;
+
+
+# direct methods
+.method public synthetic constructor <init>(Landroidx/compose/material3/DatePickerFormatter;Landroidx/compose/material3/internal/CalendarMonth;Landroidx/compose/material3/internal/CalendarModel;Ljava/util/List;Landroidx/compose/material3/DatePickerColors;)V
+    .locals 0
+
+    .line 0
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    iput-object p1, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$0:Landroidx/compose/material3/DatePickerFormatter;
+
+    iput-object p2, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$1:Landroidx/compose/material3/internal/CalendarMonth;
+
+    iput-object p3, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$2:Landroidx/compose/material3/internal/CalendarModel;
+
+    iput-object p4, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$3:Ljava/util/List;
+
+    iput-object p5, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$4:Landroidx/compose/material3/DatePickerColors;
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public final invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    .locals 7
+
+    .line 0
+    iget-object v0, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$0:Landroidx/compose/material3/DatePickerFormatter;
+
+    iget-object v1, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$1:Landroidx/compose/material3/internal/CalendarMonth;
+
+    iget-object v2, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$2:Landroidx/compose/material3/internal/CalendarModel;
+
+    iget-object v3, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$3:Ljava/util/List;
+
+    iget-object v4, p0, Landroidx/compose/material3/DateRangePickerKt$$ExternalSyntheticLambda25;->f$4:Landroidx/compose/material3/DatePickerColors;
+
+    move-object v5, p1
+
+    check-cast v5, Landroidx/compose/runtime/Composer;
+
+    check-cast p2, Ljava/lang/Integer;
+
+    invoke-virtual {p2}, Ljava/lang/Integer;->intValue()I
+
+    move-result v6
+
+    invoke-static/range {v0 .. v6}, Landroidx/compose/material3/DateRangePickerKt;->$r8$lambda$pa0UfO3b39uLnrpo_lxf3_vRWlg(Landroidx/compose/material3/DatePickerFormatter;Landroidx/compose/material3/internal/CalendarMonth;Landroidx/compose/material3/internal/CalendarModel;Ljava/util/List;Landroidx/compose/material3/DatePickerColors;Landroidx/compose/runtime/Composer;I)Lkotlin/Unit;
+
+    move-result-object p1
+
+    return-object p1
+.end method

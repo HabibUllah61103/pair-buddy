@@ -1,0 +1,15 @@
+package com.fourplex.lovio;
+
+import kotlin.Metadata;
+
+/* JADX INFO: compiled from: DaysTogetherWidget.kt */
+/* JADX INFO: loaded from: classes5.dex */
+@Metadata(d1 = {"\u0000\u0014\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0003\n\u0002\u0018\u0002\n\u0002\b\u0003\u0018\u00002\u00020\u0001B\u0007¢\u0006\u0004\b\u0002\u0010\u0003R\u0014\u0010\u0004\u001a\u00020\u0005X\u0094\u0004¢\u0006\b\n\u0000\u001a\u0004\b\u0006\u0010\u0007¨\u0006\b"}, d2 = {"Lcom/fourplex/lovio/DaysTogetherBlueWidget;", "Lcom/fourplex/lovio/BaseDaysTogetherWidget;", "<init>", "()V", "theme", "Lcom/fourplex/lovio/DaysTogetherTheme;", "getTheme", "()Lcom/fourplex/lovio/DaysTogetherTheme;", "app_release"}, k = 1, mv = {2, 1, 0}, xi = 48)
+public final class DaysTogetherBlueWidget extends BaseDaysTogetherWidget {
+    private final DaysTogetherTheme theme = new DaysTogetherTheme(R.drawable.ic_heart_blue, WidgetColors.INSTANCE.getWhite(), WidgetColors.INSTANCE.getCyan());
+
+    @Override // com.fourplex.lovio.BaseDaysTogetherWidget
+    protected DaysTogetherTheme getTheme() {
+        return this.theme;
+    }
+}

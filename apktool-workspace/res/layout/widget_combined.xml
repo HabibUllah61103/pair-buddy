@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:background="@drawable/rounded_background" android:padding="0.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:padding="8.0dip" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.2">
+        <ImageView android:id="@id/widget_combined_avatars" android:layout_width="100.0dip" android:layout_height="56.0dip" android:layout_marginBottom="7.0dip" android:scaleType="fitCenter" android:contentDescription="@string/widget_combined_avatars_description" />
+        <TextView android:textSize="18.0sp" android:textStyle="bold" android:textColor="#ffffffff" android:id="@id/widget_combined_days" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_zero_days" android:includeFontPadding="false" android:fontFamily="sans-serif-rounded" />
+        <TextView android:textSize="12.0sp" android:textStyle="bold" android:textColor="#ccffffff" android:id="@id/widget_combined_together" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_together" android:includeFontPadding="false" android:fontFamily="sans-serif-rounded" />
+    </LinearLayout>
+    <FrameLayout android:padding="8.0dip" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.0">
+        <ImageView android:id="@id/widget_combined_memory" android:background="@drawable/rounded_background" android:layout_width="fill_parent" android:layout_height="fill_parent" android:src="@drawable/image_placeholder" android:scaleType="centerCrop" android:clipToOutline="true" />
+    </FrameLayout>
+</LinearLayout>

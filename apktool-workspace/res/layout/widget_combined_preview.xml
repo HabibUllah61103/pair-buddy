@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:background="@drawable/rounded_background" android:padding="0.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:padding="10.0dip" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.2">
+        <ImageView android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_marginBottom="6.0dip" android:src="@drawable/preview_avatars_combined" android:scaleType="fitCenter" android:layout_weight="0.55" android:contentDescription="@string/widget_combined_avatars_description" />
+        <TextView android:textSize="16.0sp" android:textStyle="bold" android:textColor="#ffffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_days_preview" android:includeFontPadding="false" android:fontFamily="sans-serif-rounded" android:autoSizeTextType="uniform" android:autoSizeMinTextSize="10.0sp" android:autoSizeMaxTextSize="18.0sp" />
+        <TextView android:textSize="11.0sp" android:textStyle="bold" android:textColor="#ccffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_together" android:includeFontPadding="false" android:fontFamily="sans-serif-rounded" />
+    </LinearLayout>
+    <FrameLayout android:padding="8.0dip" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.0">
+        <LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/rounded_background" android:layout_width="fill_parent" android:layout_height="fill_parent" android:clipToOutline="true">
+            <ImageView android:layout_width="32.0dip" android:layout_height="32.0dip" android:src="@drawable/image_placeholder" android:tint="#ff888888" android:contentDescription="@string/widget_no_memories_content_description" />
+            <TextView android:textSize="10.0sp" android:textColor="#ff888888" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" android:text="@string/widget_no_memories" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

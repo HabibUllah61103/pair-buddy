@@ -1,0 +1,224 @@
+.class public final Lcom/superwall/sdk/storage/DateSerializer;
+.super Ljava/lang/Object;
+.source "CacheKeys.kt"
+
+# interfaces
+.implements Lkotlinx/serialization/KSerializer;
+
+
+# annotations
+.annotation system Ldalvik/annotation/Signature;
+    value = {
+        "Ljava/lang/Object;",
+        "Lkotlinx/serialization/KSerializer<",
+        "Ljava/util/Date;",
+        ">;"
+    }
+.end annotation
+
+.annotation runtime Lkotlin/Metadata;
+    d1 = {
+        "\u00002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0008\u0003\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0008\u0003\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0008\u0003\n\u0002\u0018\u0002\n\u0000\u0008\u00c7\u0002\u0018\u00002\u0008\u0012\u0004\u0012\u00020\u00020\u0001B\t\u0008\u0002\u00a2\u0006\u0004\u0008\u0003\u0010\u0004J\u0018\u0010\u000b\u001a\u00020\u000c2\u0006\u0010\r\u001a\u00020\u000e2\u0006\u0010\u000f\u001a\u00020\u0002H\u0016J\u0010\u0010\u0010\u001a\u00020\u00022\u0006\u0010\u0011\u001a\u00020\u0012H\u0016R\u000e\u0010\u0005\u001a\u00020\u0006X\u0082\u0004\u00a2\u0006\u0002\n\u0000R\u0014\u0010\u0007\u001a\u00020\u0008X\u0096\u0004\u00a2\u0006\u0008\n\u0000\u001a\u0004\u0008\t\u0010\n\u00a8\u0006\u0013"
+    }
+    d2 = {
+        "Lcom/superwall/sdk/storage/DateSerializer;",
+        "Lkotlinx/serialization/KSerializer;",
+        "Ljava/util/Date;",
+        "<init>",
+        "()V",
+        "format",
+        "Ljava/text/SimpleDateFormat;",
+        "descriptor",
+        "Lkotlinx/serialization/descriptors/SerialDescriptor;",
+        "getDescriptor",
+        "()Lkotlinx/serialization/descriptors/SerialDescriptor;",
+        "serialize",
+        "",
+        "encoder",
+        "Lkotlinx/serialization/encoding/Encoder;",
+        "value",
+        "deserialize",
+        "decoder",
+        "Lkotlinx/serialization/encoding/Decoder;",
+        "superwall_release"
+    }
+    k = 0x1
+    mv = {
+        0x2,
+        0x0,
+        0x0
+    }
+    xi = 0x30
+.end annotation
+
+
+# static fields
+.field public static final INSTANCE:Lcom/superwall/sdk/storage/DateSerializer;
+
+.field private static final descriptor:Lkotlinx/serialization/descriptors/SerialDescriptor;
+
+.field private static final format:Ljava/text/SimpleDateFormat;
+
+
+# direct methods
+.method static constructor <clinit>()V
+    .locals 2
+
+    new-instance v0, Lcom/superwall/sdk/storage/DateSerializer;
+
+    invoke-direct {v0}, Lcom/superwall/sdk/storage/DateSerializer;-><init>()V
+
+    sput-object v0, Lcom/superwall/sdk/storage/DateSerializer;->INSTANCE:Lcom/superwall/sdk/storage/DateSerializer;
+
+    .line 421
+    sget-object v0, Lcom/superwall/sdk/utilities/DateUtils;->INSTANCE:Lcom/superwall/sdk/utilities/DateUtils;
+
+    invoke-virtual {v0}, Lcom/superwall/sdk/utilities/DateUtils;->getISO_SECONDS_TIMEZONE()Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-static {v0}, Lcom/superwall/sdk/utilities/DateUtilsKt;->dateFormat(Ljava/lang/String;)Ljava/text/SimpleDateFormat;
+
+    move-result-object v0
+
+    .line 422
+    const-string v1, "UTC"
+
+    invoke-static {v1}, Ljava/util/TimeZone;->getTimeZone(Ljava/lang/String;)Ljava/util/TimeZone;
+
+    move-result-object v1
+
+    invoke-virtual {v0, v1}, Ljava/text/SimpleDateFormat;->setTimeZone(Ljava/util/TimeZone;)V
+
+    .line 421
+    sput-object v0, Lcom/superwall/sdk/storage/DateSerializer;->format:Ljava/text/SimpleDateFormat;
+
+    .line 426
+    sget-object v0, Lkotlinx/serialization/descriptors/PrimitiveKind$STRING;->INSTANCE:Lkotlinx/serialization/descriptors/PrimitiveKind$STRING;
+
+    check-cast v0, Lkotlinx/serialization/descriptors/PrimitiveKind;
+
+    const-string v1, "Date"
+
+    invoke-static {v1, v0}, Lkotlinx/serialization/descriptors/SerialDescriptorsKt;->PrimitiveSerialDescriptor(Ljava/lang/String;Lkotlinx/serialization/descriptors/PrimitiveKind;)Lkotlinx/serialization/descriptors/SerialDescriptor;
+
+    move-result-object v0
+
+    sput-object v0, Lcom/superwall/sdk/storage/DateSerializer;->descriptor:Lkotlinx/serialization/descriptors/SerialDescriptor;
+
+    return-void
+.end method
+
+.method private constructor <init>()V
+    .locals 0
+
+    .line 418
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public bridge synthetic deserialize(Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+    .locals 0
+
+    .line 418
+    invoke-virtual {p0, p1}, Lcom/superwall/sdk/storage/DateSerializer;->deserialize(Lkotlinx/serialization/encoding/Decoder;)Ljava/util/Date;
+
+    move-result-object p1
+
+    return-object p1
+.end method
+
+.method public deserialize(Lkotlinx/serialization/encoding/Decoder;)Ljava/util/Date;
+    .locals 3
+
+    const-string v0, "decoder"
+
+    invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
+
+    .line 437
+    invoke-interface {p1}, Lkotlinx/serialization/encoding/Decoder;->decodeString()Ljava/lang/String;
+
+    move-result-object p1
+
+    .line 438
+    sget-object v0, Lcom/superwall/sdk/storage/DateSerializer;->format:Ljava/text/SimpleDateFormat;
+
+    invoke-virtual {v0, p1}, Ljava/text/SimpleDateFormat;->parse(Ljava/lang/String;)Ljava/util/Date;
+
+    move-result-object v0
+
+    if-eqz v0, :cond_0
+
+    return-object v0
+
+    .line 439
+    :cond_0
+    new-instance v0, Lkotlinx/serialization/SerializationException;
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    const-string v2, "Invalid date format: "
+
+    invoke-direct {v1, v2}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v1, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p1
+
+    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p1
+
+    invoke-direct {v0, p1}, Lkotlinx/serialization/SerializationException;-><init>(Ljava/lang/String;)V
+
+    throw v0
+.end method
+
+.method public getDescriptor()Lkotlinx/serialization/descriptors/SerialDescriptor;
+    .locals 1
+
+    .line 425
+    sget-object v0, Lcom/superwall/sdk/storage/DateSerializer;->descriptor:Lkotlinx/serialization/descriptors/SerialDescriptor;
+
+    return-object v0
+.end method
+
+.method public bridge synthetic serialize(Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+    .locals 0
+
+    .line 418
+    check-cast p2, Ljava/util/Date;
+
+    invoke-virtual {p0, p1, p2}, Lcom/superwall/sdk/storage/DateSerializer;->serialize(Lkotlinx/serialization/encoding/Encoder;Ljava/util/Date;)V
+
+    return-void
+.end method
+
+.method public serialize(Lkotlinx/serialization/encoding/Encoder;Ljava/util/Date;)V
+    .locals 1
+
+    const-string v0, "encoder"
+
+    invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
+
+    const-string v0, "value"
+
+    invoke-static {p2, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
+
+    .line 432
+    sget-object v0, Lcom/superwall/sdk/storage/DateSerializer;->format:Ljava/text/SimpleDateFormat;
+
+    invoke-virtual {v0, p2}, Ljava/text/SimpleDateFormat;->format(Ljava/util/Date;)Ljava/lang/String;
+
+    move-result-object p2
+
+    .line 433
+    invoke-static {p2}, Lkotlin/jvm/internal/Intrinsics;->checkNotNull(Ljava/lang/Object;)V
+
+    invoke-interface {p1, p2}, Lkotlinx/serialization/encoding/Encoder;->encodeString(Ljava/lang/String;)V
+
+    return-void
+.end method

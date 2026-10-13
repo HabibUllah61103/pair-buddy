@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lovio Auth Redirect Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-dark: #120914;
+      --card-bg: rgba(30, 18, 35, 0.75);
+      --primary: #FF5A60;
+      --primary-gradient: linear-gradient(135deg, #FF6B7B 0%, #FF416C 100%);
+      --accent: #A855F7;
+      --text: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --border: rgba(255, 255, 255, 0.12);
+      --success: #10B981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(255, 90, 96, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .input-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      color: #7DD3FC;
+      font-family: monospace;
+      font-size: 13px;
+      resize: vertical;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 90, 96, 0.2);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary-gradient);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 90, 96, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    .user-card {
+      margin-top: 24px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      display: none;
+    }
+
+    .user-card.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--success);
+    }
+
+    .details h4 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .details p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--success);
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .kv-pair {
+      font-size: 13px;
+      font-family: monospace;
+      color: #93C5FD;
+      word-break: break-all;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="logo">Lovio Authenticator</div>
+      <p class="subtitle">Paste your Google OAuth redirect URL to set cookies & session</p>
+    </div>
+
+    <div class="input-group">
+      <label for="urlInput">Supabase OAuth Redirect URL</label>
+      <textarea id="urlInput" placeholder="http://localhost:3000/#access_token=eyJhbGci..."></textarea>
+    </div>
+
+    <button class="btn" id="loginBtn" onclick="processLogin()">Set Session & Sign In</button>
+    <button class="btn btn-secondary" id="deepLinkBtn" style="display:none;" onclick="triggerDeepLink()">Launch Lovio App</button>
+
+    <div class="user-card" id="userCard">
+      <div class="status-badge">✅ Session & Cookies Active</div>
+      <div class="user-info">
+        <img id="userAvatar" class="avatar" src="" alt="Avatar">
+        <div class="details">
+          <h4 id="userName">User</h4>
+          <p id="userEmail">email@example.com</p>
+        </div>
+      </div>
+      <div class="kv-pair" id="sessionStatus">Token Expiration: Active</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://eradptaqkournvgkepnz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyYWRwdGFxa291cm52Z2tlcG56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMzI0NTgsImV4cCI6MjEwNTYwODQ1OH0.placeholder";
+    
+    // Auto process if hash present in window.location.hash
+    window.onload = function() {
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        document.getElementById('urlInput').value = window.location.href;
+        processLogin();
+      }
+    };
+
+    function parseHash(hashStr) {
+      const hash = hashStr.startsWith('#') ? hashStr.substring(1) : hashStr;
+      const params = new URLSearchParams(hash);
+      return {
+        access_token: params.get('access_token'),
+        refresh_token: params.get('refresh_token'),
+        expires_at: params.get('expires_at'),
+        expires_in: params.get('expires_in'),
+        token_type: params.get('token_type')
+      };
+    }
+
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+    }
+
+    async function processLogin() {
+      const rawInput = document.getElementById('urlInput').value.trim();
+      if (!rawInput) {
+        alert("Please paste your OAuth URL or fragment!");
+        return;
+      }
+
+      let hashPart = rawInput;
+      if (rawInput.includes('#')) {
+        hashPart = rawInput.substring(rawInput.indexOf('#') + 1);
+      }
+
+      const parsed = parseHash(hashPart);
+      if (!parsed.access_token) {
+        alert("Could not find access_token in the provided URL!");
+        return;
+      }
+
+      const jwtPayload = parseJwt(parsed.access_token);
+      if (!jwtPayload) {
+        alert("Invalid JWT access_token!");
+        return;
+      }
+
+      // 1. Save cookies
+      setCookie("sb-access-token", parsed.access_token, 7);
+      if (parsed.refresh_token) {
+        setCookie("sb-refresh-token", parsed.refresh_token, 7);
+      }
+      setCookie("sb-eradptaqkournvgkepnz-auth-token", parsed.access_token, 7);
+
+      // 2. Save localStorage
+      const storageObj = {
+        access_token: parsed.access_token,
+        refresh_token: parsed.refresh_token,
+        expires_at: parsed.expires_at || (Math.floor(Date.now() / 1000) + 3600),
+        expires_in: 3600,
+        token_type: "bearer",
+        user: {
+          id: jwtPayload.sub,
+          email: jwtPayload.email,
+          user_metadata: jwtPayload.user_metadata || {}
+        }
+      };
+
+      localStorage.setItem("sb-eradptaqkournvgkepnz-auth-token", JSON.stringify(storageObj));
+
+      // 3. Display user info card
+      const userMeta = jwtPayload.user_metadata || {};
+      document.getElementById("userName").innerText = userMeta.full_name || userMeta.name || jwtPayload.email;
+      document.getElementById("userEmail").innerText = jwtPayload.email;
+      document.getElementById("userAvatar").src = userMeta.avatar_url || userMeta.picture || "https://ui-avatars.com/api/?name=" + encodeURIComponent(jwtPayload.email);
+
+      const expDate = new Date(jwtPayload.exp * 1000).toLocaleString();
+      document.getElementById("sessionStatus").innerText = `Session Active (Expires: ${expDate})`;
+
+      document.getElementById("userCard").classList.add("active");
+      document.getElementById("deepLinkBtn").style.display = "block";
+    }
+
+    function triggerDeepLink() {
+      const rawInput = document.getElementById('urlInput').value.trim();
+      const deepUrl = rawInput.replace("http://localhost:3000/", "datemate-ai-v2://");
+      window.location.href = deepUrl;
+    }
+  </script>
+</body>
+</html>

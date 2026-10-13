@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:icon="@drawable/ic_shortcut_question" android:enabled="true" android:shortcutId="support_question" android:shortcutShortLabel="@string/shortcut_question_short_label" android:shortcutLongLabel="@string/shortcut_question_long_label">
+        <intent android:action="android.intent.action.VIEW" android:data="https://forms.gle/MtKgeLo7ChU81MXN6" />
+    </shortcut>
+</shortcuts>

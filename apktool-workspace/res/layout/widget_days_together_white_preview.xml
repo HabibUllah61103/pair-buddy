@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:background="@drawable/rounded_background" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:layout_width="28.0dip" android:layout_height="28.0dip" android:layout_marginBottom="4.0dip" android:src="@drawable/ic_heart_white" android:contentDescription="@string/widget_heart_icon_description" />
+    <TextView android:textSize="28.0sp" android:textStyle="bold" android:textColor="#ffffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="0.0dip" android:text="365" android:includeFontPadding="false" android:fontFamily="sans-serif-rounded" android:autoSizeTextType="uniform" android:autoSizeMinTextSize="14.0sp" android:autoSizeMaxTextSize="30.0sp" />
+    <TextView android:textSize="11.0sp" android:textStyle="normal" android:textColor="#ffffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/widget_days_together_lock_small_label" android:fontFamily="sans-serif-medium" />
+</LinearLayout>
