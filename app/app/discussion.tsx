@@ -20,13 +20,8 @@ import {
   subscribeMessages,
   type DiscussionMessage,
 } from '../src/lib/discussion';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const CARD = '#1B3A5F';
-const MUTED = COLORS.muted;
-const WHITE = COLORS.white;
+import { FONTS } from '../src/theme';
+import { useTheme } from '../src/lib/theme-provider';
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -44,11 +39,33 @@ function MessageBubble({
   message: DiscussionMessage;
   mine: boolean;
 }) {
+  const { tokens } = useTheme();
   return (
     <View style={[styles.bubbleRow, mine ? styles.bubbleRowMine : null]}>
-      <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
-        <Text style={styles.bubbleText}>{message.body}</Text>
-        <Text style={[styles.bubbleTime, mine ? styles.bubbleTimeMine : null]}>
+      <View
+        style={[
+          styles.bubble,
+          mine
+            ? [styles.bubbleMine, { backgroundColor: tokens.primary }]
+            : [styles.bubbleTheirs, { backgroundColor: tokens.card }],
+        ]}
+      >
+        <Text
+          style={[
+            styles.bubbleText,
+            { color: mine ? tokens.onPrimary : tokens.ink },
+          ]}
+        >
+          {message.body}
+        </Text>
+        <Text
+          style={[
+            styles.bubbleTime,
+            mine
+              ? [styles.bubbleTimeMine, { color: tokens.onPrimary }]
+              : { color: tokens.muted },
+          ]}
+        >
           {formatTime(message.created_at)}
         </Text>
       </View>
@@ -57,6 +74,7 @@ function MessageBubble({
 }
 
 export default function DiscussionScreen() {
+  const { tokens } = useTheme();
   const [messages, setMessages] = useState<DiscussionMessage[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
@@ -132,33 +150,38 @@ export default function DiscussionScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.root}
+      style={[styles.root, { backgroundColor: tokens.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
     >
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>Back</Text>
+          <Text style={[styles.backText, { color: tokens.primary }]}>Back</Text>
         </Pressable>
-        <Text style={styles.title}>Discussion</Text>
+        <Text style={[styles.title, { color: tokens.ink }]}>Discussion</Text>
         <View style={styles.backButton} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={TEAL} />
+          <ActivityIndicator color={tokens.primary} />
         </View>
       ) : error && messages.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retryButton} onPress={() => void load()}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable
+            style={[styles.retryButton, { borderColor: tokens.border }]}
+            onPress={() => void load()}
+          >
+            <Text style={[styles.retryText, { color: tokens.ink }]}>Try again</Text>
           </Pressable>
         </View>
       ) : messages.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyTitle}>No messages yet</Text>
-          <Text style={styles.emptyHint}>
+          <Text style={[styles.emptyTitle, { color: tokens.ink }]}>
+            No messages yet
+          </Text>
+          <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Say hi — your partner will see it right away.
           </Text>
         </View>
@@ -175,41 +198,48 @@ export default function DiscussionScreen() {
         />
       )}
 
-      {seen ? <Text style={styles.seen}>Seen</Text> : null}
+      {seen ? <Text style={[styles.seen, { color: tokens.muted }]}>Seen</Text> : null}
 
       <View style={styles.composer}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { backgroundColor: tokens.card, color: tokens.ink },
+          ]}
           value={draft}
           onChangeText={setDraft}
           placeholder="Write a message"
-          placeholderTextColor={MUTED}
+          placeholderTextColor={tokens.muted}
           multiline
           maxLength={1000}
           returnKeyType="send"
           onSubmitEditing={() => void onSend()}
         />
         <Pressable
-          style={[styles.sendButton, !draft.trim() || sending ? styles.sendButtonDisabled : null]}
+          style={[
+            styles.sendButton,
+            { backgroundColor: tokens.primary },
+            !draft.trim() || sending ? styles.sendButtonDisabled : null,
+          ]}
           onPress={() => void onSend()}
           disabled={!draft.trim() || sending}
         >
           {sending ? (
-            <ActivityIndicator color={WHITE} size="small" />
+            <ActivityIndicator color={tokens.onPrimary} size="small" />
           ) : (
-            <Text style={styles.sendText}>Send</Text>
+            <Text style={[styles.sendText, { color: tokens.onPrimary }]}>Send</Text>
           )}
         </Pressable>
       </View>
       {error && messages.length > 0 ? (
-        <Text style={styles.inlineError}>{error}</Text>
+        <Text style={[styles.inlineError, { color: tokens.danger }]}>{error}</Text>
       ) : null}
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: NAVY },
+  root: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -218,31 +248,45 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   backButton: { minWidth: 64 },
-  backText: { color: TEAL, fontSize: 16, fontWeight: '600' },
-  title: { color: WHITE, fontSize: 18, fontWeight: '800' },
+  backText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  title: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: { color: '#FF9A8F', fontSize: 15, textAlign: 'center', marginBottom: 12 },
+  error: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
   retryButton: {
     borderWidth: 1.5,
-    borderColor: '#3A5470',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: WHITE, fontSize: 15, fontWeight: '600' },
-  emptyTitle: { color: WHITE, fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  emptyHint: { color: MUTED, fontSize: 15, textAlign: 'center', lineHeight: 22 },
+  retryText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600' },
+  emptyTitle: {
+    fontFamily: FONTS.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', lineHeight: 22 },
   list: { paddingHorizontal: 16, paddingVertical: 12 },
   bubbleRow: { flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 8 },
   bubbleRowMine: { justifyContent: 'flex-end' },
-  bubble: { maxWidth: '78%', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
-  bubbleMine: { backgroundColor: TEAL, borderBottomRightRadius: 4 },
-  bubbleTheirs: { backgroundColor: CARD, borderBottomLeftRadius: 4 },
-  bubbleText: { color: WHITE, fontSize: 16, lineHeight: 22 },
-  bubbleTime: { color: MUTED, fontSize: 11, marginTop: 4 },
-  bubbleTimeMine: { color: '#E8F6F3', textAlign: 'right' },
+  bubble: {
+    maxWidth: '78%',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  bubbleMine: { borderBottomRightRadius: 4 },
+  bubbleTheirs: { borderBottomLeftRadius: 4 },
+  bubbleText: { fontFamily: FONTS.body, fontSize: 16, lineHeight: 22 },
+  bubbleTime: { fontFamily: FONTS.body, fontSize: 11, marginTop: 4 },
+  bubbleTimeMine: { textAlign: 'right', opacity: 0.75 },
   seen: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 12,
     textAlign: 'right',
     paddingHorizontal: 20,
@@ -257,16 +301,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: CARD,
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: WHITE,
+    fontFamily: FONTS.body,
     fontSize: 16,
     maxHeight: 120,
   },
   sendButton: {
-    backgroundColor: TEAL,
     borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -274,6 +316,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendButtonDisabled: { opacity: 0.4 },
-  sendText: { color: WHITE, fontSize: 16, fontWeight: '700' },
-  inlineError: { color: '#FF9A8F', fontSize: 13, textAlign: 'center', paddingBottom: 8 },
+  sendText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
+  inlineError: {
+    fontFamily: FONTS.body,
+    fontSize: 13,
+    textAlign: 'center',
+    paddingBottom: 8,
+  },
 });
