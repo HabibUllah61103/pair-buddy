@@ -25,6 +25,7 @@ import {
 } from '../../src/lib/location';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { GradientHeader } from '../../src/components/gradient-header';
 
 const STALENESS_STYLE: Record<Staleness, { label: string; tone: 'live' | 'recent' | 'stale' }> = {
   live: { label: 'Live', tone: 'live' },
@@ -134,8 +135,13 @@ export default function DistanceScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <Text style={[styles.heading, { color: tokens.ink }]}>Distance</Text>
+      <GradientHeader
+        title="Distance"
+        subtitle="How far apart are your hearts?"
+        tokens={tokens}
+      />
 
+      <View style={styles.body}>
       {loading ? (
         <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : (
@@ -211,23 +217,34 @@ export default function DistanceScreen() {
       )}
 
       {error && !loading && partner === null && (
-        <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+        <Text style={[styles.error, { color: tokens.danger, marginHorizontal: 20 }]}>{error}</Text>
       )}
+      </View>
     </View>
   );
 }
 
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 64 },
-  heading: { fontFamily: FONTS.heading, fontSize: 28, fontWeight: '700', marginBottom: 16 },
+  container: { flex: 1 },
   loader: { marginTop: 40 },
+  body: { paddingTop: 20 },
   card: {
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 20,
     marginBottom: 16,
+    marginHorizontal: 20,
+    ...BUBBLY_SHADOW,
   },
   partnerName: { fontFamily: FONTS.body, fontSize: 14, marginBottom: 4 },
-  distance: { fontFamily: FONTS.heading, fontSize: 52, fontWeight: '800' },
+  distance: { fontFamily: FONTS.headingBold, fontSize: 56 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
