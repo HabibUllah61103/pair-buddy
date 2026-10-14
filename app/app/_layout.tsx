@@ -10,10 +10,10 @@ import {
   takePendingInviteCode,
 } from '../src/lib/deeplinks';
 import { initPush, resetPushInit } from '../src/lib/push';
-import { initSync } from '../src/lib/sync';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 
 function AuthGuard({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -40,12 +40,6 @@ function AuthGuard({ children }: { children: ReactNode }) {
       resetPushInit();
     }
   }, [session, loading]);
-
-  // Offline outbox: start the connectivity/foreground listeners once. Queued
-  // writes replay automatically when the device comes back online.
-  useEffect(() => {
-    initSync();
-  }, []);
 
   // Invite deep links: pairbuddy://invite/ABC123 (and https://<domain>/invite/ABC123
   // once the universal-link domain is chosen). Signed-in users go straight to
@@ -116,7 +110,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   splashTitle: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 32,
     fontWeight: '800',
   },

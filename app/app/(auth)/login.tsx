@@ -12,9 +12,10 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
 import type { AuthResult } from '../src/lib/auth';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 
 type Action = 'google' | 'apple' | 'phone';
 
@@ -63,7 +64,7 @@ export default function LoginScreen() {
       disabled={busy !== null}
     >
       {busy === key ? (
-        <ActivityIndicator color={primary ? '#FFFFFF' : NAVY} />
+        <ActivityIndicator color={primary ? COLORS.white : NAVY} />
       ) : (
         <Text style={[styles.buttonText, primary ? styles.primaryText : styles.secondaryText]}>
           {label}
@@ -90,7 +91,7 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="+92 300 1234567"
-                placeholderTextColor="#8AA0B8"
+                placeholderTextColor={COLORS.muted}
                 keyboardType="phone-pad"
                 autoComplete="tel"
                 value={phone}
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 36,
     fontWeight: '800',
     textAlign: 'center',
@@ -158,14 +159,14 @@ const styles = StyleSheet.create({
     backgroundColor: TEAL,
   },
   secondaryButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
   },
   primaryText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
   },
   secondaryText: {
     color: NAVY,
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   link: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 15,
     fontWeight: '500',
     textDecorationLine: 'underline',
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   footnote: {
-    color: '#8AA0B8',
+    color: COLORS.muted,
     fontSize: 12,
     textAlign: 'center',
     marginTop: 32,

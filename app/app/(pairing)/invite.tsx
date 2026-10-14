@@ -16,9 +16,10 @@ import {
   retireInvite,
   NOT_CONFIGURED,
 } from '../src/lib/pairing';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 const CORAL = '#FF6B5E';
 
 export default function InviteScreen() {
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 8,
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   code: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 44,
     fontWeight: '800',
     letterSpacing: 10,
