@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -16,6 +15,7 @@ import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
+import { SkeletonCard } from '../../src/components/skeleton-card';
 
 const PACK_COLORS: Record<string, string> = {
   fun: '#FF6B5E',
@@ -106,7 +106,11 @@ export default function QuizzesScreen() {
         tokens={tokens}
       />
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <View style={styles.skeletonList}>
+          <SkeletonCard tokens={tokens} />
+          <SkeletonCard tokens={tokens} />
+          <SkeletonCard tokens={tokens} />
+        </View>
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
@@ -148,6 +152,10 @@ const styles = StyleSheet.create({
     opacity: 0.12,
   },
   loader: { marginTop: 40 },
+  skeletonList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   center: { alignItems: 'center', marginTop: 40 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retryWrap: { marginTop: 16 },

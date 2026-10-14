@@ -23,6 +23,7 @@
     "expo-location": "~18.1.6",
     "expo-notifications": "~0.31.5",
     "expo-router": "~5.1.11",
+    "expo-status-bar": "~2.2.3",
     "expo-task-manager": "~13.1.6",
     "expo-web-browser": "~14.2.0",
     "phosphor-react-native": "3.0.6",

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { getStreak } from '../../src/lib/sparks';
@@ -7,6 +7,7 @@ import { getPartner } from '../../src/lib/location';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FONTS } from '../../src/theme';
 import { GradientHeader } from '../../src/components/gradient-header';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress, PulseView } from '../../src/components/animated';
 import { CelebrationBurst } from '../../src/components/celebration';
@@ -102,7 +103,7 @@ export default function MoreScreen() {
           >
             <Text style={[styles.cardLabel, { color: tokens.primary }]}>Daily Spark streak</Text>
             {streak === null ? (
-              <ActivityIndicator color={tokens.primary} />
+              <LoadingHeart tokens={tokens} size={24} />
             ) : isStreakMilestone ? (
               <RewardPop visible>
                 <Text style={[styles.streakValue, { color: tokens.ink }]}>
@@ -191,7 +192,7 @@ export default function MoreScreen() {
         <FadeInView delay={560}>
           {partnerLoading ? (
             <View style={[styles.card, { backgroundColor: tokens.card }]}>
-              <ActivityIndicator color={tokens.primary} />
+              <LoadingHeart tokens={tokens} size={24} />
             </View>
           ) : partnerName ? (
             <View style={[styles.card, { backgroundColor: tokens.card }]}>

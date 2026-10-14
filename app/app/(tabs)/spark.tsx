@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -24,6 +23,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { CelebrationBurst } from '../../src/components/celebration';
 import { AnimatedCheck } from '../../src/components/success-check';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
+import { LoadingHeart } from '../../src/components/loading-heart';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -125,7 +126,7 @@ export default function SparkScreen() {
   if (phase === 'loading') {
     return (
       <View style={[styles.center, { backgroundColor: tokens.background }]}>
-        <ActivityIndicator color={tokens.primary} />
+        <LoadingHeart tokens={tokens} message="Loading today\u2019s spark\u2026" />
       </View>
     );
   }
@@ -210,7 +211,7 @@ export default function SparkScreen() {
                 style={styles.button}
               >
                 {saving ? (
-                  <ActivityIndicator color="#FFFFFF" />
+                  <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
                 ) : (
                   <Text style={styles.buttonText}>Send answer</Text>
                 )}
@@ -223,11 +224,7 @@ export default function SparkScreen() {
       {phase === 'waiting' && (
         <FadeInView delay={80}>
           <View style={[styles.card, { backgroundColor: tokens.card }]}>
-            <Image
-              source={require('../../assets/mascot-waiting.png')}
-              style={styles.mascot}
-              resizeMode="contain"
-            />
+            <HeartsIllustration expression="sleepy" variant="breathe" size={140} />
             <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
             <Text style={[styles.waitingText, { color: tokens.muted }]}>
               Waiting for your partner. You will both see the answers as soon as

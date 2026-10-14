@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -26,6 +25,8 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 type Phase = 'loading' | 'error' | 'ready';
@@ -158,7 +159,7 @@ export default function MemoriesScreen() {
       />
 
       {phase === 'loading' ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Loading memories\u2026" />
       ) : phase === 'error' ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
@@ -170,11 +171,7 @@ export default function MemoriesScreen() {
         </View>
       ) : memories.length === 0 ? (
         <FadeInView delay={100} style={styles.center}>
-          <Image
-            source={require('../../assets/mascot-empty.png')}
-            style={styles.mascot}
-            resizeMode="contain"
-          />
+          <HeartsIllustration expression="curious" variant="breathe" size={140} />
           <Text style={[styles.emptyTitle, { color: tokens.ink }]}>No memories yet</Text>
           <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Add your first photo together using the + button.
@@ -234,7 +231,7 @@ export default function MemoriesScreen() {
                     disabled={deleting}
                   >
                     {deleting ? (
-                      <ActivityIndicator color={tokens.white} size="small" />
+                      <LoadingHeart tokens={tokens} size={16} color={tokens.white} />
                     ) : (
                       <Text style={[styles.deleteText, { color: tokens.white }]}>Delete</Text>
                     )}
@@ -285,7 +282,7 @@ export default function MemoriesScreen() {
               >
                 <LinearGradient colors={tokens.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.uploadButton}>
                   {uploading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
+                    <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
                   ) : (
                     <Text style={styles.uploadText}>Save memory</Text>
                   )}

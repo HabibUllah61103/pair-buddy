@@ -48,10 +48,14 @@ export function SpringPress({
   children,
   onPress,
   style,
+  accessibilityLabel,
+  accessibilityRole,
 }: {
   children: ReactNode;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+  accessibilityRole?: 'button' | 'link' | 'none';
 }) {
   const scale = useSharedValue(1);
 
@@ -69,6 +73,8 @@ export function SpringPress({
         scale.value = withSpring(1, { damping: 12, stiffness: 220 });
       }}
       onPress={onPress}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
     >
       <Animated.View style={[style, animated]}>{children}</Animated.View>
     </Pressable>

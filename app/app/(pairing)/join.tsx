@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
+  Image,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { previewInvite, redeemInvite, NOT_CONFIGURED } from '../../src/lib/pairing';
 import { isValidInviteCode } from '../../src/lib/deeplinks';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FONTS } from '../../src/theme';
+import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
+import { RichIcon } from '../../src/components/rich-icon';
 
 export default function JoinScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const { code: paramCode } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
   const [inviterName, setInviterName] = useState<string | null>(null);
@@ -23,6 +26,11 @@ export default function JoinScreen() {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   useEffect(() => {
     if (typeof paramCode === 'string' && paramCode.length > 0) {
@@ -73,36 +81,44 @@ export default function JoinScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <Text style={[styles.title, { color: tokens.ink }]}>Join your partner</Text>
-      <Text style={[styles.subtitle, { color: tokens.muted }]}>
-        Enter the 6-character code they shared with you.
-      </Text>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
+      <FadeInView delay={0}>
+        <View style={styles.iconWrap}>
+          <RichIcon name="person-add" size={28} tokens={tokens} variant="gradient" />
+        </View>
+        <Text style={[styles.title, { color: tokens.ink }]}>Join your partner</Text>
+        <Text style={[styles.subtitle, { color: tokens.muted }]}>
+          Enter the 6-character code they shared with you.
+        </Text>
+      </FadeInView>
 
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: tokens.card,
-            borderColor: tokens.border,
-            color: tokens.ink,
-          },
-        ]}
-        value={code}
-        onChangeText={onChangeCode}
-        placeholder="ABC123"
-        placeholderTextColor={tokens.muted}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        maxLength={6}
-      />
+      <FadeInView delay={120}>
+        <View style={[styles.inputCard, styles.cardShadow, { backgroundColor: tokens.card }]}>
+          <TextInput
+            style={[styles.input, { color: tokens.ink }]}
+            value={code}
+            onChangeText={onChangeCode}
+            placeholder="ABC123"
+            placeholderTextColor={tokens.muted}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={6}
+          />
+        </View>
+      </FadeInView>
 
       <View style={styles.previewRow}>
         {previewing ? (
-          <ActivityIndicator color={tokens.primary} size="small" />
+          <LoadingHeart tokens={tokens} size={16} />
         ) : inviterName ? (
-          <Text style={[styles.previewOk, { color: tokens.primary }]}>
-            Invite from {inviterName}
-          </Text>
+          <FadeInView delay={0}>
+            <View style={[styles.previewPill, { backgroundColor: tokens.primaryTint }]}>
+              <RichIcon name="checkmark" size={16} tokens={tokens} variant="plain" />
+              <Text style={[styles.previewOk, { color: tokens.primary }]}>
+                Invite from {inviterName}
+              </Text>
+            </View>
+          </FadeInView>
         ) : previewError ? (
           <Text style={[styles.previewError, { color: tokens.danger }]}>
             {previewError}
@@ -117,19 +133,26 @@ export default function JoinScreen() {
         <Text style={[styles.error, { color: tokens.danger }]}>{NOT_CONFIGURED}</Text>
       ) : null}
 
-      <Pressable
-        style={[
-          styles.button,
-          { backgroundColor: tokens.primary },
-          !canJoin && styles.buttonDisabled,
-        ]}
-        onPress={onJoin}
-        disabled={!canJoin}
-      >
-        <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
-          {joining ? 'Joining…' : 'Join'}
-        </Text>
-      </Pressable>
+      <FadeInView delay={200}>
+        <SpringPress onPress={canJoin ? onJoin : undefined}>
+          <LinearGradient
+            colors={tokens.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[
+              styles.button,
+              styles.buttonShadow,
+              !canJoin && styles.buttonDisabled,
+            ]}
+          >
+            {joining ? (
+              <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
+            ) : (
+              <Text style={styles.buttonText}>Join</Text>
+            )}
+          </LinearGradient>
+        </SpringPress>
+      </FadeInView>
     </View>
   );
 }
@@ -140,9 +163,17 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
+  iconWrap: {
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   title: {
     fontFamily: FONTS.headingBold,
-    fontSize: 28,
+    fontSize: 30,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -153,20 +184,38 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     lineHeight: 22,
   },
+  inputCard: {
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  cardShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   input: {
-    borderRadius: 12,
-    borderWidth: 1,
     fontFamily: FONTS.headingBold,
-    fontSize: 28,
+    fontSize: 30,
     letterSpacing: 8,
     textAlign: 'center',
-    paddingVertical: 18,
+    paddingVertical: 16,
   },
   previewRow: {
-    minHeight: 28,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
+  },
+  previewPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
   },
   previewOk: {
     fontFamily: FONTS.bodySemi,
@@ -184,16 +233,24 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   button: {
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 20,
+    paddingVertical: 17,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 16,
+  },
+  buttonShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
   },
   buttonDisabled: {
-    opacity: 0.4,
+    opacity: 0.5,
   },
   buttonText: {
     fontFamily: FONTS.bodyBold,
     fontSize: 17,
+    color: '#FFFFFF',
   },
 });
