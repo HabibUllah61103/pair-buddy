@@ -41,7 +41,7 @@ function getClient(): SupabaseClient | null {
   } catch {
     cachedClient = null;
   }
-  return cachedClient;
+  return cachedClient ?? null;
 }
 
 function getLocation(): any | null {
