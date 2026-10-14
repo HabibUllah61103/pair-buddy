@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +21,7 @@ import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FadeInView, SpringPress } from '../../src/components/animated';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -30,7 +30,7 @@ function sameText(a: string, b: string): boolean {
 }
 
 export default function SparkScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const [phase, setPhase] = useState<Phase>('loading');
   const [spark, setSpark] = useState<DailySpark | null>(null);
   const [answers, setAnswers] = useState<NamedAnswer[]>([]);
@@ -40,6 +40,10 @@ export default function SparkScreen() {
   const [streak, setStreak] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   const load = useCallback(async (sparkId?: string): Promise<string | null> => {
     try {
@@ -122,8 +126,9 @@ export default function SparkScreen() {
   if (phase === 'error') {
     return (
       <View style={[styles.center, { backgroundColor: tokens.background }]}>
+        <Image source={bgSource} style={styles.bg} resizeMode="cover" />
         <Text style={[styles.errorText, { color: tokens.danger }]}>{error ?? 'Something went wrong.'}</Text>
-        <Pressable onPress={handleRetry}>
+        <SpringPress onPress={handleRetry}>
           <LinearGradient
             colors={tokens.gradient}
             start={{ x: 0, y: 0 }}
@@ -132,7 +137,7 @@ export default function SparkScreen() {
           >
             <Text style={styles.buttonText}>Try again</Text>
           </LinearGradient>
-        </Pressable>
+        </SpringPress>
       </View>
     );
   }
@@ -142,6 +147,7 @@ export default function SparkScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <GradientHeader
         title="Daily Spark"
         subtitle="One question a day, answered together"
@@ -157,97 +163,104 @@ export default function SparkScreen() {
         }
       />
     <ScrollView contentContainerStyle={styles.content}>
-      <View style={[styles.questionCard, { backgroundColor: tokens.card }]}>
-        <Text style={[styles.questionLabel, { color: tokens.primary }]}>Today&apos;s question</Text>
-        <Text style={[styles.questionText, { color: tokens.ink }]}>{spark?.question_text}</Text>
-      </View>
+      <FadeInView delay={0}>
+        <View style={[styles.questionCard, { backgroundColor: tokens.card }]}>
+          <Text style={[styles.questionLabel, { color: tokens.primary }]}>Today&apos;s question</Text>
+          <Text style={[styles.questionText, { color: tokens.ink }]}>{spark?.question_text}</Text>
+        </View>
+      </FadeInView>
 
       {phase === 'answer' && (
-        <View style={[styles.card, { backgroundColor: tokens.card }]}>
-          <Text style={[styles.label, { color: tokens.muted }]}>Your answer</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
-            value={answerText}
-            onChangeText={setAnswerText}
-            placeholder="Write honestly..."
-            placeholderTextColor={tokens.muted}
-            multiline
-          />
-          <Text style={[styles.label, { color: tokens.muted }]}>Guess your partner&apos;s answer</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
-            value={guessText}
-            onChangeText={setGuessText}
-            placeholder="What will they say? (optional)"
-            placeholderTextColor={tokens.muted}
-            multiline
-          />
-          {error && <Text style={[styles.errorText, { color: tokens.danger }]}>{error}</Text>}
-          <Pressable
-            onPress={handleSubmit}
-            disabled={!answerText.trim() || saving}
-            style={(!answerText.trim() || saving) && styles.buttonDisabled}
-          >
-            <LinearGradient
-              colors={tokens.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.button}
+        <FadeInView delay={80}>
+          <View style={[styles.card, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.label, { color: tokens.muted }]}>Your answer</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
+              value={answerText}
+              onChangeText={setAnswerText}
+              placeholder="Write honestly..."
+              placeholderTextColor={tokens.muted}
+              multiline
+            />
+            <Text style={[styles.label, { color: tokens.muted }]}>Guess your partner&apos;s answer</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
+              value={guessText}
+              onChangeText={setGuessText}
+              placeholder="What will they say? (optional)"
+              placeholderTextColor={tokens.muted}
+              multiline
+            />
+            {error && <Text style={[styles.errorText, { color: tokens.danger }]}>{error}</Text>}
+            <SpringPress
+              onPress={handleSubmit}
+              style={(!answerText.trim() || saving) ? styles.buttonDisabled : undefined}
             >
-              {saving ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.buttonText}>Send answer</Text>
-              )}
-            </LinearGradient>
-          </Pressable>
-        </View>
+              <LinearGradient
+                colors={tokens.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.button}
+              >
+                {saving ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Send answer</Text>
+                )}
+              </LinearGradient>
+            </SpringPress>
+          </View>
+        </FadeInView>
       )}
 
       {phase === 'waiting' && (
-        <View style={[styles.card, { backgroundColor: tokens.card }]}>
-          <Image
-            source={require('../../assets/mascot-waiting.png')}
-            style={styles.mascot}
-            resizeMode="contain"
-          />
-          <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
-          <Text style={[styles.waitingText, { color: tokens.muted }]}>
-            Waiting for your partner. You will both see the answers as soon as
-            they reply.
-          </Text>
-          {myAnswer && (
-            <View style={styles.answerBlock}>
-              <Text style={[styles.answerName, { color: tokens.primary }]}>You wrote</Text>
-              <Text style={[styles.answerValue, { color: tokens.ink }]}>{myAnswer.answer_text}</Text>
-            </View>
-          )}
-        </View>
+        <FadeInView delay={80}>
+          <View style={[styles.card, { backgroundColor: tokens.card }]}>
+            <Image
+              source={require('../../assets/mascot-waiting.png')}
+              style={styles.mascot}
+              resizeMode="contain"
+            />
+            <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
+            <Text style={[styles.waitingText, { color: tokens.muted }]}>
+              Waiting for your partner. You will both see the answers as soon as
+              they reply.
+            </Text>
+            {myAnswer && (
+              <View style={styles.answerBlock}>
+                <Text style={[styles.answerName, { color: tokens.primary }]}>You wrote</Text>
+                <Text style={[styles.answerValue, { color: tokens.ink }]}>{myAnswer.answer_text}</Text>
+              </View>
+            )}
+          </View>
+        </FadeInView>
       )}
 
       {phase === 'results' && (
         <View>
-          {answers.map((a) => {
+          {answers.map((a, idx) => {
             const other = answers.find((x) => x.user_id !== a.user_id);
             const guess = other?.guess_partner_answer;
             const guessedRight = guess ? sameText(guess, a.answer_text) : null;
             const isMe = a.user_id === myUserId;
             return (
-              <View key={a.id} style={[styles.card, { backgroundColor: tokens.card }]}>
-                <Text style={[styles.answerName, { color: tokens.primary }]}>{isMe ? 'You' : a.userName}</Text>
-                <Text style={[styles.answerValue, { color: tokens.ink }]}>{a.answer_text}</Text>
-                {guess && (
-                  <Text
-                    style={[
-                      styles.guessLine,
-                      guessedRight ? { color: tokens.success } : { color: tokens.muted },
-                    ]}
-                  >
-                    {isMe ? 'Your partner' : 'You'} guessed &ldquo;{guess}&rdquo; —{' '}
-                    {guessedRight ? 'spot on!' : 'not quite.'}
-                  </Text>
-                )}
-              </View>
+              <FadeInView key={a.id} delay={idx * 80}>
+                <View style={[styles.card, { backgroundColor: tokens.card }]}>
+                  <Text style={[styles.answerName, { color: tokens.primary }]}>{isMe ? 'You' : a.userName}</Text>
+                  <Text style={[styles.answerValue, { color: tokens.ink }]}>{a.answer_text}</Text>
+                  {guess && (
+                    <Text
+                      style={[
+                        styles.guessLine,
+                        guessedRight ? { color: tokens.success } : { color: tokens.muted },
+                      ]}
+                    >
+                      {isMe ? 'Your partner' : 'You'} guessed &ldquo;{guess}&rdquo; —{' '}
+                      {guessedRight ? 'spot on!' : 'not quite.'}
+                    </Text>
+                  )}
+                </View>
+              </FadeInView>
             );
           })}
         </View>
@@ -267,6 +280,10 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
   content: { padding: 20, paddingBottom: 40 },
   center: {
     flex: 1,

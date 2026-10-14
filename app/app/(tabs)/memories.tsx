@@ -26,17 +26,23 @@ import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FadeInView, SpringPress } from '../../src/components/animated';
+import { RichIcon } from '../../src/components/rich-icon';
 
 type Phase = 'loading' | 'error' | 'ready';
 
 export default function MemoriesScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const [phase, setPhase] = useState<Phase>('loading');
   const [memories, setMemories] = useState<Memory[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Memory | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   // Add-memory flow state.
   const [pendingUri, setPendingUri] = useState<string | null>(null);
@@ -122,18 +128,21 @@ export default function MemoriesScreen() {
     [doDelete],
   );
 
-  const renderItem = ({ item }: { item: Memory }) => (
-    <MemoryCard memory={item} onPress={() => setSelected(item)} />
+  const renderItem = ({ item, index }: { item: Memory; index: number }) => (
+    <FadeInView delay={index * 80} style={styles.itemWrap}>
+      <MemoryCard memory={item} onPress={() => setSelected(item)} />
+    </FadeInView>
   );
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <GradientHeader
         title="Memories"
         subtitle="Photos you have shared with each other"
         tokens={tokens}
         right={
-          <Pressable
+          <SpringPress
             onPress={() => void pickPhoto()}
             accessibilityLabel="Add a memory"
           >
@@ -143,7 +152,7 @@ export default function MemoriesScreen() {
             >
               <Ionicons name="add" size={26} color="#FFFFFF" />
             </LinearGradient>
-          </Pressable>
+          </SpringPress>
         }
       />
 
@@ -152,14 +161,14 @@ export default function MemoriesScreen() {
       ) : phase === 'error' ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
-          <Pressable onPress={() => void load()}>
+          <SpringPress onPress={() => void load()}>
             <LinearGradient colors={tokens.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.retry}>
               <Text style={styles.retryText}>Try again</Text>
             </LinearGradient>
-          </Pressable>
+          </SpringPress>
         </View>
       ) : memories.length === 0 ? (
-        <View style={styles.center}>
+        <FadeInView delay={100} style={styles.center}>
           <Image
             source={require('../../assets/mascot-empty.png')}
             style={styles.mascot}
@@ -169,7 +178,7 @@ export default function MemoriesScreen() {
           <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Add your first photo together using the + button.
           </Text>
-        </View>
+        </FadeInView>
       ) : (
         <FlatList
           data={memories}
@@ -197,7 +206,7 @@ export default function MemoriesScreen() {
               />
             ) : (
               <View style={[styles.modalImage, styles.imageFallback, { backgroundColor: tokens.background }]}>
-                <Ionicons name="image-outline" size={40} color={tokens.muted} />
+                <RichIcon name="image-outline" size={28} tokens={tokens} variant="soft" />
               </View>
             )}
             <View style={styles.modalMeta}>
@@ -299,6 +308,11 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
+  itemWrap: { flex: 1 },
   addButton: {
     width: 48,
     height: 48,

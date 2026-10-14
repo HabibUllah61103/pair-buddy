@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   StyleSheet,
   Switch,
   Text,
@@ -26,6 +27,8 @@ import {
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { GradientHeader } from '../../src/components/gradient-header';
+import { FadeInView, PulseView } from '../../src/components/animated';
+import { RichIcon } from '../../src/components/rich-icon';
 
 const STALENESS_STYLE: Record<Staleness, { label: string; tone: 'live' | 'recent' | 'stale' }> = {
   live: { label: 'Live', tone: 'live' },
@@ -43,7 +46,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function DistanceScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const [sharing, setSharing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [unit, setUnit] = useState<DistanceUnit>('km');
@@ -51,6 +54,10 @@ export default function DistanceScreen() {
   const [distanceKm, setDistanceKm] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -135,6 +142,7 @@ export default function DistanceScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <GradientHeader
         title="Distance"
         subtitle="How far apart are your hearts?"
@@ -146,71 +154,80 @@ export default function DistanceScreen() {
         <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : (
         <>
-          <View style={[styles.card, { backgroundColor: tokens.card }]}>
-            {partner ? (
-              <>
-                <Text style={[styles.partnerName, { color: tokens.muted }]}>{partner.name}</Text>
-                <Text style={[styles.distance, { color: tokens.ink }]}>
-                  {distanceKm === null ? '—' : formatDistance(distanceKm, unit)}
-                </Text>
-                <View style={styles.row}>
-                  {badge && (
-                    <View style={[styles.badge, { borderColor: toneColor }]}>
-                      <View style={[styles.dot, { backgroundColor: toneColor }]} />
-                      <Text style={[styles.badgeText, { color: toneColor }]}>
-                        {badge.label} · {timeAgo(partner.updatedAt)}
-                      </Text>
-                    </View>
-                  )}
-                  <View style={[styles.unitToggle, { backgroundColor: tokens.primaryTint }]}>
-                    {(['km', 'mi'] as DistanceUnit[]).map((u) => (
-                      <TouchableOpacity
-                        key={u}
-                        style={[styles.unitBtn, unit === u && { backgroundColor: tokens.primary }]}
-                        onPress={() => toggleUnit(u)}
-                      >
-                        <Text
-                          style={[
-                            styles.unitText,
-                            { color: unit === u ? tokens.onPrimary : tokens.muted },
-                          ]}
-                        >
-                          {u}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+          <FadeInView delay={0}>
+            <View style={[styles.card, { backgroundColor: tokens.card }]}>
+              {partner ? (
+                <>
+                  <View style={styles.partnerRow}>
+                    <RichIcon name="location" size={20} tokens={tokens} variant="gradient" />
+                    <Text style={[styles.partnerName, { color: tokens.muted }]}>{partner.name}</Text>
                   </View>
-                </View>
-                <Text style={[styles.coords, { color: tokens.muted }]}>
-                  {partner.lat.toFixed(4)}, {partner.lng.toFixed(4)}
-                </Text>
-              </>
-            ) : (
-              <Text style={[styles.empty, { color: tokens.muted }]}>
-                {error ?? 'No partner location yet.'}
-              </Text>
-            )}
-          </View>
-
-          <View style={[styles.card, { backgroundColor: tokens.card }]}>
-            <View style={styles.rowBetween}>
-              <View>
-                <Text style={[styles.toggleTitle, { color: tokens.ink }]}>Share my location</Text>
-                <Text style={[styles.toggleSub, { color: tokens.muted }]}>
-                  Only your partner can see it. Turn off anytime.
-                </Text>
-              </View>
-              {busy ? (
-                <ActivityIndicator color={tokens.primary} />
+                  <PulseView>
+                    <Text style={[styles.distance, { color: tokens.ink }]}>
+                      {distanceKm === null ? '—' : formatDistance(distanceKm, unit)}
+                    </Text>
+                  </PulseView>
+                  <View style={styles.row}>
+                    {badge && (
+                      <View style={[styles.badge, { borderColor: toneColor }]}>
+                        <View style={[styles.dot, { backgroundColor: toneColor }]} />
+                        <Text style={[styles.badgeText, { color: toneColor }]}>
+                          {badge.label} · {timeAgo(partner.updatedAt)}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={[styles.unitToggle, { backgroundColor: tokens.primaryTint }]}>
+                      {(['km', 'mi'] as DistanceUnit[]).map((u) => (
+                        <TouchableOpacity
+                          key={u}
+                          style={[styles.unitBtn, unit === u && { backgroundColor: tokens.primary }]}
+                          onPress={() => toggleUnit(u)}
+                        >
+                          <Text
+                            style={[
+                              styles.unitText,
+                              { color: unit === u ? tokens.onPrimary : tokens.muted },
+                            ]}
+                          >
+                            {u}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                  <Text style={[styles.coords, { color: tokens.muted }]}>
+                    {partner.lat.toFixed(4)}, {partner.lng.toFixed(4)}
+                  </Text>
+                </>
               ) : (
-                <Switch
-                  value={sharing}
-                  onValueChange={toggleSharing}
-                  trackColor={{ false: tokens.border, true: tokens.primary }}
-                />
+                <Text style={[styles.empty, { color: tokens.muted }]}>
+                  {error ?? 'No partner location yet.'}
+                </Text>
               )}
             </View>
-          </View>
+          </FadeInView>
+
+          <FadeInView delay={80}>
+            <View style={[styles.card, { backgroundColor: tokens.card }]}>
+              <View style={styles.rowBetween}>
+                <View>
+                  <Text style={[styles.toggleTitle, { color: tokens.ink }]}>Share my location</Text>
+                  <Text style={[styles.toggleSub, { color: tokens.muted }]}>
+                    Only your partner can see it. Turn off anytime.
+                  </Text>
+                </View>
+                {busy ? (
+                  <ActivityIndicator color={tokens.primary} />
+                ) : (
+                  <Switch
+                    value={sharing}
+                    onValueChange={toggleSharing}
+                    trackColor={{ false: tokens.border, true: tokens.primary }}
+                  />
+                )}
+              </View>
+            </View>
+          </FadeInView>
 
           {error && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
         </>
@@ -234,6 +251,10 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
   loader: { marginTop: 40 },
   body: { paddingTop: 20 },
   card: {
@@ -243,7 +264,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     ...BUBBLY_SHADOW,
   },
-  partnerName: { fontFamily: FONTS.body, fontSize: 14, marginBottom: 4 },
+  partnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  partnerName: { fontFamily: FONTS.body, fontSize: 14 },
   distance: { fontFamily: FONTS.headingBold, fontSize: 56 },
   row: {
     flexDirection: 'row',

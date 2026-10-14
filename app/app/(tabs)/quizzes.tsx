@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -14,6 +15,8 @@ import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FadeInView, SpringPress } from '../../src/components/animated';
+import { RichIcon } from '../../src/components/rich-icon';
 
 const PACK_COLORS: Record<string, string> = {
   fun: '#FF6B5E',
@@ -26,10 +29,14 @@ const PACK_COLORS: Record<string, string> = {
 type PackWithProgress = QuizPack & { answeredBoth: number };
 
 export default function QuizzesScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const [packs, setPacks] = useState<PackWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,41 +63,44 @@ export default function QuizzesScreen() {
     void load();
   }, [load]);
 
-  const renderPack = ({ item }: { item: PackWithProgress }) => {
+  const renderPack = ({ item, index }: { item: PackWithProgress; index: number }) => {
     const pct =
       item.questionCount > 0 ? item.answeredBoth / item.questionCount : 0;
     const color = PACK_COLORS[item.category] ?? tokens.primary;
     return (
-      <Pressable
-        style={[styles.card, { backgroundColor: tokens.card }]}
-        onPress={() =>
-          router.push({ pathname: '/quiz-play', params: { category: item.category } })
-        }
-      >
-        <LinearGradient
-          colors={[color, color + 'CC']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.cover}
+      <FadeInView delay={index * 80}>
+        <Pressable
+          style={[styles.card, { backgroundColor: tokens.card }]}
+          onPress={() =>
+            router.push({ pathname: '/quiz-play', params: { category: item.category } })
+          }
         >
-          <Ionicons name="albums" size={28} color="#FFFFFF" />
-        </LinearGradient>
-        <View style={styles.info}>
-          <Text style={[styles.title, { color: tokens.ink }]}>{item.title}</Text>
-          <Text style={[styles.subtitle, { color: tokens.muted }]}>
-            {item.questionCount} questions · {item.answeredBoth} answered together
-          </Text>
-          <View style={[styles.barTrack, { backgroundColor: tokens.background }]}>
-            <View style={[styles.barFill, { backgroundColor: tokens.primary, width: `${Math.round(pct * 100)}%` }]} />
+          <LinearGradient
+            colors={[color, color + 'CC']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.cover}
+          >
+            <Ionicons name="albums" size={28} color="#FFFFFF" />
+          </LinearGradient>
+          <View style={styles.info}>
+            <Text style={[styles.title, { color: tokens.ink }]}>{item.title}</Text>
+            <Text style={[styles.subtitle, { color: tokens.muted }]}>
+              {item.questionCount} questions · {item.answeredBoth} answered together
+            </Text>
+            <View style={[styles.barTrack, { backgroundColor: tokens.background }]}>
+              <View style={[styles.barFill, { backgroundColor: tokens.primary, width: `${Math.round(pct * 100)}%` }]} />
+            </View>
           </View>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={tokens.muted} />
-      </Pressable>
+          <RichIcon name="chevron-forward" size={14} tokens={tokens} variant="soft" />
+        </Pressable>
+      </FadeInView>
     );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <GradientHeader
         title="Quiz Packs"
         subtitle="Play through a pack together and compare answers"
@@ -101,7 +111,7 @@ export default function QuizzesScreen() {
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
-          <Pressable onPress={() => void load()}>
+          <SpringPress onPress={() => void load()} style={styles.retryWrap}>
             <LinearGradient
               colors={tokens.gradient}
               start={{ x: 0, y: 0 }}
@@ -110,7 +120,7 @@ export default function QuizzesScreen() {
             >
               <Text style={styles.retryText}>Try again</Text>
             </LinearGradient>
-          </Pressable>
+          </SpringPress>
         </View>
       ) : (
         <FlatList
@@ -134,11 +144,15 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
   loader: { marginTop: 40 },
   center: { alignItems: 'center', marginTop: 40 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
+  retryWrap: { marginTop: 16 },
   retry: {
-    marginTop: 16,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 18,
