@@ -19,6 +19,7 @@ import {
   NOT_CONFIGURED,
 } from '../../src/lib/pairing';
 import { useTheme } from '../../src/lib/theme-provider';
+import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 
 export default function InviteScreen() {
