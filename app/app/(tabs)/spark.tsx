@@ -19,9 +19,11 @@ import {
 } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import GlassHeader from '../../src/components/glass-header';
+import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { CelebrationBurst } from '../../src/components/celebration';
+import { AnimatedCheck } from '../../src/components/success-check';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -40,6 +42,7 @@ export default function SparkScreen() {
   const [streak, setStreak] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const bgSource =
     mode === 'dark'
       ? require('../../assets/bg-night-stars.png')
@@ -110,6 +113,10 @@ export default function SparkScreen() {
     await load(spark.id);
   };
 
+  useEffect(() => {
+    setCelebrate(phase === 'results');
+  }, [phase]);
+
   const handleRetry = () => {
     setPhase('loading');
     void load();
@@ -148,14 +155,14 @@ export default function SparkScreen() {
   return (
     <View style={[styles.root, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GlassHeader
+      <GradientHeader
         title="Daily Spark"
         subtitle="One question a day, answered together"
         tokens={tokens}
         right={
           streak > 0 ? (
             <View style={styles.streakBadge}>
-              <Text style={[styles.streakText, { color: tokens.ink }]}>
+              <Text style={styles.streakText}>
                 {streak} day{streak === 1 ? '' : 's'} in a row
               </Text>
             </View>
@@ -266,6 +273,14 @@ export default function SparkScreen() {
         </View>
       )}
     </ScrollView>
+      {phase === 'results' && (
+        <>
+          <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
+          <View style={styles.checkLayer} pointerEvents="none">
+            <AnimatedCheck visible={celebrate} color={tokens.success} size={84} />
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -280,6 +295,11 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  checkLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bg: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.12,
@@ -292,12 +312,10 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   streakBadge: {
-    backgroundColor: 'rgba(255,255,255,0.55)',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   streakText: { fontFamily: FONTS.bodyBold, fontSize: 13, color: '#FFFFFF' },
   questionCard: {
