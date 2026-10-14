@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { getStreak } from '../../src/lib/sparks';
@@ -72,6 +72,13 @@ export default function MoreScreen() {
           <Text style={[styles.streakValue, { color: tokens.ink }]}>
             {streak} day{streak === 1 ? '' : 's'}
           </Text>
+        )}
+        {streak !== null && streak >= 7 && (
+          <Image
+            source={require('../../assets/mascot-celebration.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
         )}
         <Text style={[styles.cardHint, { color: tokens.muted }]}>
           Answer the spark together every day to keep it going.
@@ -235,6 +242,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   streakValue: { fontFamily: FONTS.heading, fontSize: 28, fontWeight: '800' },
+  mascot: { width: 120, height: 120, alignSelf: 'center', marginTop: 8 },
   partnerName: { fontFamily: FONTS.heading, fontSize: 22, fontWeight: '800' },
   cardHint: { fontFamily: FONTS.body, fontSize: 14, marginTop: 8, lineHeight: 20 },
   syncValue: { fontFamily: FONTS.heading, fontSize: 20, fontWeight: '800' },
