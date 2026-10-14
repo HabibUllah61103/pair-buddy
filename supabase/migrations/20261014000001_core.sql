@@ -1,17 +1,9 @@
 -- Pair Buddy core schema: profiles, couples, membership, invites.
 -- Apply order: 000001 -> 000002 -> 000003.
-
--- Helper: is the caller a member of this couple?
-create or replace function is_couple_member(c uuid)
-returns boolean
-language sql
-stable
-as $$
-  select exists (
-    select 1 from couple_members
-    where couple_id = c and user_id = auth.uid()
-  );
-$$;
+--
+-- Ordering matters: tables first, then functions (LANGUAGE sql functions
+-- are validated against existing tables at creation time), then RLS
+-- policies that reference those functions.
 
 -- Profiles: one row per auth user.
 create table profiles (
@@ -24,32 +16,6 @@ create table profiles (
   created_at timestamptz not null default now()
 );
 
-alter table profiles enable row level security;
-
-create policy "users read own profile"
-  on profiles for select
-  using (auth.uid() = id);
-
-create policy "users read partner profiles"
-  on profiles for select
-  using (
-    exists (
-      select 1
-      from couple_members m1
-      join couple_members m2 on m1.couple_id = m2.couple_id
-      where m1.user_id = auth.uid()
-        and m2.user_id = profiles.id
-    )
-  );
-
-create policy "users insert own profile"
-  on profiles for insert
-  with check (auth.uid() = id);
-
-create policy "users update own profile"
-  on profiles for update
-  using (auth.uid() = id);
-
 -- Couples: the pair.
 create table couples (
   id uuid primary key default gen_random_uuid(),
@@ -59,20 +25,6 @@ create table couples (
   created_at timestamptz not null default now()
 );
 
-alter table couples enable row level security;
-
-create policy "members read own couple"
-  on couples for select
-  using (is_couple_member(id));
-
-create policy "authenticated users create couples"
-  on couples for insert
-  with check (auth.role() = 'authenticated');
-
-create policy "members update own couple"
-  on couples for update
-  using (is_couple_member(id));
-
 -- Membership.
 create table couple_members (
   couple_id uuid not null references couples (id) on delete cascade,
@@ -81,16 +33,6 @@ create table couple_members (
   joined_at timestamptz not null default now(),
   primary key (couple_id, user_id)
 );
-
-alter table couple_members enable row level security;
-
-create policy "members read memberships"
-  on couple_members for select
-  using (is_couple_member(couple_id));
-
-create policy "users join as themselves"
-  on couple_members for insert
-  with check (user_id = auth.uid());
 
 -- Invites.
 create table pairing_invites (
@@ -104,19 +46,17 @@ create table pairing_invites (
     check (status in ('open', 'accepted', 'expired'))
 );
 
-alter table pairing_invites enable row level security;
-
-create policy "creators read own invites"
-  on pairing_invites for select
-  using (created_by = auth.uid());
-
-create policy "creators create invites"
-  on pairing_invites for insert
-  with check (created_by = auth.uid() and status = 'open');
-
-create policy "creators update own invites"
-  on pairing_invites for update
-  using (created_by = auth.uid());
+-- Helper: is the caller a member of this couple?
+create or replace function is_couple_member(c uuid)
+returns boolean
+language sql
+stable
+as $$
+  select exists (
+    select 1 from couple_members
+    where couple_id = c and user_id = auth.uid()
+  );
+$$;
 
 -- Invite preview: lets a joiner see who invited them without
 -- being able to list invites. Called with the code they received.
@@ -136,8 +76,6 @@ as $$
   join profiles p on p.id = pi.created_by
   where pi.code = invite_code;
 $$;
-
-grant execute on function get_invite_preview(text) to anon, authenticated;
 
 -- Redeem an invite: validates it, adds the caller as invitee,
 -- and marks the invite accepted. One call joins the couple.
@@ -174,4 +112,67 @@ begin
 end;
 $$;
 
+-- Row level security.
+alter table profiles enable row level security;
+alter table couples enable row level security;
+alter table couple_members enable row level security;
+alter table pairing_invites enable row level security;
+
+create policy "users read own profile"
+  on profiles for select
+  using (auth.uid() = id);
+
+create policy "users read partner profiles"
+  on profiles for select
+  using (
+    exists (
+      select 1
+      from couple_members m1
+      join couple_members m2 on m1.couple_id = m2.couple_id
+      where m1.user_id = auth.uid()
+        and m2.user_id = profiles.id
+    )
+  );
+
+create policy "users insert own profile"
+  on profiles for insert
+  with check (auth.uid() = id);
+
+create policy "users update own profile"
+  on profiles for update
+  using (auth.uid() = id);
+
+create policy "members read own couple"
+  on couples for select
+  using (is_couple_member(id));
+
+create policy "authenticated users create couples"
+  on couples for insert
+  with check (auth.role() = 'authenticated');
+
+create policy "members update own couple"
+  on couples for update
+  using (is_couple_member(id));
+
+create policy "members read memberships"
+  on couple_members for select
+  using (is_couple_member(couple_id));
+
+create policy "users join as themselves"
+  on couple_members for insert
+  with check (user_id = auth.uid());
+
+create policy "creators read own invites"
+  on pairing_invites for select
+  using (created_by = auth.uid());
+
+create policy "creators create invites"
+  on pairing_invites for insert
+  with check (created_by = auth.uid() and status = 'open');
+
+create policy "creators update own invites"
+  on pairing_invites for update
+  using (created_by = auth.uid());
+
+grant execute on function get_invite_preview(text) to anon, authenticated;
 grant execute on function redeem_invite(text) to authenticated;
