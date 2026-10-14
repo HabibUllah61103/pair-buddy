@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   Share,
   StyleSheet,
@@ -22,6 +21,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 export default function InviteScreen() {
@@ -118,7 +118,7 @@ export default function InviteScreen() {
       </FadeInView>
 
       {loading ? (
-        <ActivityIndicator color={tokens.primary} size="large" style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Preparing your invite\u2026" />
       ) : error ? (
         <FadeInView delay={120}>
           <View style={[styles.card, styles.cardShadow, { backgroundColor: tokens.card }]}>
@@ -180,7 +180,7 @@ export default function InviteScreen() {
             <SpringPress onPress={working ? undefined : onRegenerate}>
               <View style={styles.regen}>
                 {working ? (
-                  <ActivityIndicator color={tokens.primary} size="small" />
+                  <LoadingHeart tokens={tokens} size={16} />
                 ) : (
                   <Text style={[styles.regenText, { color: tokens.primary }]}>
                     Get a new code
