@@ -39,6 +39,20 @@ export default function MoreScreen() {
 
       <Pressable
         style={styles.rowButton}
+        onPress={() => router.push('/date-ideas')}
+      >
+        <Text style={styles.rowButtonText}>Date ideas</Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.rowButton}
+        onPress={() => router.push('/date-plans')}
+      >
+        <Text style={styles.rowButtonText}>My date plans</Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.rowButton}
         onPress={() => router.push('/(pairing)/invite')}
       >
         <Text style={styles.rowButtonText}>Invite partner</Text>
@@ -72,10 +86,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 18,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   rowButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  signedInAs: { color: MUTED, fontSize: 14, textAlign: 'center', marginBottom: 16 },
+  signedInAs: { color: MUTED, fontSize: 14, textAlign: 'center', marginBottom: 16, marginTop: 12 },
   signOutButton: {
     borderWidth: 1.5,
     borderColor: '#3A5470',
