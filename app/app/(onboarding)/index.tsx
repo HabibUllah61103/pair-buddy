@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
-import { useOnboarding } from '../src/lib/onboarding';
-import type { StepProps } from '../src/components/onboarding/steps';
+import { useOnboarding } from '../../src/lib/onboarding';
+import type { StepProps } from '../../src/components/onboarding/steps';
 import {
   AnniversaryStep,
   BirthdateStep,
@@ -14,7 +14,7 @@ import {
   RemindersStep,
   SuccessStep,
   WelcomeStep,
-} from '../src/components/onboarding/steps';
+} from '../../src/components/onboarding/steps';
 
 const STEP_COMPONENTS: Record<string, (props: StepProps) => JSX.Element> = {
   welcome: WelcomeStep,

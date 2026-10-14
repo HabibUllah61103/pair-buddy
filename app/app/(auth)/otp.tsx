@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../src/lib/auth';
+import { useAuth } from '../../src/lib/auth';
 import { COLORS } from '../../src/theme';
 
 const NAVY = COLORS.navy;
