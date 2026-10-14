@@ -2,6 +2,17 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { useFonts } from 'expo-font';
+import {
+  Fredoka_600SemiBold,
+  Fredoka_700Bold,
+} from '@expo-google-fonts/fredoka';
+import {
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from '@expo-google-fonts/nunito';
 import * as Linking from 'expo-linking';
 import { AuthProvider, useAuth } from '../src/lib/auth';
 import { ThemeProvider } from '../src/lib/theme-provider';
@@ -87,6 +98,24 @@ function AuthGuard({ children }: { children: ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Fredoka_600SemiBold,
+    Fredoka_700Bold,
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.splash}>
+        <Text style={styles.splashTitle}>Pair Buddy</Text>
+        <ActivityIndicator color={TEAL} />
+      </View>
+    );
+  }
+
   return (
     <ThemeProvider>
       <AuthProvider>
