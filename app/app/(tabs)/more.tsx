@@ -82,6 +82,13 @@ export default function MoreScreen() {
 
       <Pressable
         style={styles.rowButton}
+        onPress={() => router.push('/date-ai')}
+      >
+        <Text style={styles.rowButtonText}>AI date planner</Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.rowButton}
         onPress={() => router.push('/date-plans')}
       >
         <Text style={styles.rowButtonText}>My date plans</Text>
