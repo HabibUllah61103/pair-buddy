@@ -2,8 +2,13 @@
 //
 // POST { mood?, budget?, location?, occasion?, preferences? } with the
 // caller's Supabase JWT in the Authorization header. The function verifies
-// the caller, then asks Mistral for one date idea tailored to the inputs and
-// returns it as structured JSON for the app to display and save.
+// the caller, checks their rate limit, then asks Mistral for one date idea
+// tailored to the inputs and returns it as structured JSON for the app to
+// display and save.
+//
+// Rate limit: 10 successful generations per user per rolling 24 hours,
+// tracked in the ai_generations table (written with the service role; the
+// client has no write policy on that table).
 //
 // The Mistral key lives server-side only, in the function's secrets:
 //   Dashboard -> Edge Functions -> Manage secrets -> New secret
@@ -11,12 +16,17 @@
 // or:  supabase secrets set MISTRAL_API_KEY=<key>
 //
 // Deploy:  supabase functions deploy generate-date-plan
-// Secrets: SUPABASE_URL, SUPABASE_ANON_KEY, MISTRAL_API_KEY
+// Secrets: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+//          MISTRAL_API_KEY
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.44.4";
 
 const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
 const MISTRAL_MODEL = "mistral-small-latest";
+
+// Successful generations allowed per user per rolling 24 hours.
+const DAILY_GENERATION_LIMIT = 10;
+const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const VALID_CATEGORIES = ["food", "outdoors", "culture", "home", "adventure"] as const;
 
@@ -120,7 +130,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !anonKey) {
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !anonKey || !serviceKey) {
     return json(500, { error: "server not configured" });
   }
 
@@ -135,6 +146,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } = await userClient.auth.getUser();
   if (userError || !user) {
     return json(401, { error: "unauthorized" });
+  }
+
+  // Rate limit: count this user's successful generations in the last 24h.
+  // The service-role client bypasses RLS, which clients cannot write through.
+  const adminClient = createClient(supabaseUrl, serviceKey);
+  const windowStart = new Date(Date.now() - WINDOW_MS).toISOString();
+  const { count, error: countError } = await adminClient
+    .from("ai_generations")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gt("created_at", windowStart);
+  if (countError) {
+    console.error("rate limit check failed", countError.message);
+    return json(500, { error: "server error" });
+  }
+  if ((count ?? 0) >= DAILY_GENERATION_LIMIT) {
+    // Tell the client when the oldest counted generation leaves the window
+    // so the app can show a useful "try again" time.
+    const { data: oldest } = await adminClient
+      .from("ai_generations")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .gt("created_at", windowStart)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const retryAfter = oldest
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(oldest.created_at as string).getTime() + WINDOW_MS - Date.now()) / 1000
+          )
+        )
+      : Math.ceil(WINDOW_MS / 1000);
+    return json(429, { error: "rate_limited", retry_after: retryAfter });
   }
 
   let input: PlannerInput;
@@ -186,6 +232,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   if (!plan) {
     return json(502, { error: "ai_bad_response" });
+  }
+
+  // Log the generation AFTER a successful Mistral response, so failed
+  // generations (provider errors, bad JSON) do not burn the user's quota.
+  const { error: logError } = await adminClient.from("ai_generations").insert({
+    user_id: user.id,
+  });
+  if (logError) {
+    // Non-fatal: the plan was already generated, so still return it.
+    console.error("failed to log ai generation", logError.message);
   }
   return json(200, { plan });
 });
