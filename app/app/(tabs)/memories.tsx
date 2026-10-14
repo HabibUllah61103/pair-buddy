@@ -22,18 +22,13 @@ import {
   listMemories,
   type Memory,
 } from '../../src/lib/memories';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const CARD = '#1A3A5C';
-const TEAL = COLORS.teal;
-const CORAL = '#FF6B5E';
-const WHITE = COLORS.white;
-const MUTED = COLORS.muted;
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
 type Phase = 'loading' | 'error' | 'ready';
 
 export default function MemoriesScreen() {
+  const { tokens } = useTheme();
   const [phase, setPhase] = useState<Phase>('loading');
   const [memories, setMemories] = useState<Memory[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
@@ -130,35 +125,35 @@ export default function MemoriesScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Memories</Text>
-          <Text style={styles.lede}>Photos you have shared with each other.</Text>
+          <Text style={[styles.header, { color: tokens.ink }]}>Memories</Text>
+          <Text style={[styles.lede, { color: tokens.muted }]}>Photos you have shared with each other.</Text>
         </View>
         <Pressable
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: tokens.primary }]}
           onPress={() => void pickPhoto()}
           accessibilityLabel="Add a memory"
         >
-          <Ionicons name="add" size={26} color={WHITE} />
+          <Ionicons name="add" size={26} color={tokens.onPrimary} />
         </Pressable>
       </View>
 
       {phase === 'loading' ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : phase === 'error' ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={() => void load()}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : memories.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="images-outline" size={48} color={MUTED} />
-          <Text style={styles.emptyTitle}>No memories yet</Text>
-          <Text style={styles.emptyHint}>
+          <Ionicons name="images-outline" size={48} color={tokens.muted} />
+          <Text style={[styles.emptyTitle, { color: tokens.ink }]}>No memories yet</Text>
+          <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Add your first photo together using the + button.
           </Text>
         </View>
@@ -180,7 +175,7 @@ export default function MemoriesScreen() {
         onRequestClose={() => setSelected(null)}
       >
         <Pressable style={styles.modalBackdrop} onPress={() => setSelected(null)}>
-          <Pressable style={styles.modalCard} onPress={() => undefined}>
+          <Pressable style={[styles.modalCard, { backgroundColor: tokens.card }]} onPress={() => undefined}>
             {selected?.signed_url ? (
               <Image
                 source={{ uri: selected.signed_url }}
@@ -188,17 +183,17 @@ export default function MemoriesScreen() {
                 resizeMode="cover"
               />
             ) : (
-              <View style={[styles.modalImage, styles.imageFallback]}>
-                <Ionicons name="image-outline" size={40} color={MUTED} />
+              <View style={[styles.modalImage, styles.imageFallback, { backgroundColor: tokens.background }]}>
+                <Ionicons name="image-outline" size={40} color={tokens.muted} />
               </View>
             )}
             <View style={styles.modalMeta}>
-              <Text style={styles.modalCaption}>
+              <Text style={[styles.modalCaption, { color: tokens.ink }]}>
                 {selected?.caption?.trim()
                   ? selected.caption
                   : 'Untitled memory'}
               </Text>
-              <Text style={styles.modalSub}>
+              <Text style={[styles.modalSub, { color: tokens.muted }]}>
                 {selected ? formatMemoryDate(selected.created_at) : ''} ·{' '}
                 {selected?.creator_name ?? ''}
               </Text>
@@ -207,18 +202,18 @@ export default function MemoriesScreen() {
                   style={styles.closeButton}
                   onPress={() => setSelected(null)}
                 >
-                  <Text style={styles.closeText}>Close</Text>
+                  <Text style={[styles.closeText, { color: tokens.muted }]}>Close</Text>
                 </Pressable>
                 {selected && myUserId && selected.created_by === myUserId ? (
                   <Pressable
-                    style={styles.deleteButton}
+                    style={[styles.deleteButton, { backgroundColor: tokens.danger }]}
                     onPress={() => confirmDelete(selected)}
                     disabled={deleting}
                   >
                     {deleting ? (
-                      <ActivityIndicator color={WHITE} size="small" />
+                      <ActivityIndicator color={tokens.white} size="small" />
                     ) : (
-                      <Text style={styles.deleteText}>Delete</Text>
+                      <Text style={[styles.deleteText, { color: tokens.white }]}>Delete</Text>
                     )}
                   </Pressable>
                 ) : null}
@@ -236,7 +231,7 @@ export default function MemoriesScreen() {
         onRequestClose={() => setPendingUri(null)}
       >
         <View style={styles.sheetBackdrop}>
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { backgroundColor: tokens.card }]}>
             {pendingUri ? (
               <Image
                 source={{ uri: pendingUri }}
@@ -245,9 +240,9 @@ export default function MemoriesScreen() {
               />
             ) : null}
             <TextInput
-              style={styles.captionInput}
+              style={[styles.captionInput, { backgroundColor: tokens.background, color: tokens.ink }]}
               placeholder="Add a caption (optional)"
-              placeholderTextColor={MUTED}
+              placeholderTextColor={tokens.muted}
               value={caption}
               onChangeText={setCaption}
               maxLength={140}
@@ -259,17 +254,17 @@ export default function MemoriesScreen() {
                 onPress={() => setPendingUri(null)}
                 disabled={uploading}
               >
-                <Text style={styles.closeText}>Cancel</Text>
+                <Text style={[styles.closeText, { color: tokens.muted }]}>Cancel</Text>
               </Pressable>
               <Pressable
-                style={styles.uploadButton}
+                style={[styles.uploadButton, { backgroundColor: tokens.primary }]}
                 onPress={() => void upload()}
                 disabled={uploading}
               >
                 {uploading ? (
-                  <ActivityIndicator color={WHITE} size="small" />
+                  <ActivityIndicator color={tokens.onPrimary} size="small" />
                 ) : (
-                  <Text style={styles.uploadText}>Save memory</Text>
+                  <Text style={[styles.uploadText, { color: tokens.onPrimary }]}>Save memory</Text>
                 )}
               </Pressable>
             </View>
@@ -281,7 +276,7 @@ export default function MemoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: NAVY, paddingTop: 64 },
+  container: { flex: 1, paddingTop: 64 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -289,28 +284,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  header: { color: WHITE, fontSize: 28, fontWeight: '700' },
-  lede: { color: MUTED, fontSize: 15, marginTop: 6 },
+  header: { fontFamily: FONTS.headingBold, fontSize: 28 },
+  lede: { fontFamily: FONTS.body, fontSize: 15, marginTop: 6 },
   addButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: TEAL,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loader: { marginTop: 40 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  error: { color: CORAL, fontSize: 15, textAlign: 'center', marginBottom: 16 },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 16 },
   retry: {
-    backgroundColor: TEAL,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: WHITE, fontWeight: '700' },
-  emptyTitle: { color: WHITE, fontSize: 20, fontWeight: '700', marginTop: 16 },
-  emptyHint: { color: MUTED, fontSize: 15, textAlign: 'center', marginTop: 8 },
+  retryText: { fontFamily: FONTS.bodyBold },
+  emptyTitle: { fontFamily: FONTS.heading, fontSize: 20, marginTop: 16 },
+  emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginTop: 8 },
   list: { paddingHorizontal: 14, paddingBottom: 24 },
   modalBackdrop: {
     flex: 1,
@@ -321,15 +314,14 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: '100%',
-    backgroundColor: CARD,
     borderRadius: 16,
     overflow: 'hidden',
   },
-  modalImage: { width: '100%', aspectRatio: 1, backgroundColor: '#14283F' },
+  modalImage: { width: '100%', aspectRatio: 1 },
   imageFallback: { alignItems: 'center', justifyContent: 'center' },
   modalMeta: { padding: 16 },
-  modalCaption: { color: WHITE, fontSize: 17, fontWeight: '700' },
-  modalSub: { color: MUTED, fontSize: 13, marginTop: 6 },
+  modalCaption: { fontFamily: FONTS.bodyBold, fontSize: 17 },
+  modalSub: { fontFamily: FONTS.body, fontSize: 13, marginTop: 6 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 },
   closeButton: {
     borderRadius: 10,
@@ -337,31 +329,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginRight: 8,
   },
-  closeText: { color: MUTED, fontWeight: '700' },
+  closeText: { fontFamily: FONTS.bodyBold },
   deleteButton: {
-    backgroundColor: CORAL,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 18,
     minWidth: 90,
     alignItems: 'center',
   },
-  deleteText: { color: WHITE, fontWeight: '700' },
+  deleteText: { fontFamily: FONTS.bodyBold },
   sheetBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: CARD,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
   },
   sheetImage: { width: '100%', aspectRatio: 16 / 9, borderRadius: 12 },
   captionInput: {
-    backgroundColor: '#14283F',
-    color: WHITE,
+    fontFamily: FONTS.body,
     borderRadius: 10,
     padding: 12,
     marginTop: 12,
@@ -369,12 +358,11 @@ const styles = StyleSheet.create({
   },
   sheetActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
   uploadButton: {
-    backgroundColor: TEAL,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 18,
     minWidth: 130,
     alignItems: 'center',
   },
-  uploadText: { color: WHITE, fontWeight: '700' },
+  uploadText: { fontFamily: FONTS.bodyBold },
 });

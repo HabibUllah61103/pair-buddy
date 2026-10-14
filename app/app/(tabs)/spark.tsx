@@ -17,14 +17,8 @@ import {
   type DailySpark,
   type NamedAnswer,
 } from '../../src/lib/sparks';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A3A5C';
-const CORAL = '#FF6B5E';
-const WHITE = COLORS.white;
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -33,6 +27,7 @@ function sameText(a: string, b: string): boolean {
 }
 
 export default function SparkScreen() {
+  const { tokens } = useTheme();
   const [phase, setPhase] = useState<Phase>('loading');
   const [spark, setSpark] = useState<DailySpark | null>(null);
   const [answers, setAnswers] = useState<NamedAnswer[]>([]);
@@ -115,18 +110,18 @@ export default function SparkScreen() {
 
   if (phase === 'loading') {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={TEAL} />
+      <View style={[styles.center, { backgroundColor: tokens.background }]}>
+        <ActivityIndicator color={tokens.primary} />
       </View>
     );
   }
 
   if (phase === 'error') {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error ?? 'Something went wrong.'}</Text>
-        <Pressable style={styles.button} onPress={handleRetry}>
-          <Text style={styles.buttonText}>Try again</Text>
+      <View style={[styles.center, { backgroundColor: tokens.background }]}>
+        <Text style={[styles.errorText, { color: tokens.danger }]}>{error ?? 'Something went wrong.'}</Text>
+        <Pressable style={[styles.button, { backgroundColor: tokens.primary }]} onPress={handleRetry}>
+          <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>Try again</Text>
         </Pressable>
       </View>
     );
@@ -136,69 +131,69 @@ export default function SparkScreen() {
   const partnerAnswer = answers.find((a) => a.user_id !== myUserId) ?? null;
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.root, { backgroundColor: tokens.background }]} contentContainerStyle={styles.content}>
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Daily Spark</Text>
+        <Text style={[styles.headerTitle, { color: tokens.ink }]}>Daily Spark</Text>
         {streak > 0 && (
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakText}>
+          <View style={[styles.streakBadge, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.streakText, { color: tokens.primary }]}>
               {streak} day{streak === 1 ? '' : 's'} in a row
             </Text>
           </View>
         )}
       </View>
 
-      <View style={styles.questionCard}>
-        <Text style={styles.questionLabel}>Today&apos;s question</Text>
-        <Text style={styles.questionText}>{spark?.question_text}</Text>
+      <View style={[styles.questionCard, { backgroundColor: tokens.card }]}>
+        <Text style={[styles.questionLabel, { color: tokens.primary }]}>Today&apos;s question</Text>
+        <Text style={[styles.questionText, { color: tokens.ink }]}>{spark?.question_text}</Text>
       </View>
 
       {phase === 'answer' && (
-        <View style={styles.card}>
-          <Text style={styles.label}>Your answer</Text>
+        <View style={[styles.card, { backgroundColor: tokens.card }]}>
+          <Text style={[styles.label, { color: tokens.muted }]}>Your answer</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
             value={answerText}
             onChangeText={setAnswerText}
             placeholder="Write honestly..."
-            placeholderTextColor={MUTED}
+            placeholderTextColor={tokens.muted}
             multiline
           />
-          <Text style={styles.label}>Guess your partner&apos;s answer</Text>
+          <Text style={[styles.label, { color: tokens.muted }]}>Guess your partner&apos;s answer</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: tokens.background, color: tokens.ink }]}
             value={guessText}
             onChangeText={setGuessText}
             placeholder="What will they say? (optional)"
-            placeholderTextColor={MUTED}
+            placeholderTextColor={tokens.muted}
             multiline
           />
-          {error && <Text style={styles.errorText}>{error}</Text>}
+          {error && <Text style={[styles.errorText, { color: tokens.danger }]}>{error}</Text>}
           <Pressable
-            style={[styles.button, (!answerText.trim() || saving) && styles.buttonDisabled]}
+            style={[styles.button, { backgroundColor: tokens.primary }, (!answerText.trim() || saving) && styles.buttonDisabled]}
             onPress={handleSubmit}
             disabled={!answerText.trim() || saving}
           >
             {saving ? (
-              <ActivityIndicator color={WHITE} />
+              <ActivityIndicator color={tokens.onPrimary} />
             ) : (
-              <Text style={styles.buttonText}>Send answer</Text>
+              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>Send answer</Text>
             )}
           </Pressable>
         </View>
       )}
 
       {phase === 'waiting' && (
-        <View style={styles.card}>
-          <Text style={styles.waitingTitle}>Answer sent</Text>
-          <Text style={styles.waitingText}>
+        <View style={[styles.card, { backgroundColor: tokens.card }]}>
+          <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
+          <Text style={[styles.waitingText, { color: tokens.muted }]}>
             Waiting for your partner. You will both see the answers as soon as
             they reply.
           </Text>
           {myAnswer && (
             <View style={styles.answerBlock}>
-              <Text style={styles.answerName}>You wrote</Text>
-              <Text style={styles.answerValue}>{myAnswer.answer_text}</Text>
+              <Text style={[styles.answerName, { color: tokens.primary }]}>You wrote</Text>
+              <Text style={[styles.answerValue, { color: tokens.ink }]}>{myAnswer.answer_text}</Text>
             </View>
           )}
         </View>
@@ -212,14 +207,14 @@ export default function SparkScreen() {
             const guessedRight = guess ? sameText(guess, a.answer_text) : null;
             const isMe = a.user_id === myUserId;
             return (
-              <View key={a.id} style={styles.card}>
-                <Text style={styles.answerName}>{isMe ? 'You' : a.userName}</Text>
-                <Text style={styles.answerValue}>{a.answer_text}</Text>
+              <View key={a.id} style={[styles.card, { backgroundColor: tokens.card }]}>
+                <Text style={[styles.answerName, { color: tokens.primary }]}>{isMe ? 'You' : a.userName}</Text>
+                <Text style={[styles.answerValue, { color: tokens.ink }]}>{a.answer_text}</Text>
                 {guess && (
                   <Text
                     style={[
                       styles.guessLine,
-                      guessedRight ? styles.guessRight : styles.guessWrong,
+                      guessedRight ? { color: tokens.success } : { color: tokens.muted },
                     ]}
                   >
                     {isMe ? 'Your partner' : 'You'} guessed &ldquo;{guess}&rdquo; —{' '}
@@ -236,11 +231,10 @@ export default function SparkScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: NAVY },
+  root: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
   center: {
     flex: 1,
-    backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -251,61 +245,53 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  headerTitle: { color: WHITE, fontSize: 24, fontWeight: '800' },
+  headerTitle: { fontFamily: FONTS.headingBold, fontSize: 24 },
   streakBadge: {
-    backgroundColor: CARD,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  streakText: { color: CORAL, fontSize: 13, fontWeight: '700' },
+  streakText: { fontFamily: FONTS.bodyBold, fontSize: 13 },
   questionCard: {
-    backgroundColor: CARD,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
   },
   questionLabel: {
-    color: TEAL,
+    fontFamily: FONTS.bodyBold,
     fontSize: 12,
-    fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  questionText: { color: WHITE, fontSize: 19, fontWeight: '600', lineHeight: 27 },
+  questionText: { fontFamily: FONTS.bodySemi, fontSize: 19, lineHeight: 27 },
   card: {
-    backgroundColor: CARD,
     borderRadius: 16,
     padding: 18,
     marginBottom: 14,
   },
-  label: { color: MUTED, fontSize: 13, fontWeight: '600', marginBottom: 8, marginTop: 4 },
+  label: { fontFamily: FONTS.bodySemi, fontSize: 13, marginBottom: 8, marginTop: 4 },
   input: {
-    backgroundColor: NAVY,
     borderRadius: 12,
     padding: 14,
-    color: WHITE,
+    fontFamily: FONTS.body,
     fontSize: 16,
     minHeight: 52,
     marginBottom: 12,
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: WHITE, fontSize: 16, fontWeight: '700' },
-  errorText: { color: CORAL, fontSize: 14, textAlign: 'center', marginBottom: 12 },
-  waitingTitle: { color: WHITE, fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  waitingText: { color: MUTED, fontSize: 15, lineHeight: 22 },
+  buttonText: { fontFamily: FONTS.bodyBold, fontSize: 16 },
+  errorText: { fontFamily: FONTS.body, fontSize: 14, textAlign: 'center', marginBottom: 12 },
+  waitingTitle: { fontFamily: FONTS.heading, fontSize: 18, marginBottom: 8 },
+  waitingText: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 22 },
   answerBlock: { marginTop: 14 },
-  answerName: { color: TEAL, fontSize: 13, fontWeight: '700', marginBottom: 4 },
-  answerValue: { color: WHITE, fontSize: 16, lineHeight: 24 },
-  guessLine: { fontSize: 14, marginTop: 10, lineHeight: 20 },
-  guessRight: { color: TEAL },
-  guessWrong: { color: MUTED },
+  answerName: { fontFamily: FONTS.bodyBold, fontSize: 13, marginBottom: 4 },
+  answerValue: { fontFamily: FONTS.body, fontSize: 16, lineHeight: 24 },
+  guessLine: { fontFamily: FONTS.body, fontSize: 14, marginTop: 10, lineHeight: 20 },
 });
