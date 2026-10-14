@@ -138,9 +138,17 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="(auth)" />
+              <Stack.Screen name="auth" />
               <Stack.Screen name="(onboarding)" />
               <Stack.Screen name="(pairing)" />
               <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="date-ai" />
+              <Stack.Screen name="date-ideas" />
+              <Stack.Screen name="date-plans" />
+              <Stack.Screen name="discussion" />
+              <Stack.Screen name="quiz-play" />
+              <Stack.Screen name="quiz-results" />
+              <Stack.Screen name="widget-settings" />
             </Stack>
           </AuthGuard>
         </AuthProvider>
