@@ -11,14 +11,11 @@ import {
   saveWidgetConfig,
   type WidgetType,
 } from '../src/lib/widgets';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A3A5C';
+import { FONTS } from '../src/theme';
+import { useTheme } from '../src/lib/theme-provider';
 
 export default function WidgetSettingsScreen() {
+  const { tokens } = useTheme();
   const [selected, setSelected] = useState<WidgetType | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,41 +57,62 @@ export default function WidgetSettingsScreen() {
   }, [selected, saving]);
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.root}>
-      <Text style={styles.title}>Home widgets</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView
+      style={[styles.scroll, { backgroundColor: tokens.background }]}
+      contentContainerStyle={styles.root}
+    >
+      <Text style={[styles.title, { color: tokens.ink }]}>Home widgets</Text>
+      <Text style={[styles.subtitle, { color: tokens.muted }]}>
         Pick what your home-screen widget shows. Your choice syncs to your account.
       </Text>
 
       {loading ? (
-        <ActivityIndicator color={TEAL} />
+        <ActivityIndicator color={tokens.primary} />
       ) : (
         WIDGET_TYPES.map((type) => (
           <Pressable
             key={type}
-            style={[styles.card, selected === type && styles.cardSelected]}
+            style={[
+              styles.card,
+              { backgroundColor: tokens.card },
+              selected === type && { borderColor: tokens.primary },
+            ]}
             onPress={() => setSelected(type)}
           >
-            <Text style={styles.cardTitle}>{WIDGET_LABELS[type]}</Text>
-            <Text style={styles.cardHint}>{WIDGET_DESCRIPTIONS[type]}</Text>
-            {selected === type && <Text style={styles.check}>Selected</Text>}
+            <Text style={[styles.cardTitle, { color: tokens.ink }]}>
+              {WIDGET_LABELS[type]}
+            </Text>
+            <Text style={[styles.cardHint, { color: tokens.muted }]}>
+              {WIDGET_DESCRIPTIONS[type]}
+            </Text>
+            {selected === type && (
+              <Text style={[styles.check, { color: tokens.primary }]}>Selected</Text>
+            )}
           </Pressable>
         ))
       )}
 
-      {error && <Text style={styles.error}>{error}</Text>}
-      {notice && <Text style={styles.notice}>{notice}</Text>}
+      {error && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
+      {notice && (
+        <Text style={[styles.notice, { color: tokens.primary }]}>{notice}</Text>
+      )}
 
       <Pressable
-        style={[styles.saveButton, (!selected || saving) && styles.saveButtonDisabled]}
+        style={[
+          styles.saveButton,
+          { backgroundColor: tokens.primary },
+          (!selected || saving) && styles.saveButtonDisabled,
+        ]}
         disabled={!selected || saving}
         onPress={() => void onSave()}
       >
-        <Text style={styles.saveText}>{saving ? 'Saving...' : 'Save widget'}</Text>
+        <Text style={[styles.saveText, { color: tokens.onPrimary }]}>
+          {saving ? 'Saving...' : 'Save widget'}
+        </Text>
       </Pressable>
 
       {!nativeAvailable && (
-        <Text style={styles.cardHint}>
+        <Text style={[styles.cardHint, { color: tokens.muted }]}>
           Widgets render in a development build (Android: npx expo run:android;
           iOS: npx expo run:ios on a Mac with Xcode). They are not available
           inside Expo Go.
@@ -102,40 +120,37 @@ export default function WidgetSettingsScreen() {
       )}
 
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>Back</Text>
+        <Text style={[styles.backText, { color: tokens.muted }]}>Back</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: NAVY },
+  scroll: { flex: 1 },
   root: { padding: 20 },
-  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 8 },
-  subtitle: { color: MUTED, fontSize: 14, lineHeight: 20, marginBottom: 16 },
+  title: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '800', marginBottom: 8 },
+  subtitle: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 20, marginBottom: 16 },
   card: {
-    backgroundColor: CARD,
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  cardSelected: { borderColor: TEAL },
-  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700' },
-  cardHint: { color: MUTED, fontSize: 14, marginTop: 6, lineHeight: 20 },
-  check: { color: TEAL, fontSize: 13, fontWeight: '700', marginTop: 8 },
-  error: { color: '#F08A8A', fontSize: 14, marginTop: 8, lineHeight: 20 },
-  notice: { color: TEAL, fontSize: 14, marginTop: 8, lineHeight: 20 },
+  cardTitle: { fontFamily: FONTS.heading, fontSize: 17, fontWeight: '700' },
+  cardHint: { fontFamily: FONTS.body, fontSize: 14, marginTop: 6, lineHeight: 20 },
+  check: { fontFamily: FONTS.body, fontSize: 13, fontWeight: '700', marginTop: 8 },
+  error: { fontFamily: FONTS.body, fontSize: 14, marginTop: 8, lineHeight: 20 },
+  notice: { fontFamily: FONTS.body, fontSize: 14, marginTop: 8, lineHeight: 20 },
   saveButton: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
   },
   saveButtonDisabled: { opacity: 0.5 },
-  saveText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
+  saveText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
   backButton: { alignItems: 'center', marginTop: 16 },
-  backText: { color: MUTED, fontSize: 15, textDecorationLine: 'underline' },
+  backText: { fontFamily: FONTS.body, fontSize: 15, textDecorationLine: 'underline' },
 });

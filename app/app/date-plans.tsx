@@ -18,12 +18,8 @@ import {
   updatePlan,
   type DatePlan,
 } from '../src/lib/dates';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A2F4D';
+import { FONTS } from '../src/theme';
+import { useTheme } from '../src/lib/theme-provider';
 
 function categoryLabel(c: string | null): string {
   if (!c) return 'Custom';
@@ -54,6 +50,7 @@ function splitPlans(plans: DatePlan[]): {
 }
 
 export default function DatePlansScreen() {
+  const { tokens } = useTheme();
   const [plans, setPlans] = useState<DatePlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,26 +117,36 @@ export default function DatePlansScreen() {
   };
 
   const renderPlan = (plan: DatePlan) => (
-    <View key={plan.id} style={styles.card}>
+    <View key={plan.id} style={[styles.card, { backgroundColor: tokens.card }]}>
       <View style={styles.cardTop}>
         <View style={styles.cardMain}>
-          <Text style={styles.cardCategory}>{categoryLabel(plan.category)}</Text>
-          <Text style={styles.cardTitle}>{plan.title}</Text>
+          <Text style={[styles.cardCategory, { color: tokens.primary }]}>
+            {categoryLabel(plan.category)}
+          </Text>
+          <Text style={[styles.cardTitle, { color: tokens.ink }]}>{plan.title}</Text>
           {plan.description ? (
-            <Text style={styles.cardDesc} numberOfLines={2}>
+            <Text style={[styles.cardDesc, { color: tokens.muted }]} numberOfLines={2}>
               {plan.description}
             </Text>
           ) : null}
-          <Text style={styles.cardDate}>{formatPlanDate(plan.plannedFor)}</Text>
+          <Text style={[styles.cardDate, { color: tokens.ink }]}>
+            {formatPlanDate(plan.plannedFor)}
+          </Text>
         </View>
-        {busyId === plan.id && <ActivityIndicator color={TEAL} />}
+        {busyId === plan.id && <ActivityIndicator color={tokens.primary} />}
       </View>
       <View style={styles.cardActions}>
-        <Pressable style={styles.actionButton} onPress={() => setEditingId(plan.id)}>
-          <Text style={styles.actionText}>Set date</Text>
+        <Pressable
+          style={[styles.actionButton, { backgroundColor: tokens.primaryTint }]}
+          onPress={() => setEditingId(plan.id)}
+        >
+          <Text style={[styles.actionText, { color: tokens.primary }]}>Set date</Text>
         </Pressable>
-        <Pressable style={styles.actionButton} onPress={() => onDelete(plan)}>
-          <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
+        <Pressable
+          style={[styles.actionButton, { backgroundColor: tokens.primaryTint }]}
+          onPress={() => onDelete(plan)}
+        >
+          <Text style={[styles.actionText, { color: tokens.danger }]}>Delete</Text>
         </Pressable>
       </View>
       {editingId === plan.id && (
@@ -157,33 +164,41 @@ export default function DatePlansScreen() {
   const { upcoming, unscheduled, past } = splitPlans(plans);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: tokens.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text style={styles.back}>Back</Text>
+          <Text style={[styles.back, { color: tokens.primary }]}>Back</Text>
         </Pressable>
-        <Text style={styles.title}>My date plans</Text>
+        <Text style={[styles.title, { color: tokens.ink }]}>My date plans</Text>
         <Pressable onPress={() => router.push('/date-ideas')} hitSlop={12}>
-          <Text style={styles.back}>Ideas</Text>
+          <Text style={[styles.back, { color: tokens.primary }]}>Ideas</Text>
         </Pressable>
       </View>
 
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={load}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable
+            style={[styles.retry, { backgroundColor: tokens.primary }]}
+            onPress={load}
+          >
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : plans.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.empty}>
+          <Text style={[styles.empty, { color: tokens.muted }]}>
             No plans yet. Browse the idea bank and save your first date.
           </Text>
-          <Pressable style={styles.retry} onPress={() => router.push('/date-ideas')}>
-            <Text style={styles.retryText}>Browse ideas</Text>
+          <Pressable
+            style={[styles.retry, { backgroundColor: tokens.primary }]}
+            onPress={() => router.push('/date-ideas')}
+          >
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>
+              Browse ideas
+            </Text>
           </Pressable>
         </View>
       ) : (
@@ -198,7 +213,9 @@ export default function DatePlansScreen() {
           renderItem={({ item: s }) =>
             s.items.length === 0 ? null : (
               <View>
-                <Text style={styles.sectionTitle}>{s.section}</Text>
+                <Text style={[styles.sectionTitle, { color: tokens.muted }]}>
+                  {s.section}
+                </Text>
                 {s.items.map(renderPlan)}
               </View>
             )
@@ -210,7 +227,7 @@ export default function DatePlansScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: NAVY },
+  root: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,12 +236,12 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 12,
   },
-  back: { color: TEAL, fontSize: 16, fontWeight: '600' },
-  title: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
+  back: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  title: { fontFamily: FONTS.heading, fontSize: 20, fontWeight: '800' },
   loader: { marginTop: 40 },
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   sectionTitle: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -232,7 +249,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   card: {
-    backgroundColor: CARD,
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
@@ -240,32 +256,45 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
   cardMain: { flex: 1 },
   cardCategory: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700', marginBottom: 4 },
-  cardDesc: { color: MUTED, fontSize: 14, lineHeight: 20, marginBottom: 6 },
-  cardDate: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
+  cardTitle: {
+    fontFamily: FONTS.heading,
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  cardDesc: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 20, marginBottom: 6 },
+  cardDate: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '600' },
   cardActions: { flexDirection: 'row', gap: 12, marginTop: 12 },
   actionButton: {
-    backgroundColor: '#24405F',
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  actionText: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
-  deleteText: { color: '#E2605C' },
+  actionText: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '600' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  error: { color: '#E2605C', fontSize: 15, textAlign: 'center', marginBottom: 12 },
-  empty: { color: MUTED, fontSize: 15, textAlign: 'center', marginBottom: 16, lineHeight: 22 },
+  error: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  empty: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 22,
+  },
   retry: {
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: COLORS.white, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.body, fontWeight: '700' },
 });

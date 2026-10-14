@@ -7,6 +7,7 @@ import {
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { COLORS } from '../theme';
+import { useTheme } from '../lib/theme-provider';
 
 export const DRAW_COLORS = [
   COLORS.navy, // navy
@@ -50,6 +51,7 @@ function point(d: string | null, x: number, y: number): string {
  */
 const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
   function DrawingCanvas({ color, size }, ref) {
+    const { tokens } = useTheme();
     const [strokes, setStrokes] = useState<Stroke[]>([]);
     const [canvas, setCanvas] = useState({ w: 0, h: 0 });
     const drawing = useRef(false);
@@ -110,7 +112,7 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
 
     return (
       <View
-        style={styles.wrap}
+        style={[styles.wrap, { backgroundColor: tokens.white }]}
         onLayout={(e) => {
           const { width, height } = e.nativeEvent.layout;
           setCanvas({ w: width, h: height });
@@ -147,7 +149,6 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
 const styles = StyleSheet.create({
   wrap: {
     flex: 1,
-    backgroundColor: COLORS.white,
     borderRadius: 16,
     overflow: 'hidden',
   },

@@ -1,11 +1,8 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Memory } from '../lib/memories';
-import { COLORS } from '../theme';
-
-const CARD = '#1A3A5C';
-const WHITE = COLORS.white;
-const MUTED = COLORS.muted;
+import { FONTS } from '../theme';
+import { useTheme } from '../lib/theme-provider';
 
 export function formatMemoryDate(iso: string): string {
   const d = new Date(iso);
@@ -23,8 +20,12 @@ type Props = {
 };
 
 export default function MemoryCard({ memory, onPress }: Props) {
+  const { tokens } = useTheme();
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable
+      style={[styles.card, { backgroundColor: tokens.card }]}
+      onPress={onPress}
+    >
       {memory.signed_url ? (
         <Image
           source={{ uri: memory.signed_url }}
@@ -32,15 +33,23 @@ export default function MemoryCard({ memory, onPress }: Props) {
           resizeMode="cover"
         />
       ) : (
-        <View style={[styles.image, styles.imageFallback]}>
-          <Ionicons name="image-outline" size={32} color={MUTED} />
+        <View
+          style={[
+            styles.image,
+            styles.imageFallback,
+            { backgroundColor: tokens.wash },
+          ]}
+        >
+          <Ionicons name="image-outline" size={32} color={tokens.muted} />
         </View>
       )}
       <View style={styles.meta}>
-        <Text style={styles.caption} numberOfLines={1}>
+        <Text style={[styles.caption, { color: tokens.ink }]} numberOfLines={1}>
           {memory.caption?.trim() ? memory.caption : 'Untitled memory'}
         </Text>
-        <Text style={styles.date}>{formatMemoryDate(memory.created_at)}</Text>
+        <Text style={[styles.date, { color: tokens.muted }]}>
+          {formatMemoryDate(memory.created_at)}
+        </Text>
       </View>
     </Pressable>
   );
@@ -49,7 +58,6 @@ export default function MemoryCard({ memory, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: CARD,
     borderRadius: 14,
     overflow: 'hidden',
     margin: 6,
@@ -57,7 +65,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#14283F',
   },
   imageFallback: {
     alignItems: 'center',
@@ -68,12 +75,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   caption: {
-    color: WHITE,
+    fontFamily: FONTS.body,
     fontSize: 13,
     fontWeight: '600',
   },
   date: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 11,
     marginTop: 2,
   },
