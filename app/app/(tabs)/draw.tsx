@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -24,6 +25,7 @@ import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FadeInView, SpringPress } from '../../src/components/animated';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -35,7 +37,7 @@ function formatWhen(iso: string): string {
 }
 
 export default function DrawScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const canvasRef = useRef<DrawingCanvasHandle>(null);
   const [color, setColor] = useState(DRAW_COLORS[0]);
   const [size, setSize] = useState(DRAW_SIZES[1]);
@@ -45,6 +47,10 @@ export default function DrawScreen() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-playful-pattern.png');
 
   const latest = history.length > 0 ? history[0] : null;
 
@@ -123,6 +129,7 @@ export default function DrawScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <GradientHeader
         title="Draw"
         subtitle="Sketch something sweet together"
@@ -130,9 +137,11 @@ export default function DrawScreen() {
       />
       <ScrollView contentContainerStyle={styles.content}>
 
-      <View style={[styles.canvasBox, editing && { borderWidth: 2, borderColor: tokens.primary }]}>
-        <DrawingCanvas ref={canvasRef} color={color} size={size} />
-      </View>
+      <FadeInView delay={0}>
+        <View style={[styles.canvasBox, editing && { borderWidth: 2, borderColor: tokens.primary }]}>
+          <DrawingCanvas ref={canvasRef} color={color} size={size} />
+        </View>
+      </FadeInView>
 
       <View style={styles.toolbar}>
         <View style={styles.swatches}>
@@ -166,22 +175,21 @@ export default function DrawScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable
+        <SpringPress
           onPress={() => canvasRef.current?.undo()}
           style={[styles.ghostBtn, { backgroundColor: tokens.card }]}
         >
           <Text style={[styles.ghostText, { color: tokens.ink }]}>Undo</Text>
-        </Pressable>
-        <Pressable
+        </SpringPress>
+        <SpringPress
           onPress={clearCanvas}
           style={[styles.ghostBtn, { backgroundColor: tokens.card }]}
         >
           <Text style={[styles.ghostText, { color: tokens.ink }]}>Clear</Text>
-        </Pressable>
-        <Pressable
+        </SpringPress>
+        <SpringPress
           onPress={send}
-          disabled={sending}
-          style={sending && styles.sendDisabled}
+          style={[styles.sendWrap, sending && styles.sendDisabled]}
         >
           <LinearGradient
             colors={tokens.gradient}
@@ -195,33 +203,35 @@ export default function DrawScreen() {
               <Text style={styles.sendText}>Send</Text>
             )}
           </LinearGradient>
-        </Pressable>
+        </SpringPress>
       </View>
 
       {error !== null && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
       {notice !== null && <Text style={[styles.notice, { color: tokens.primary }]}>{notice}</Text>}
 
       <Text style={[styles.sectionTitle, { color: tokens.ink }]}>Latest</Text>
-      <View style={[styles.latestCard, { backgroundColor: tokens.card }]}>
-        {latest === null ? (
-          <Text style={[styles.hint, { color: tokens.muted }]}>
-            No drawings yet. Send the first doodle.
-          </Text>
-        ) : (
-          <>
-            <SvgUri
-              uri={latest.image_url}
-              width="100%"
-              height={180}
-              style={styles.latestArt}
-            />
-            <Text style={[styles.latestMeta, { color: tokens.muted }]}>
-              {latestMine ? 'You' : latest.creator_name} ·{' '}
-              {formatWhen(latest.created_at)}
+      <FadeInView delay={80}>
+        <View style={[styles.latestCard, { backgroundColor: tokens.card }]}>
+          {latest === null ? (
+            <Text style={[styles.hint, { color: tokens.muted }]}>
+              No drawings yet. Send the first doodle.
             </Text>
-          </>
-        )}
-      </View>
+          ) : (
+            <>
+              <SvgUri
+                uri={latest.image_url}
+                width="100%"
+                height={180}
+                style={styles.latestArt}
+              />
+              <Text style={[styles.latestMeta, { color: tokens.muted }]}>
+                {latestMine ? 'You' : latest.creator_name} ·{' '}
+                {formatWhen(latest.created_at)}
+              </Text>
+            </>
+          )}
+        </View>
+      </FadeInView>
 
       {history.length > 1 && (
         <>
@@ -236,29 +246,30 @@ export default function DrawScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.historyRow}
           >
-            {history.slice(1).map((d) => (
-              <Pressable
-                key={d.id}
-                onPress={() => loadForEdit(d)}
-                style={[styles.historyCard, { backgroundColor: tokens.card }]}
-              >
-                <SvgUri
-                  uri={d.image_url}
-                  width={104}
-                  height={78}
-                  style={styles.historyArt}
-                />
-                <Text
-                  style={[styles.historyMeta, { color: tokens.muted }]}
-                  numberOfLines={1}
+            {history.slice(1).map((d, idx) => (
+              <FadeInView key={d.id} delay={idx * 80}>
+                <SpringPress
+                  onPress={() => loadForEdit(d)}
+                  style={[styles.historyCard, { backgroundColor: tokens.card }]}
                 >
-                  {myId !== null && d.created_by === myId
-                    ? 'You'
-                    : d.creator_name}
-                  {' · '}
-                  {formatWhen(d.created_at)}
-                </Text>
-              </Pressable>
+                  <SvgUri
+                    uri={d.image_url}
+                    width={104}
+                    height={78}
+                    style={styles.historyArt}
+                  />
+                  <Text
+                    style={[styles.historyMeta, { color: tokens.muted }]}
+                    numberOfLines={1}
+                  >
+                    {myId !== null && d.created_by === myId
+                      ? 'You'
+                      : d.creator_name}
+                    {' · '}
+                    {formatWhen(d.created_at)}
+                  </Text>
+                </SpringPress>
+              </FadeInView>
             ))}
           </ScrollView>
         </>
@@ -279,6 +290,10 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
   content: { padding: 20 },
   canvasBox: {
     height: 300,
@@ -318,11 +333,11 @@ const styles = StyleSheet.create({
   },
   ghostText: { fontFamily: FONTS.body, fontWeight: '700' },
   sendBtn: {
-    flex: 1,
     paddingVertical: 14,
     borderRadius: 18,
     alignItems: 'center',
   },
+  sendWrap: { flex: 1 },
   sendDisabled: { opacity: 0.6 },
   sendText: { fontFamily: FONTS.body, fontWeight: '800', fontSize: 16, color: '#FFFFFF' },
   error: { fontFamily: FONTS.body, marginTop: 10, fontSize: 14 },
