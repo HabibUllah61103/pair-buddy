@@ -52,6 +52,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="distance"
+        options={{
+          title: 'Distance',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="location" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="more"
         options={{
           title: 'More',
