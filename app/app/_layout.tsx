@@ -14,6 +14,7 @@ import {
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import * as Linking from 'expo-linking';
+import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HeartIcon } from 'phosphor-react-native';
 import Animated, {
@@ -106,6 +107,21 @@ function AuthGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Theme-aware status bar: light icons on dark backgrounds, dark icons on
+ * light backgrounds, with the bar tinted to the theme background color so it
+ * never clashes with the screen behind it.
+ */
+function ThemedStatusBar() {
+  const { tokens, mode } = useTheme();
+  return (
+    <StatusBar
+      style={mode === 'dark' ? 'light' : 'dark'}
+      backgroundColor={tokens.background}
+    />
+  );
+}
+
 function ThemedSplash() {
   const { tokens, mode } = useTheme();
   const bgSource =
@@ -178,6 +194,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
+      <ThemedStatusBar />
       <AuthProvider>
         <AuthGuard>
           <Stack screenOptions={{ headerShown: false }}>
