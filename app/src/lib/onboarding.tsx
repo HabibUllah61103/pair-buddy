@@ -11,6 +11,7 @@ import type { ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from './auth';
+import { friendlyErrorMessage } from './errors';
 
 // Metro/Babel resolve this at runtime; declared here for TypeScript.
 declare function require(name: string): any;
@@ -230,7 +231,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       }
       return { error: null };
     } catch (e) {
-      const message = e instanceof Error && e.message ? e.message : 'Could not finish setup. Try again.';
+      const message = friendlyErrorMessage(e, 'Could not finish setup. Try again.');
       if (mounted.current) setError(message);
       return { error: message };
     } finally {
