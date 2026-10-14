@@ -1,57 +1,64 @@
 {
-  "//":"TODO (rebrand PR): once the user uploads app/assets/icon.png (1024x1024), app/assets/adaptive-icon.png (1024x1024, art inside the central 66% safe zone on solid #123B63), and app/assets/splash.png (1284x2778, coral heart on #123B63) via the GitHub web UI, wire them here: \"icon\": \"./assets/icon.png\", \"android\": { \"adaptiveIcon\": { \"foregroundImage\": \"./assets/adaptive-icon.png\", \"backgroundColor\": \"#123B63\" } }, \"splash\": { \"image\": \"./assets/splash.png\", \"backgroundColor\": \"#123B63\" }. Do not reference files that are not in the repo.",
-  "//eas":"TODO (release): run `eas init` (or copy the project ID from expo.dev) and replace YOUR_EAS_PROJECT_ID with the real EAS project ID. Expo push tokens do not work until this is set.",
-  "expo":{
-    "android":{
-      "package":"com.pairbuddy.app"
-    },
-    "assetBundlePatterns":[
-      "**/*"
-    ],
-    "experiments":{
-      "typedRoutes":true
-    },
-    "extra":{
-      "eas":{
-        "projectId":"YOUR_EAS_PROJECT_ID"
+  "//eas": "TODO (release): run `eas init` (or copy the project ID from expo.dev) and replace YOUR_EAS_PROJECT_ID with the real EAS project ID. Expo push tokens do not work until this is set.",
+  "expo": {
+    "android": {
+      "package": "com.pairbuddy.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#123B63"
       }
     },
-    "ios":{
-      "bundleIdentifier":"com.pairbuddy.app",
-      "infoPlist":{
-        "NSLocationAlwaysAndWhenInUseUsageDescription":"Pair Buddy shares your live distance with your partner, even when the app is closed.",
-        "NSLocationWhenInUseUsageDescription":"Pair Buddy needs your location to show live distance to your partner."
-      },
-      "supportsTablet":true
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "experiments": {
+      "typedRoutes": true
     },
-    "name":"Pair Buddy",
-    "newArchEnabled":true,
-    "orientation":"portrait",
-    "plugins":[
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.pairbuddy.app",
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Pair Buddy shares your live distance with your partner, even when the app is closed.",
+        "NSLocationWhenInUseUsageDescription": "Pair Buddy needs your location to show live distance to your partner."
+      },
+      "supportsTablet": true
+    },
+    "name": "Pair Buddy",
+    "newArchEnabled": true,
+    "orientation": "portrait",
+    "plugins": [
       "expo-router",
       [
         "expo-location",
         {
-          "isAndroidBackgroundLocationEnabled":true,
-          "locationAlwaysAndWhenInUsePermission":"Pair Buddy shares your live distance with your partner, even when the app is closed.",
-          "locationWhenInUsePermission":"Pair Buddy needs your location to show live distance to your partner."
+          "isAndroidBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "Pair Buddy shares your live distance with your partner, even when the app is closed.",
+          "locationWhenInUsePermission": "Pair Buddy needs your location to show live distance to your partner."
         }
       ],
       [
         "expo-notifications",
         {
-          "color":"#123B63"
+          "color": "#123B63",
+          "icon": "./assets/icon.png"
         }
       ],
       "./plugins/withPairWidgets",
       "./plugins/withPairWidgetsIOS"
     ],
-    "scheme":"pairbuddy",
-    "slug":"pair-buddy",
-    "splash":{
-      "backgroundColor":"#123B63"
+    "scheme": "pairbuddy",
+    "slug": "pair-buddy",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#123B63"
     },
-    "userInterfaceStyle":"automatic",
-    "version":"0.1.0"
+    "userInterfaceStyle": "automatic",
+    "version": "0.1.0",
+    "icon": "./assets/icon.png"
   }
 }
