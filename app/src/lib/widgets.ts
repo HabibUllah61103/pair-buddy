@@ -38,6 +38,12 @@ export type WidgetPayload = {
   line1: string;
   line2?: string;
   updatedAt: number;
+  /**
+   * ISO date (yyyy-MM-dd) behind a countdown payload. The Android periodic
+   * worker uses it to recompute the days-left label locally so the countdown
+   * rolls over at midnight without opening the app. Absent for other types.
+   */
+  targetDate?: string;
 };
 
 export type WidgetConfig = {
@@ -208,6 +214,7 @@ async function buildCountdownPayload(): Promise<WidgetPayload> {
     line1: days <= 0 ? 'Today!' : `${days} day${days === 1 ? '' : 's'} to go`,
     line2: formatPlanDate(next.plannedFor),
     updatedAt: Date.now(),
+    targetDate: next.plannedFor,
   };
 }
 
