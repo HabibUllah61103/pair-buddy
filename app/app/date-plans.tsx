@@ -18,10 +18,11 @@ import {
   updatePlan,
   type DatePlan,
 } from '../src/lib/dates';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A2F4D';
 
 function categoryLabel(c: string | null): string {
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   back: { color: TEAL, fontSize: 16, fontWeight: '600' },
-  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
+  title: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
   loader: { marginTop: 40 },
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   sectionTitle: {
@@ -245,9 +246,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  cardTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700', marginBottom: 4 },
+  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700', marginBottom: 4 },
   cardDesc: { color: MUTED, fontSize: 14, lineHeight: 20, marginBottom: 6 },
-  cardDate: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  cardDate: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
   cardActions: { flexDirection: 'row', gap: 12, marginTop: 12 },
   actionButton: {
     backgroundColor: '#24405F',
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  actionText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  actionText: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
   deleteText: { color: '#E2605C' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   error: { color: '#E2605C', fontSize: 15, textAlign: 'center', marginBottom: 12 },
@@ -266,5 +267,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: '#FFFFFF', fontWeight: '700' },
+  retryText: { color: COLORS.white, fontWeight: '700' },
 });

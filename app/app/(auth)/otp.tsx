@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 const RESEND_COOLDOWN_SECONDS = 30;
 
 export default function OtpScreen() {
@@ -76,7 +77,7 @@ export default function OtpScreen() {
           autoFocus
           editable={!busy}
           placeholder="••••••"
-          placeholderTextColor="#8AA0B8"
+          placeholderTextColor={COLORS.muted}
         />
 
         <Pressable
@@ -85,7 +86,7 @@ export default function OtpScreen() {
           disabled={busy || code.length < 6}
         >
           {busy ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={COLORS.white} />
           ) : (
             <Text style={styles.buttonText}>Verify</Text>
           )}
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   codeInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 14,
     paddingVertical: 16,
     fontSize: 28,
@@ -152,19 +153,19 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
   link: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 15,
     fontWeight: '500',
     textDecorationLine: 'underline',
     textAlign: 'center',
   },
   linkDisabled: {
-    color: '#8AA0B8',
+    color: COLORS.muted,
     textDecorationLine: 'none',
   },
   error: {

@@ -9,10 +9,11 @@ import {
   getPendingCount,
   retryOutbox,
 } from '../../src/lib/sync';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A3A5C';
 const WARN = '#E8A13D';
 
@@ -165,7 +166,7 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: NAVY },
   root: { padding: 20 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginBottom: 16 },
+  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 16 },
   card: { backgroundColor: CARD, borderRadius: 16, padding: 18, marginBottom: 14 },
   cardLabel: {
     color: TEAL,
@@ -174,9 +175,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  streakValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
+  streakValue: { color: COLORS.white, fontSize: 28, fontWeight: '800' },
   cardHint: { color: MUTED, fontSize: 14, marginTop: 8, lineHeight: 20 },
-  syncValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
+  syncValue: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
   syncFailed: { color: WARN, fontSize: 14, marginTop: 6, lineHeight: 20 },
   retryButton: {
     backgroundColor: TEAL,
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
-  retryText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  retryText: { color: COLORS.white, fontSize: 15, fontWeight: '700' },
   clearText: {
     color: MUTED,
     fontSize: 14,
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginBottom: 12,
   },
-  rowButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  rowButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
   signedInAs: { color: MUTED, fontSize: 14, textAlign: 'center', marginBottom: 16, marginTop: 12 },
   signOutButton: {
     borderWidth: 1.5,
@@ -209,5 +210,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  signOutText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  signOutText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
 });

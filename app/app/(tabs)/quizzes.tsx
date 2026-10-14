@@ -10,13 +10,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
+const NAVY = COLORS.navy;
 const CARD = '#1B3A5F';
-const TEAL = '#14B8A6';
+const TEAL = COLORS.teal;
 const CORAL = '#FF6B5E';
-const WHITE = '#FFFFFF';
-const MUTED = '#8AA0B8';
+const WHITE = COLORS.white;
+const MUTED = COLORS.muted;
 
 const PACK_COLORS: Record<string, string> = {
   fun: CORAL,

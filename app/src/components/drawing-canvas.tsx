@@ -6,10 +6,11 @@ import {
 } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { COLORS } from '../theme';
 
 export const DRAW_COLORS = [
-  '#123B63', // navy
-  '#14B8A6', // teal
+  COLORS.navy, // navy
+  COLORS.teal, // teal
   '#F97066', // coral
   '#FAC515', // amber
   '#53B1FD', // sky
@@ -69,7 +70,7 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
           .join('');
         const svg =
           `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(w)}" height="${Math.round(h)}" viewBox="0 0 ${w.toFixed(1)} ${h.toFixed(1)}">` +
-          `<rect width="100%" height="100%" fill="#FFFFFF"/>${paths}</svg>`;
+          `<rect width="100%" height="100%" fill="${COLORS.white}"/>${paths}</svg>`;
         return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
       },
       clear: () => {
@@ -146,7 +147,7 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
 const styles = StyleSheet.create({
   wrap: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     overflow: 'hidden',
   },

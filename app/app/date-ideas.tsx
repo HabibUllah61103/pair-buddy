@@ -16,10 +16,11 @@ import {
   saveIdeaAsPlan,
   type DateIdea,
 } from '../src/lib/dates';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A2F4D';
 const CHIP = '#24405F';
 
@@ -193,7 +194,7 @@ export default function DateIdeasScreen() {
                 ) : (
                   <Pressable style={styles.saveButton} onPress={save} disabled={saving}>
                     {saving ? (
-                      <ActivityIndicator color="#FFFFFF" />
+                      <ActivityIndicator color={COLORS.white} />
                     ) : (
                       <Text style={styles.saveButtonText}>Save as plan</Text>
                     )}
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   back: { color: TEAL, fontSize: 16, fontWeight: '600' },
-  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
+  title: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: TEAL },
   chipText: { color: MUTED, fontSize: 14, fontWeight: '600' },
-  chipTextActive: { color: '#FFFFFF' },
+  chipTextActive: { color: COLORS.white },
   loader: { marginTop: 40 },
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   card: {
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  cardTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700', marginBottom: 6 },
+  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700', marginBottom: 6 },
   cardDesc: { color: MUTED, fontSize: 14, lineHeight: 20 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   error: { color: '#E2605C', fontSize: 15, textAlign: 'center', marginBottom: 12 },
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: '#FFFFFF', fontWeight: '700' },
+  retryText: { color: COLORS.white, fontWeight: '700' },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
     padding: 24,
     maxHeight: '85%',
   },
-  modalTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '800', marginBottom: 10 },
+  modalTitle: { color: COLORS.white, fontSize: 22, fontWeight: '800', marginBottom: 10 },
   modalDesc: { color: MUTED, fontSize: 15, lineHeight: 22, marginBottom: 18 },
   dateRow: {
     backgroundColor: CHIP,
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 14,
   },
-  dateRowText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  dateRowText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
   saveButton: {
     backgroundColor: TEAL,
     borderRadius: 14,
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  saveButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  saveButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
   savedNote: {
     color: TEAL,
     fontSize: 15,

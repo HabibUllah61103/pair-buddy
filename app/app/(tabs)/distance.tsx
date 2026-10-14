@@ -23,10 +23,11 @@ import {
   type PartnerLocation,
   type Staleness,
 } from '../../src/lib/location';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A2F4D';
 
 const STALENESS_STYLE: Record<Staleness, { label: string; color: string }> = {
@@ -215,7 +216,7 @@ export default function DistanceScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: NAVY, padding: 20, paddingTop: 64 },
-  heading: { color: '#FFFFFF', fontSize: 28, fontWeight: '700', marginBottom: 16 },
+  heading: { color: COLORS.white, fontSize: 28, fontWeight: '700', marginBottom: 16 },
   loader: { marginTop: 40 },
   card: {
     backgroundColor: CARD,
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   partnerName: { color: MUTED, fontSize: 14, marginBottom: 4 },
-  distance: { color: '#FFFFFF', fontSize: 52, fontWeight: '800' },
+  distance: { color: COLORS.white, fontSize: 52, fontWeight: '800' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   unitTextActive: { color: NAVY },
   coords: { color: MUTED, fontSize: 12, marginTop: 12, fontVariant: ['tabular-nums'] },
   empty: { color: MUTED, fontSize: 15, textAlign: 'center', paddingVertical: 12 },
-  toggleTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  toggleTitle: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
   toggleSub: { color: MUTED, fontSize: 12, marginTop: 2, maxWidth: 220 },
   error: { color: '#E2605C', fontSize: 13, marginTop: 4 },
 });

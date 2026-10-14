@@ -17,13 +17,14 @@ import {
   type DailySpark,
   type NamedAnswer,
 } from '../../src/lib/sparks';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A3A5C';
 const CORAL = '#FF6B5E';
-const WHITE = '#FFFFFF';
+const WHITE = COLORS.white;
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 

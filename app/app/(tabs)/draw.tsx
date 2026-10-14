@@ -20,10 +20,11 @@ import {
   subscribeDrawings,
   type Drawing,
 } from '../../src/lib/drawings';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1B4A7A';
 
 function formatWhen(iso: string): string {
@@ -156,7 +157,7 @@ export default function DrawScreen() {
           style={[styles.sendBtn, sending && styles.sendDisabled]}
         >
           {sending ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={COLORS.white} size="small" />
           ) : (
             <Text style={styles.sendText}>Send</Text>
           )}
@@ -195,7 +196,7 @@ export default function DrawScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: NAVY },
   content: { padding: 16 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginBottom: 12 },
+  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 12 },
   canvasBox: { height: 300, borderRadius: 16, overflow: 'hidden' },
   toolbar: {
     flexDirection: 'row',
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  swatchActive: { borderColor: '#FFFFFF' },
+  swatchActive: { borderColor: COLORS.white },
   sizes: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   sizeDot: {
     width: 30,
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sizeActive: { borderColor: TEAL, borderWidth: 2 },
-  sizeInner: { backgroundColor: '#FFFFFF', borderRadius: 99 },
+  sizeInner: { backgroundColor: COLORS.white, borderRadius: 99 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
   ghostBtn: {
     paddingVertical: 12,
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: CARD,
   },
-  ghostText: { color: '#FFFFFF', fontWeight: '700' },
+  ghostText: { color: COLORS.white, fontWeight: '700' },
   sendBtn: {
     flex: 1,
     paddingVertical: 12,
@@ -239,11 +240,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendDisabled: { opacity: 0.6 },
-  sendText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16 },
+  sendText: { color: COLORS.white, fontWeight: '800', fontSize: 16 },
   error: { color: '#F97066', marginTop: 10, fontSize: 14 },
   notice: { color: TEAL, marginTop: 10, fontSize: 14 },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 18,
     fontWeight: '800',
     marginTop: 18,
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
   },
-  latestArt: { borderRadius: 8, backgroundColor: '#FFFFFF' },
+  latestArt: { borderRadius: 8, backgroundColor: COLORS.white },
   latestMeta: { color: MUTED, fontSize: 13, marginTop: 8 },
   hint: { color: MUTED, fontSize: 15, textAlign: 'center', paddingVertical: 24 },
   spacer: { height: 24 },

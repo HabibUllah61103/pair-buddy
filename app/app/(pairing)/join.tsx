@@ -10,9 +10,10 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { previewInvite, redeemInvite, NOT_CONFIGURED } from '../src/lib/pairing';
 import { isValidInviteCode } from '../src/lib/deeplinks';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 
 export default function JoinScreen() {
   const { code: paramCode } = useLocalSearchParams<{ code?: string }>();
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 8,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#1B4A7A',
     borderRadius: 12,
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 28,
     fontWeight: '800',
     letterSpacing: 8,

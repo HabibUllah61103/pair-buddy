@@ -22,13 +22,14 @@ import {
   listMemories,
   type Memory,
 } from '../../src/lib/memories';
+import { COLORS } from '../../src/theme';
 
-const NAVY = '#123B63';
+const NAVY = COLORS.navy;
 const CARD = '#1A3A5C';
-const TEAL = '#14B8A6';
+const TEAL = COLORS.teal;
 const CORAL = '#FF6B5E';
-const WHITE = '#FFFFFF';
-const MUTED = '#8AA0B8';
+const WHITE = COLORS.white;
+const MUTED = COLORS.muted;
 
 type Phase = 'loading' | 'error' | 'ready';
 
