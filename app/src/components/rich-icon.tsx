@@ -1,70 +1,78 @@
 /**
  * Premium bubbly icon with gradient / tinted / plain variants.
- * Glyphs by Hugeicons (free set, MIT), rendered via react-native-svg.
+ * Glyphs by Phosphor Icons (MIT), duotone by default, rendered via react-native-svg.
+ * When `active` is true the icon pops to `fill` weight with a spring scale.
  */
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react-native';
-import {
-  Add01Icon,
-  AlbumIcon,
-  ArrowRight01Icon,
-  BrushIcon,
-  BubbleChatIcon,
-  BulbIcon,
-  Calendar01Icon,
-  Camera01Icon,
-  CheckIcon,
-  ChevronRightIcon,
-  GiftIcon,
-  GridIcon,
-  HeartIcon,
-  Image01Icon,
-  Image02Icon,
-  Location01Icon,
-  Moon01Icon,
-  MoreHorizontalIcon,
-  PencilEdit01Icon,
-  PlayIcon,
-  RefreshIcon,
-  SendIcon,
-  SparklesIcon,
-  StarIcon,
-  UserAdd01Icon,
-} from '@hugeicons/core-free-icons';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import {
+  ArrowClockwiseIcon,
+  ArrowRightIcon,
+  CalendarIcon,
+  CameraIcon,
+  CaretRightIcon,
+  ChatCircleIcon,
+  CheckIcon,
+  DotsThreeIcon,
+  GiftIcon,
+  GridFourIcon,
+  HeartIcon,
+  ImageIcon,
+  ImagesIcon,
+  LightbulbIcon,
+  MapPinIcon,
+  MoonIcon,
+  PaintBrushIcon,
+  PaperPlaneTiltIcon,
+  PencilSimpleIcon,
+  PlayIcon,
+  PlusIcon,
+  SparkleIcon,
+  StackIcon,
+  StarIcon,
+  UserPlusIcon,
+  type Icon,
+  type IconWeight,
+} from 'phosphor-react-native';
 import type { ThemeTokens } from '../lib/tokens';
 
 /**
- * Ionicons-style names mapped to Hugeicons free icons.
- * Call sites keep the familiar names; glyphs come from Hugeicons.
+ * Familiar short names mapped to Phosphor icons.
+ * Call sites keep the short names; glyphs come from Phosphor (duotone).
  */
 const ICONS = {
-  sparkles: SparklesIcon,
-  'chevron-forward': ChevronRightIcon,
-  'arrow-forward': ArrowRight01Icon,
-  'image-outline': Image01Icon,
-  images: Image02Icon,
-  location: Location01Icon,
-  bulb: BulbIcon,
-  calendar: Calendar01Icon,
-  chatbubbles: BubbleChatIcon,
-  grid: GridIcon,
-  'person-add': UserAdd01Icon,
+  sparkles: SparkleIcon,
+  'chevron-forward': CaretRightIcon,
+  'arrow-forward': ArrowRightIcon,
+  'image-outline': ImageIcon,
+  images: ImagesIcon,
+  location: MapPinIcon,
+  bulb: LightbulbIcon,
+  calendar: CalendarIcon,
+  chatbubbles: ChatCircleIcon,
+  grid: GridFourIcon,
+  'person-add': UserPlusIcon,
   heart: HeartIcon,
-  brush: BrushIcon,
-  camera: Camera01Icon,
-  send: SendIcon,
-  refresh: RefreshIcon,
-  pencil: PencilEdit01Icon,
-  albums: AlbumIcon,
-  'ellipsis-horizontal': MoreHorizontalIcon,
-  add: Add01Icon,
+  brush: PaintBrushIcon,
+  camera: CameraIcon,
+  send: PaperPlaneTiltIcon,
+  refresh: ArrowClockwiseIcon,
+  pencil: PencilSimpleIcon,
+  albums: StackIcon,
+  'ellipsis-horizontal': DotsThreeIcon,
+  add: PlusIcon,
   star: StarIcon,
   gift: GiftIcon,
-  moon: Moon01Icon,
+  moon: MoonIcon,
   checkmark: CheckIcon,
   play: PlayIcon,
-} satisfies Record<string, IconSvgElement>;
+} satisfies Record<string, Icon>;
 
 export type RichIconName = keyof typeof ICONS;
 
@@ -75,18 +83,51 @@ type Props = {
   size?: number;
   tokens: ThemeTokens;
   variant?: RichIconVariant;
+  /** Phosphor weight; defaults to duotone. Overridden to fill when active. */
+  weight?: IconWeight;
+  /** When true, icon switches to fill weight and springs to 1.15x scale. */
+  active?: boolean;
+  /** Override the icon color (plain variant); defaults to tokens.primary. */
+  color?: string;
 };
 
 /**
  * Bubbly icon badge:
- * - gradient: LinearGradient circle (tokens.gradient), white icon
- * - soft: tokens.primaryTint circle, tokens.primary icon
- * - plain: no background, tokens.primary icon
+ * - gradient: LinearGradient circle (tokens.gradient), white duotone icon
+ * - soft: tokens.primaryTint circle, tokens.primary duotone icon
+ * - plain: no background, theme-colored duotone icon
+ *
+ * Duotone colors are theme-driven: `color` tints the main layer and the
+ * secondary layer renders at 20% opacity of the same color, so the icon
+ * automatically adapts to every theme.
  */
-export function RichIcon({ name, size = 22, tokens, variant = 'soft' }: Props) {
+export function RichIcon({
+  name,
+  size = 22,
+  tokens,
+  variant = 'soft',
+  weight = 'duotone',
+  active = false,
+  color,
+}: Props) {
   const container = size * 2.2;
   const radius = size * 1.1;
-  const icon: IconSvgElement = ICONS[name];
+  const Glyph: Icon = ICONS[name];
+  const effectiveWeight: IconWeight = active ? 'fill' : weight;
+
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    scale.value = withSpring(active ? 1.15 : 1, { damping: 10, stiffness: 300 });
+  }, [active, scale]);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const renderGlyph = (glyphColor: string) => (
+    <Animated.View style={animatedStyle}>
+      <Glyph size={size} color={glyphColor} weight={effectiveWeight} />
+    </Animated.View>
+  );
 
   if (variant === 'gradient') {
     return (
@@ -96,7 +137,7 @@ export function RichIcon({ name, size = 22, tokens, variant = 'soft' }: Props) {
         end={{ x: 1, y: 1 }}
         style={[styles.circle, { width: container, height: container, borderRadius: radius }]}
       >
-        <HugeiconsIcon icon={icon} size={size} color="#FFFFFF" strokeWidth={1.8} />
+        {renderGlyph('#FFFFFF')}
       </LinearGradient>
     );
   }
@@ -114,12 +155,12 @@ export function RichIcon({ name, size = 22, tokens, variant = 'soft' }: Props) {
           },
         ]}
       >
-        <HugeiconsIcon icon={icon} size={size} color={tokens.primary} strokeWidth={1.8} />
+        {renderGlyph(color ?? tokens.primary)}
       </View>
     );
   }
 
-  return <HugeiconsIcon icon={icon} size={size} color={tokens.primary} strokeWidth={1.8} />;
+  return renderGlyph(color ?? tokens.primary);
 }
 
 const styles = StyleSheet.create({
