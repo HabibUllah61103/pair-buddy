@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -22,6 +21,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -118,7 +118,7 @@ export default function SparkScreen() {
   if (phase === 'loading') {
     return (
       <View style={[styles.center, { backgroundColor: tokens.background }]}>
-        <ActivityIndicator color={tokens.primary} />
+        <LoadingHeart tokens={tokens} message="Loading today\u2019s spark\u2026" />
       </View>
     );
   }
@@ -203,7 +203,7 @@ export default function SparkScreen() {
                 style={styles.button}
               >
                 {saving ? (
-                  <ActivityIndicator color="#FFFFFF" />
+                  <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
                 ) : (
                   <Text style={styles.buttonText}>Send answer</Text>
                 )}
