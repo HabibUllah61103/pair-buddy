@@ -32,7 +32,7 @@ function getClient(): SupabaseClient | null {
   } catch {
     cachedClient = null;
   }
-  return cachedClient;
+  return cachedClient ?? null;
 }
 
 function toMessage(e: unknown, fallback: string): string {
