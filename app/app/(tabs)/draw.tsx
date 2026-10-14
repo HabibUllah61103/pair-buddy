@@ -23,7 +23,7 @@ import {
 } from '../../src/lib/drawings';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 
@@ -130,7 +130,7 @@ export default function DrawScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Draw"
         subtitle="Sketch something sweet together"
         tokens={tokens}
