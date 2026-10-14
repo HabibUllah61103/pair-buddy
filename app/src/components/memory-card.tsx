@@ -1,10 +1,11 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Memory } from '../lib/memories';
+import { COLORS } from '../theme';
 
 const CARD = '#1A3A5C';
-const WHITE = '#FFFFFF';
-const MUTED = '#8AA0B8';
+const WHITE = COLORS.white;
+const MUTED = COLORS.muted;
 
 export function formatMemoryDate(iso: string): string {
   const d = new Date(iso);

@@ -5,10 +5,11 @@ import { useAuth } from '../src/lib/auth';
 import { getOnboardingComplete } from '../src/lib/onboarding';
 import { getMyCoupleId, NOT_CONFIGURED } from '../src/lib/pairing';
 import { getCoupleMemberCount } from '../src/lib/sparks';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 
 export default function HomeScreen() {
   const { loading: authLoading } = useAuth();
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 32,
     fontWeight: '800',
     marginBottom: 12,

@@ -11,10 +11,11 @@ import {
   saveWidgetConfig,
   type WidgetType,
 } from '../src/lib/widgets';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A3A5C';
 
 export default function WidgetSettingsScreen() {
@@ -110,7 +111,7 @@ export default function WidgetSettingsScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: NAVY },
   root: { padding: 20 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginBottom: 8 },
+  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 8 },
   subtitle: { color: MUTED, fontSize: 14, lineHeight: 20, marginBottom: 16 },
   card: {
     backgroundColor: CARD,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   cardSelected: { borderColor: TEAL },
-  cardTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700' },
   cardHint: { color: MUTED, fontSize: 14, marginTop: 6, lineHeight: 20 },
   check: { color: TEAL, fontSize: 13, fontWeight: '700', marginTop: 8 },
   error: { color: '#F08A8A', fontSize: 14, marginTop: 8, lineHeight: 20 },
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveButtonDisabled: { opacity: 0.5 },
-  saveText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  saveText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
   backButton: { alignItems: 'center', marginTop: 16 },
   backText: { color: MUTED, fontSize: 15, textDecorationLine: 'underline' },
 });

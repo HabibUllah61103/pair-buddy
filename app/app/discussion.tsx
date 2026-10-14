@@ -20,12 +20,13 @@ import {
   subscribeMessages,
   type DiscussionMessage,
 } from '../src/lib/discussion';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
 const CARD = '#1B3A5F';
-const MUTED = '#8AA0B8';
-const WHITE = '#FFFFFF';
+const MUTED = COLORS.muted;
+const WHITE = COLORS.white;
 
 function formatTime(iso: string): string {
   const d = new Date(iso);

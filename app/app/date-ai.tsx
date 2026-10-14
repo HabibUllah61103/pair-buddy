@@ -15,10 +15,11 @@ import {
   saveAiPlan,
   type AiDatePlan,
 } from '../src/lib/ai-dates';
+import { COLORS } from '../src/theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 const CARD = '#1A2F4D';
 const CHIP = '#24405F';
 const INPUT_BG = '#0F2540';
@@ -147,7 +148,7 @@ export default function DateAiScreen() {
         disabled={generating}
       >
         {generating ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={COLORS.white} />
         ) : (
           <Text style={styles.generateText}>Generate a date</Text>
         )}
@@ -196,7 +197,7 @@ export default function DateAiScreen() {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={COLORS.white} />
             ) : (
               <Text style={styles.saveButtonText}>Save as plan</Text>
             )}
@@ -210,7 +211,7 @@ export default function DateAiScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: NAVY },
   root: { padding: 20, paddingBottom: 40 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginBottom: 6 },
+  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 6 },
   subtitle: { color: MUTED, fontSize: 15, lineHeight: 21, marginBottom: 20 },
   sectionLabel: {
     color: TEAL,
@@ -228,14 +229,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   chipActive: { backgroundColor: TEAL },
-  chipText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  chipText: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
   chipTextActive: { color: NAVY },
   input: {
     backgroundColor: INPUT_BG,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 15,
   },
   generateButton: {
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   generateButtonDisabled: { opacity: 0.6 },
-  generateText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  generateText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
   error: { color: '#F97066', fontSize: 14, marginTop: 12, lineHeight: 20 },
   card: { backgroundColor: CARD, borderRadius: 16, padding: 18, marginTop: 20 },
   cardLabel: {
@@ -256,8 +257,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  planTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '800', marginBottom: 8 },
-  planDescription: { color: '#FFFFFF', fontSize: 15, lineHeight: 22 },
+  planTitle: { color: COLORS.white, fontSize: 20, fontWeight: '800', marginBottom: 8 },
+  planDescription: { color: COLORS.white, fontSize: 15, lineHeight: 22 },
   metaRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   meta: {
     color: TEAL,
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     alignItems: 'center',
   },
-  dateButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  dateButtonText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
   saveButton: {
     backgroundColor: TEAL,
     borderRadius: 14,
@@ -286,5 +287,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
-  saveButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  saveButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
 });

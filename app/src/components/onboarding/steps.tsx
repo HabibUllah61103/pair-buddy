@@ -16,10 +16,11 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import type { OnboardingDraft } from '../../lib/onboarding';
+import { COLORS } from '../../theme';
 
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const MUTED = '#8AA0B8';
+const NAVY = COLORS.navy;
+const TEAL = COLORS.teal;
+const MUTED = COLORS.muted;
 
 export type StepProps = {
   draft: OnboardingDraft;
@@ -457,7 +458,7 @@ export function SuccessStep({ onFinish, finishing, finishError }: StepProps) {
           disabled={finishing}
         >
           {finishing ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={COLORS.white} />
           ) : (
             <Text style={styles.primaryButtonText}>Finish</Text>
           )}
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 10,
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -522,7 +523,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   secondaryButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -563,12 +564,12 @@ const styles = StyleSheet.create({
     borderColor: TEAL,
   },
   chipText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 15,
     fontWeight: '500',
   },
   chipTextSelected: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontWeight: '700',
   },
   hint: {
@@ -612,7 +613,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reminderLabel: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '500',
   },
