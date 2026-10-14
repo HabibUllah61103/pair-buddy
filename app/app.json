@@ -1,5 +1,6 @@
 {
   "//":"TODO (rebrand PR): once the user uploads app/assets/icon.png (1024x1024), app/assets/adaptive-icon.png (1024x1024, art inside the central 66% safe zone on solid #123B63), and app/assets/splash.png (1284x2778, coral heart on #123B63) via the GitHub web UI, wire them here: \"icon\": \"./assets/icon.png\", \"android\": { \"adaptiveIcon\": { \"foregroundImage\": \"./assets/adaptive-icon.png\", \"backgroundColor\": \"#123B63\" } }, \"splash\": { \"image\": \"./assets/splash.png\", \"backgroundColor\": \"#123B63\" }. Do not reference files that are not in the repo.",
+  "//eas":"TODO (release): run `eas init` (or copy the project ID from expo.dev) and replace YOUR_EAS_PROJECT_ID with the real EAS project ID. Expo push tokens do not work until this is set.",
   "expo":{
     "android":{
       "package":"com.pairbuddy.app"
@@ -9,6 +10,11 @@
     ],
     "experiments":{
       "typedRoutes":true
+    },
+    "extra":{
+      "eas":{
+        "projectId":"YOUR_EAS_PROJECT_ID"
+      }
     },
     "ios":{
       "bundleIdentifier":"com.pairbuddy.app",
