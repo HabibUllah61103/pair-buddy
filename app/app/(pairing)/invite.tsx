@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
 import {
   createInvite,
   ensureInvite,
@@ -16,10 +17,9 @@ import {
   retireInvite,
   NOT_CONFIGURED,
 } from '../src/lib/pairing';
-import { COLORS } from '../../src/theme';
 
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
+const NAVY = '#123B63';
+const TEAL = '#14B8A6';
 const CORAL = '#FF6B5E';
 
 export default function InviteScreen() {
@@ -117,6 +117,9 @@ export default function InviteScreen() {
               {working ? 'Making a new code…' : 'Get a new code'}
             </Text>
           </Pressable>
+          <Pressable onPress={() => router.push('/(pairing)/join')} style={styles.joinLink}>
+            <Text style={styles.joinLinkText}>Have a code? Join your partner →</Text>
+          </Pressable>
         </View>
       )}
     </View>
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 8,
@@ -154,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   code: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontSize: 44,
     fontWeight: '800',
     letterSpacing: 10,
@@ -197,6 +200,16 @@ const styles = StyleSheet.create({
     color: CORAL,
     fontSize: 14,
     fontWeight: '600',
+  },
+  joinLink: {
+    marginTop: 8,
+    padding: 8,
+  },
+  joinLinkText: {
+    color: TEAL,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   error: {
     color: '#FFB4AB',
