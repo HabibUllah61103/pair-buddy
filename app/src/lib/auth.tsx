@@ -269,6 +269,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async (): Promise<void> => {
     const client = getClient();
     try {
+      // Drop this device's push token first so a signed-out device stops
+      // receiving the partner's notifications. Best-effort: wrapped so it
+      // can never break sign-out.
+      try {
+        await require('./push').unregisterPushToken();
+      } catch {
+        // Push cleanup is best-effort; sign-out continues regardless.
+      }
       await client?.auth.signOut();
     } catch {
       // Never throw from sign-out; local state is cleared below regardless.
