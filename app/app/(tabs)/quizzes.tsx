@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
@@ -100,7 +100,7 @@ export default function QuizzesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Quiz Packs"
         subtitle="Play through a pack together and compare answers"
         tokens={tokens}
