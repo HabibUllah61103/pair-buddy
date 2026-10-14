@@ -4,19 +4,20 @@ import {
   ActivityIndicator,
   Image,
   Platform,
-  Pressable,
   StyleSheet,
   Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import type { OnboardingDraft } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme-provider';
+import { FadeInView, SpringPress } from '../animated';
 import type { ThemeTokens } from '../../lib/tokens';
 import { FONTS } from '../../theme';
 
@@ -51,33 +52,46 @@ function StepShell({
   showBack?: boolean;
   tokens: ThemeTokens;
 }) {
+  const { mode } = useTheme();
+  const bgSource =
+    mode === 'dark'
+      ? require('../../../assets/bg-night-stars.png')
+      : require('../../../assets/bg-hearts-dreamy.png');
   return (
     <View style={[styles.shell, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <View style={styles.body}>
-        <Text style={[styles.title, { color: tokens.ink }]}>{title}</Text>
-        <Text style={[styles.subtitle, { color: tokens.primary }]}>{subtitle}</Text>
-        {children}
+        <FadeInView delay={0}>
+          <Text style={[styles.title, { color: tokens.ink }]}>{title}</Text>
+          <Text style={[styles.subtitle, { color: tokens.primary }]}>{subtitle}</Text>
+        </FadeInView>
+        <FadeInView delay={120}>{children}</FadeInView>
       </View>
-      <View style={styles.footer}>
-        <Pressable
-          style={[
-            styles.primaryButton,
-            { backgroundColor: tokens.primary },
-            nextDisabled && styles.buttonDisabled,
-          ]}
-          onPress={onNext}
-          disabled={nextDisabled}
-        >
-          <Text style={[styles.primaryButtonText, { color: tokens.onPrimary }]}>
-            {nextLabel}
-          </Text>
-        </Pressable>
-        {showBack ? (
-          <Pressable style={styles.backButton} onPress={onBack}>
-            <Text style={[styles.backText, { color: tokens.muted }]}>Back</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      <FadeInView delay={200}>
+        <View style={styles.footer}>
+          <SpringPress onPress={nextDisabled ? undefined : onNext}>
+            <LinearGradient
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[
+                styles.primaryButton,
+                styles.buttonShadow,
+                nextDisabled && styles.buttonDisabled,
+              ]}
+            >
+              <Text style={styles.primaryButtonText}>{nextLabel}</Text>
+            </LinearGradient>
+          </SpringPress>
+          {showBack ? (
+            <SpringPress onPress={onBack}>
+              <View style={styles.backButton}>
+                <Text style={[styles.backText, { color: tokens.muted }]}>Back</Text>
+              </View>
+            </SpringPress>
+          ) : null}
+        </View>
+      </FadeInView>
     </View>
   );
 }
@@ -94,24 +108,24 @@ function Chip({
   tokens: ThemeTokens;
 }) {
   return (
-    <Pressable
-      style={[
-        styles.chip,
-        { borderColor: tokens.border },
-        selected && { backgroundColor: tokens.primary, borderColor: tokens.primary },
-      ]}
-      onPress={onPress}
-    >
-      <Text
-        style={[
-          styles.chipText,
-          { color: selected ? tokens.onPrimary : tokens.ink },
-          selected && styles.chipTextSelected,
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
+    <SpringPress onPress={onPress}>
+      {selected ? (
+        <LinearGradient
+          colors={tokens.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.chip, styles.chipShadow, { borderColor: 'transparent' }]}
+        >
+          <Text style={[styles.chipText, styles.chipTextSelected, { color: '#FFFFFF' }]}>
+            {label}
+          </Text>
+        </LinearGradient>
+      ) : (
+        <View style={[styles.chip, styles.chipShadowLight, { borderColor: tokens.border, backgroundColor: tokens.card }]}>
+          <Text style={[styles.chipText, { color: tokens.ink }]}>{label}</Text>
+        </View>
+      )}
+    </SpringPress>
   );
 }
 
@@ -196,20 +210,19 @@ export function BirthdateStep({ draft, update, onNext, onBack }: StepProps) {
       nextDisabled={!valid}
       tokens={tokens}
     >
-      <Pressable
-        style={[styles.input, { backgroundColor: tokens.card }]}
-        onPress={() => setShowPicker(true)}
-      >
-        <Text
-          style={[
-            styles.inputText,
-            { color: tokens.ink },
-            !draft.birthdate && { color: tokens.muted },
-          ]}
-        >
-          {formatDate(draft.birthdate)}
-        </Text>
-      </Pressable>
+      <SpringPress onPress={() => setShowPicker(true)}>
+        <View style={[styles.input, styles.inputShadow, { backgroundColor: tokens.card }]}>
+          <Text
+            style={[
+              styles.inputText,
+              { color: tokens.ink },
+              !draft.birthdate && { color: tokens.muted },
+            ]}
+          >
+            {formatDate(draft.birthdate)}
+          </Text>
+        </View>
+      </SpringPress>
       {showPicker && (
         <DateTimePicker
           value={draft.birthdate ? new Date(`${draft.birthdate}T00:00:00`) : new Date(2000, 0, 1)}
@@ -297,14 +310,13 @@ export function PhotoStep({ draft, update, onNext, onBack }: StepProps) {
             </Text>
           </View>
         )}
-        <Pressable
-          style={[styles.secondaryButton, { backgroundColor: tokens.card }]}
-          onPress={pickPhoto}
-        >
-          <Text style={[styles.secondaryButtonText, { color: tokens.ink }]}>
-            {draft.avatarUri ? 'Choose a different photo' : 'Choose a photo'}
-          </Text>
-        </Pressable>
+        <SpringPress onPress={pickPhoto}>
+          <View style={[styles.secondaryButton, styles.inputShadow, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.secondaryButtonText, { color: tokens.ink }]}>
+              {draft.avatarUri ? 'Choose a different photo' : 'Choose a photo'}
+            </Text>
+          </View>
+        </SpringPress>
         {error ? <Text style={[styles.hint, { color: tokens.danger }]}>{error}</Text> : null}
       </View>
     </StepShell>
@@ -391,20 +403,19 @@ export function AnniversaryStep({ draft, update, onNext, onBack }: StepProps) {
       nextDisabled={!draft.anniversaryDate}
       tokens={tokens}
     >
-      <Pressable
-        style={[styles.input, { backgroundColor: tokens.card }]}
-        onPress={() => setShowPicker(true)}
-      >
-        <Text
-          style={[
-            styles.inputText,
-            { color: tokens.ink },
-            !draft.anniversaryDate && { color: tokens.muted },
-          ]}
-        >
-          {formatDate(draft.anniversaryDate)}
-        </Text>
-      </Pressable>
+      <SpringPress onPress={() => setShowPicker(true)}>
+        <View style={[styles.input, styles.inputShadow, { backgroundColor: tokens.card }]}>
+          <Text
+            style={[
+              styles.inputText,
+              { color: tokens.ink },
+              !draft.anniversaryDate && { color: tokens.muted },
+            ]}
+          >
+            {formatDate(draft.anniversaryDate)}
+          </Text>
+        </View>
+      </SpringPress>
       {showPicker && (
         <DateTimePicker
           value={
@@ -499,14 +510,13 @@ export function RemindersStep({ draft, update, onNext, onBack }: StepProps) {
         />
       </View>
       {draft.reminderEnabled ? (
-        <Pressable
-          style={[styles.input, { backgroundColor: tokens.card }]}
-          onPress={() => setShowPicker(true)}
-        >
-          <Text style={[styles.inputText, { color: tokens.ink }]}>
-            {draft.reminderTime}
-          </Text>
-        </Pressable>
+        <SpringPress onPress={() => setShowPicker(true)}>
+          <View style={[styles.input, styles.inputShadow, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.inputText, { color: tokens.ink }]}>
+              {draft.reminderTime}
+            </Text>
+          </View>
+        </SpringPress>
       ) : null}
       {showPicker && (
         <DateTimePicker
@@ -521,37 +531,47 @@ export function RemindersStep({ draft, update, onNext, onBack }: StepProps) {
 }
 
 export function SuccessStep({ onFinish, finishing, finishError }: StepProps) {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
+  const bgSource =
+    mode === 'dark'
+      ? require('../../../assets/bg-night-stars.png')
+      : require('../../../assets/bg-hearts-dreamy.png');
   return (
     <View style={[styles.shell, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <View style={styles.body}>
-        <Text style={[styles.title, { color: tokens.ink }]}>You're all set</Text>
-        <Text style={[styles.subtitle, { color: tokens.primary }]}>
-          Your space is ready. Invite your partner and answer your first question together.
-        </Text>
+        <FadeInView delay={0}>
+          <Text style={[styles.title, { color: tokens.ink }]}>You're all set</Text>
+          <Text style={[styles.subtitle, { color: tokens.primary }]}>
+            Your space is ready. Invite your partner and answer your first question together.
+          </Text>
+        </FadeInView>
         {finishError ? (
           <Text style={[styles.error, { color: tokens.danger }]}>{finishError}</Text>
         ) : null}
       </View>
-      <View style={styles.footer}>
-        <Pressable
-          style={[
-            styles.primaryButton,
-            { backgroundColor: tokens.primary },
-            finishing && styles.buttonDisabled,
-          ]}
-          onPress={onFinish}
-          disabled={finishing}
-        >
-          {finishing ? (
-            <ActivityIndicator color={tokens.onPrimary} />
-          ) : (
-            <Text style={[styles.primaryButtonText, { color: tokens.onPrimary }]}>
-              Finish
-            </Text>
-          )}
-        </Pressable>
-      </View>
+      <FadeInView delay={160}>
+        <View style={styles.footer}>
+          <SpringPress onPress={finishing ? undefined : onFinish}>
+            <LinearGradient
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[
+                styles.primaryButton,
+                styles.buttonShadow,
+                finishing && styles.buttonDisabled,
+              ]}
+            >
+              {finishing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Finish</Text>
+              )}
+            </LinearGradient>
+          </SpringPress>
+        </View>
+      </FadeInView>
     </View>
   );
 }
@@ -566,13 +586,45 @@ const styles = StyleSheet.create({
     padding: 28,
     justifyContent: 'space-between',
   },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
+  buttonShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  chipShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  chipShadowLight: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  inputShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 2,
+  },
   body: {
     flex: 1,
     justifyContent: 'center',
   },
   title: {
     fontFamily: FONTS.headingBold,
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     marginBottom: 10,
   },
@@ -587,14 +639,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   primaryButton: {
-    borderRadius: 14,
-    paddingVertical: 15,
+    borderRadius: 20,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   primaryButtonText: {
     fontFamily: FONTS.body,
     fontSize: 16,
     fontWeight: '600',
+    color: '#FFFFFF',
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -609,8 +662,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   secondaryButton: {
-    borderRadius: 14,
-    paddingVertical: 13,
+    borderRadius: 20,
+    paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
   },
@@ -621,9 +674,9 @@ const styles = StyleSheet.create({
   },
   input: {
     fontFamily: FONTS.body,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
   },
   inputText: {
     fontFamily: FONTS.body,
@@ -681,9 +734,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
     marginBottom: 12,
   },
   reminderLabel: {
