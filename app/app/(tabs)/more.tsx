@@ -6,7 +6,7 @@ import { getStreak } from '../../src/lib/sparks';
 import { getPartner } from '../../src/lib/location';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FONTS } from '../../src/theme';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress, PulseView } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
@@ -84,7 +84,7 @@ export default function MoreScreen() {
         resizeMode="cover"
       />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.root}>
-        <GradientHeader
+        <GlassHeader
           title="More"
           subtitle="Settings, themes & your partner"
           tokens={tokens}

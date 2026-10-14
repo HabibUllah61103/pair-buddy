@@ -19,7 +19,7 @@ import {
 } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 
@@ -148,14 +148,14 @@ export default function SparkScreen() {
   return (
     <View style={[styles.root, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Daily Spark"
         subtitle="One question a day, answered together"
         tokens={tokens}
         right={
           streak > 0 ? (
             <View style={styles.streakBadge}>
-              <Text style={styles.streakText}>
+              <Text style={[styles.streakText, { color: tokens.ink }]}>
                 {streak} day{streak === 1 ? '' : 's'} in a row
               </Text>
             </View>
@@ -292,10 +292,12 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   streakBadge: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.55)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   streakText: { fontFamily: FONTS.bodyBold, fontSize: 13, color: '#FFFFFF' },
   questionCard: {
