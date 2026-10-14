@@ -9,6 +9,7 @@ import {
   setPendingInviteCode,
   takePendingInviteCode,
 } from '../src/lib/deeplinks';
+import { initPush, resetPushInit } from '../src/lib/push';
 
 const NAVY = '#123B63';
 const TEAL = '#14B8A6';
@@ -27,6 +28,17 @@ function AuthGuard({ children }: { children: ReactNode }) {
       router.replace('/');
     }
   }, [session, loading, segments, router]);
+
+  // Push setup: register the device token once per signed-in session so the
+  // partner can be notified; reset on sign-out so the next sign-in re-registers.
+  useEffect(() => {
+    if (loading) return;
+    if (session) {
+      initPush();
+    } else {
+      resetPushInit();
+    }
+  }, [session, loading]);
 
   // Invite deep links: pairbuddy://invite/ABC123 (and https://<domain>/invite/ABC123
   // once the universal-link domain is chosen). Signed-in users go straight to
