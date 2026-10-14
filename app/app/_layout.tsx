@@ -15,17 +15,14 @@ import {
 } from '@expo-google-fonts/nunito';
 import * as Linking from 'expo-linking';
 import { AuthProvider, useAuth } from '../src/lib/auth';
-import { ThemeProvider } from '../src/lib/theme-provider';
+import { ThemeProvider, useTheme } from '../src/lib/theme-provider';
 import {
   extractInviteCode,
   setPendingInviteCode,
   takePendingInviteCode,
 } from '../src/lib/deeplinks';
 import { initPush, resetPushInit } from '../src/lib/push';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
+import { FONTS } from '../src/theme';
 
 function AuthGuard({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -93,19 +90,26 @@ function AuthGuard({ children }: { children: ReactNode }) {
   }, [session, loading, router]);
 
   if (loading) {
-    return (
-      <View style={styles.splash}>
-        <Text style={styles.splashTitle}>Pair Buddy</Text>
-        <ActivityIndicator color={TEAL} />
-      </View>
-    );
+    return <ThemedSplash />;
   }
 
   return <>{children}</>;
 }
 
+function ThemedSplash() {
+  const { tokens } = useTheme();
+  return (
+    <View style={[styles.splash, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.splashTitle, { color: tokens.ink, fontFamily: FONTS.headingBold }]}>
+        Pair Buddy
+      </Text>
+      <ActivityIndicator color={tokens.primary} />
+    </View>
+  );
+}
+
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Fredoka_600SemiBold,
     Fredoka_700Bold,
     Nunito_400Regular,
@@ -114,28 +118,33 @@ export default function RootLayout() {
     Nunito_800ExtraBold,
   });
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.splash}>
-        <Text style={styles.splashTitle}>Pair Buddy</Text>
-        <ActivityIndicator color={TEAL} />
-      </View>
-    );
-  }
+  // If font loading fails, log it and proceed with system fonts rather than
+  // hanging on the splash forever.
+  useEffect(() => {
+    if (fontError) {
+      console.warn('Font loading failed, falling back to system fonts:', fontError);
+    }
+  }, [fontError]);
+
+  const ready = fontsLoaded || !!fontError;
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <AuthGuard>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(pairing)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </AuthGuard>
-      </AuthProvider>
+      {!ready ? (
+        <ThemedSplash />
+      ) : (
+        <AuthProvider>
+          <AuthGuard>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(pairing)" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </AuthGuard>
+        </AuthProvider>
+      )}
     </ThemeProvider>
   );
 }
@@ -143,14 +152,11 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   splash: {
     flex: 1,
-    backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
   },
   splashTitle: {
-    color: COLORS.white,
     fontSize: 32,
-    fontWeight: '800',
   },
 });
