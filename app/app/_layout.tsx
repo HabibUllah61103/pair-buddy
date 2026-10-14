@@ -2,7 +2,13 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { AuthProvider, useAuth } from '../src/lib/auth';
+import {
+  extractInviteCode,
+  setPendingInviteCode,
+  takePendingInviteCode,
+} from '../src/lib/deeplinks';
 
 const NAVY = '#123B63';
 const TEAL = '#14B8A6';
@@ -21,6 +27,38 @@ function AuthGuard({ children }: { children: ReactNode }) {
       router.replace('/');
     }
   }, [session, loading, segments, router]);
+
+  // Invite deep links: pairbuddy://invite/ABC123 (and https://<domain>/invite/ABC123
+  // once the universal-link domain is chosen). Signed-in users go straight to
+  // the join screen; signed-out users get the code stashed until sign-in.
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const code = extractInviteCode(url);
+      if (!code) return;
+      if (loading) return;
+      if (!session) {
+        setPendingInviteCode(code);
+        return;
+      }
+      router.push({ pathname: '/(pairing)/join', params: { code } });
+    };
+
+    Linking.getInitialURL()
+      .then(handleUrl)
+      .catch(() => {});
+    const subscription = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => subscription.remove();
+  }, [session, loading, router]);
+
+  // Consume a code that arrived while signed out, now that a session exists.
+  useEffect(() => {
+    if (loading || !session) return;
+    const code = takePendingInviteCode();
+    if (code) {
+      router.push({ pathname: '/(pairing)/join', params: { code } });
+    }
+  }, [session, loading, router]);
 
   if (loading) {
     return (
@@ -41,6 +79,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(pairing)" />
         </Stack>
       </AuthGuard>
     </AuthProvider>
