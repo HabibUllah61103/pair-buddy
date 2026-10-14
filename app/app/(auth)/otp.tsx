@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
+  Image,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../src/lib/auth';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { FadeInView, SpringPress } from '../../src/components/animated';
+import { RichIcon } from '../../src/components/rich-icon';
+
 const RESEND_COOLDOWN_SECONDS = 30;
 
 export default function OtpScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const { phone } = useLocalSearchParams<{ phone?: string }>();
   const phoneNumber = Array.isArray(phone) ? phone[0] : phone ?? '';
   const { verifyOtp, signInWithPhone } = useAuth();
@@ -24,6 +28,11 @@ export default function OtpScreen() {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -59,67 +68,88 @@ export default function OtpScreen() {
     }
   };
 
+  const canVerify = code.length >= 6 && !busy;
+
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <View style={styles.inner}>
-        <Text style={[styles.title, { color: tokens.ink }]}>
-          Check your messages
-        </Text>
-        <Text style={[styles.subtitle, { color: tokens.primary }]}>
-          We sent a 6-digit code to {phoneNumber || 'your phone'}.
-        </Text>
+        <FadeInView delay={0}>
+          <View style={styles.iconWrap}>
+            <RichIcon name="chatbubbles" size={28} tokens={tokens} variant="gradient" />
+          </View>
+          <Text style={[styles.title, { color: tokens.ink }]}>
+            Check your messages
+          </Text>
+          <Text style={[styles.subtitle, { color: tokens.primary }]}>
+            We sent a 6-digit code to {phoneNumber || 'your phone'}.
+          </Text>
+        </FadeInView>
 
-        <TextInput
-          style={[
-            styles.codeInput,
-            { backgroundColor: tokens.card, color: tokens.ink },
-          ]}
-          value={code}
-          onChangeText={(t) => setCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
-          keyboardType="number-pad"
-          maxLength={6}
-          autoFocus
-          editable={!busy}
-          placeholder="••••••"
-          placeholderTextColor={tokens.muted}
-        />
+        <FadeInView delay={120}>
+          <View style={[styles.codeCard, styles.cardShadow, { backgroundColor: tokens.card }]}>
+            <TextInput
+              style={[styles.codeInput, { color: tokens.ink }]}
+              value={code}
+              onChangeText={(t) => setCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+              editable={!busy}
+              placeholder="••••••"
+              placeholderTextColor={tokens.muted}
+            />
+          </View>
+        </FadeInView>
 
-        <Pressable
-          style={[
-            styles.button,
-            { backgroundColor: tokens.primary },
-            code.length < 6 && styles.buttonDisabled,
-          ]}
-          onPress={onVerify}
-          disabled={busy || code.length < 6}
-        >
-          {busy ? (
-            <ActivityIndicator color={tokens.onPrimary} />
-          ) : (
-            <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
-              Verify
-            </Text>
-          )}
-        </Pressable>
-
-        <Pressable onPress={onResend} disabled={resending || cooldown > 0}>
-          {resending ? (
-            <ActivityIndicator color={tokens.primary} />
-          ) : (
-            <Text
+        <FadeInView delay={200}>
+          <SpringPress onPress={canVerify ? onVerify : undefined}>
+            <LinearGradient
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
               style={[
-                styles.link,
-                { color: cooldown > 0 ? tokens.muted : tokens.ink },
-                cooldown > 0 && styles.linkNoUnderline,
+                styles.button,
+                styles.buttonShadow,
+                !canVerify && styles.buttonDisabled,
               ]}
             >
-              {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
-            </Text>
-          )}
-        </Pressable>
+              {busy ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Verify</Text>
+              )}
+            </LinearGradient>
+          </SpringPress>
+        </FadeInView>
+
+        <FadeInView delay={280}>
+          <SpringPress
+            onPress={resending || cooldown > 0 ? undefined : onResend}
+          >
+            <View style={styles.resendWrap}>
+              {resending ? (
+                <ActivityIndicator color={tokens.primary} />
+              ) : (
+                <Text
+                  style={[
+                    styles.link,
+                    { color: cooldown > 0 ? tokens.muted : tokens.primary },
+                  ]}
+                >
+                  {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+                </Text>
+              )}
+            </View>
+          </SpringPress>
+        </FadeInView>
 
         {error ? (
-          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <FadeInView delay={0}>
+            <View style={[styles.errorCard, { backgroundColor: tokens.card }]}>
+              <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+            </View>
+          </FadeInView>
         ) : null}
       </View>
     </View>
@@ -130,14 +160,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
   inner: {
     flex: 1,
     justifyContent: 'center',
     padding: 28,
   },
+  iconWrap: {
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   title: {
     fontFamily: FONTS.headingBold,
-    fontSize: 28,
+    fontSize: 30,
     textAlign: 'center',
   },
   subtitle: {
@@ -147,20 +185,38 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 32,
   },
-  codeInput: {
-    fontFamily: FONTS.headingBold,
-    borderRadius: 14,
-    paddingVertical: 16,
-    fontSize: 28,
-    textAlign: 'center',
-    letterSpacing: 12,
+  codeCard: {
+    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     marginBottom: 20,
   },
+  cardShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  codeInput: {
+    fontFamily: FONTS.headingBold,
+    fontSize: 30,
+    textAlign: 'center',
+    letterSpacing: 12,
+    paddingVertical: 14,
+  },
   button: {
-    borderRadius: 14,
-    paddingVertical: 15,
+    borderRadius: 20,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+  buttonShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -168,20 +224,25 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: FONTS.bodySemi,
     fontSize: 16,
+    color: '#FFFFFF',
+  },
+  resendWrap: {
+    alignItems: 'center',
+    paddingVertical: 12,
   },
   link: {
     fontFamily: FONTS.bodySemi,
     fontSize: 15,
-    textDecorationLine: 'underline',
     textAlign: 'center',
   },
-  linkNoUnderline: {
-    textDecorationLine: 'none',
+  errorCard: {
+    borderRadius: 18,
+    padding: 16,
+    marginTop: 16,
   },
   error: {
     fontFamily: FONTS.body,
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 16,
   },
 });
