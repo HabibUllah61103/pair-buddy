@@ -1,0 +1,16 @@
+# Pair Buddy EAS Workflow: preview builds.
+#
+# Trigger from GitHub: label a PR with eas-build-android:preview
+# (repo is connected in the Expo dashboard under Project GitHub settings).
+# Run manually:  cd app && eas workflow:run preview.yml
+#
+# iOS preview builds need Apple Developer credentials connected to EAS
+# (Expo dashboard > Credentials). Until then, only the Android job runs.
+
+jobs:
+  build_android_preview:
+    name: Build Android preview APK
+    type: build
+    params:
+      platform: android
+      profile: preview
