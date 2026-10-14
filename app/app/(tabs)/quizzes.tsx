@@ -15,6 +15,7 @@ import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
+import { SkeletonCard } from '../../src/components/skeleton-card';
 
 const PACK_COLORS: Record<string, string> = {
   fun: '#FF6B5E',
