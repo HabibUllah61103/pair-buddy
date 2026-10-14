@@ -23,17 +23,13 @@ import {
   type PartnerLocation,
   type Staleness,
 } from '../../src/lib/location';
-import { COLORS } from '../../src/theme';
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A2F4D';
-
-const STALENESS_STYLE: Record<Staleness, { label: string; color: string }> = {
-  live: { label: 'Live', color: '#2ECC71' },
-  recent: { label: 'Recent', color: '#F5B942' },
-  stale: { label: 'Stale', color: '#E2605C' },
+const STALENESS_STYLE: Record<Staleness, { label: string; tone: 'live' | 'recent' | 'stale' }> = {
+  live: { label: 'Live', tone: 'live' },
+  recent: { label: 'Recent', tone: 'recent' },
+  stale: { label: 'Stale', tone: 'stale' },
 };
 
 function timeAgo(iso: string): string {
@@ -46,6 +42,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function DistanceScreen() {
+  const { tokens } = useTheme();
   const [sharing, setSharing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [unit, setUnit] = useState<DistanceUnit>('km');
@@ -128,42 +125,48 @@ export default function DistanceScreen() {
 
   const staleness = partner ? getStaleness(partner.updatedAt) : null;
   const badge = staleness ? STALENESS_STYLE[staleness] : null;
+  const toneColor =
+    badge?.tone === 'live'
+      ? tokens.success
+      : badge?.tone === 'recent'
+        ? tokens.warning
+        : tokens.danger;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Distance</Text>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.heading, { color: tokens.ink }]}>Distance</Text>
 
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : (
         <>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: tokens.card }]}>
             {partner ? (
               <>
-                <Text style={styles.partnerName}>{partner.name}</Text>
-                <Text style={styles.distance}>
+                <Text style={[styles.partnerName, { color: tokens.muted }]}>{partner.name}</Text>
+                <Text style={[styles.distance, { color: tokens.ink }]}>
                   {distanceKm === null ? '—' : formatDistance(distanceKm, unit)}
                 </Text>
                 <View style={styles.row}>
                   {badge && (
-                    <View style={[styles.badge, { borderColor: badge.color }]}>
-                      <View style={[styles.dot, { backgroundColor: badge.color }]} />
-                      <Text style={[styles.badgeText, { color: badge.color }]}>
+                    <View style={[styles.badge, { borderColor: toneColor }]}>
+                      <View style={[styles.dot, { backgroundColor: toneColor }]} />
+                      <Text style={[styles.badgeText, { color: toneColor }]}>
                         {badge.label} · {timeAgo(partner.updatedAt)}
                       </Text>
                     </View>
                   )}
-                  <View style={styles.unitToggle}>
+                  <View style={[styles.unitToggle, { backgroundColor: tokens.primaryTint }]}>
                     {(['km', 'mi'] as DistanceUnit[]).map((u) => (
                       <TouchableOpacity
                         key={u}
-                        style={[styles.unitBtn, unit === u && styles.unitBtnActive]}
+                        style={[styles.unitBtn, unit === u && { backgroundColor: tokens.primary }]}
                         onPress={() => toggleUnit(u)}
                       >
                         <Text
                           style={[
                             styles.unitText,
-                            unit === u && styles.unitTextActive,
+                            { color: unit === u ? tokens.onPrimary : tokens.muted },
                           ]}
                         >
                           {u}
@@ -172,60 +175,59 @@ export default function DistanceScreen() {
                     ))}
                   </View>
                 </View>
-                <Text style={styles.coords}>
+                <Text style={[styles.coords, { color: tokens.muted }]}>
                   {partner.lat.toFixed(4)}, {partner.lng.toFixed(4)}
                 </Text>
               </>
             ) : (
-              <Text style={styles.empty}>
+              <Text style={[styles.empty, { color: tokens.muted }]}>
                 {error ?? 'No partner location yet.'}
               </Text>
             )}
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: tokens.card }]}>
             <View style={styles.rowBetween}>
               <View>
-                <Text style={styles.toggleTitle}>Share my location</Text>
-                <Text style={styles.toggleSub}>
+                <Text style={[styles.toggleTitle, { color: tokens.ink }]}>Share my location</Text>
+                <Text style={[styles.toggleSub, { color: tokens.muted }]}>
                   Only your partner can see it. Turn off anytime.
                 </Text>
               </View>
               {busy ? (
-                <ActivityIndicator color={TEAL} />
+                <ActivityIndicator color={tokens.primary} />
               ) : (
                 <Switch
                   value={sharing}
                   onValueChange={toggleSharing}
-                  trackColor={{ false: '#2A3F5C', true: TEAL }}
+                  trackColor={{ false: tokens.border, true: tokens.primary }}
                 />
               )}
             </View>
           </View>
 
-          {error && <Text style={styles.error}>{error}</Text>}
+          {error && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
         </>
       )}
 
       {error && !loading && partner === null && (
-        <Text style={styles.error}>{error}</Text>
+        <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: NAVY, padding: 20, paddingTop: 64 },
-  heading: { color: COLORS.white, fontSize: 28, fontWeight: '700', marginBottom: 16 },
+  container: { flex: 1, padding: 20, paddingTop: 64 },
+  heading: { fontFamily: FONTS.heading, fontSize: 28, fontWeight: '700', marginBottom: 16 },
   loader: { marginTop: 40 },
   card: {
-    backgroundColor: CARD,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
   },
-  partnerName: { color: MUTED, fontSize: 14, marginBottom: 4 },
-  distance: { color: COLORS.white, fontSize: 52, fontWeight: '800' },
+  partnerName: { fontFamily: FONTS.body, fontSize: 14, marginBottom: 4 },
+  distance: { fontFamily: FONTS.heading, fontSize: 52, fontWeight: '800' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -246,15 +248,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
-  badgeText: { fontSize: 12, fontWeight: '600' },
-  unitToggle: { flexDirection: 'row', backgroundColor: '#0F2540', borderRadius: 999 },
+  badgeText: { fontFamily: FONTS.body, fontSize: 12, fontWeight: '600' },
+  unitToggle: { flexDirection: 'row', borderRadius: 999 },
   unitBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999 },
-  unitBtnActive: { backgroundColor: TEAL },
-  unitText: { color: MUTED, fontWeight: '600' },
-  unitTextActive: { color: NAVY },
-  coords: { color: MUTED, fontSize: 12, marginTop: 12, fontVariant: ['tabular-nums'] },
-  empty: { color: MUTED, fontSize: 15, textAlign: 'center', paddingVertical: 12 },
-  toggleTitle: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
-  toggleSub: { color: MUTED, fontSize: 12, marginTop: 2, maxWidth: 220 },
-  error: { color: '#E2605C', fontSize: 13, marginTop: 4 },
+  unitText: { fontFamily: FONTS.body, fontWeight: '600' },
+  coords: { fontFamily: FONTS.body, fontSize: 12, marginTop: 12, fontVariant: ['tabular-nums'] },
+  empty: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', paddingVertical: 12 },
+  toggleTitle: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  toggleSub: { fontFamily: FONTS.body, fontSize: 12, marginTop: 2, maxWidth: 220 },
+  error: { fontFamily: FONTS.body, fontSize: 13, marginTop: 4 },
 });

@@ -20,12 +20,8 @@ import {
   subscribeDrawings,
   type Drawing,
 } from '../../src/lib/drawings';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1B4A7A';
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -37,6 +33,7 @@ function formatWhen(iso: string): string {
 }
 
 export default function DrawScreen() {
+  const { tokens } = useTheme();
   const canvasRef = useRef<DrawingCanvasHandle>(null);
   const [color, setColor] = useState(DRAW_COLORS[0]);
   const [size, setSize] = useState(DRAW_SIZES[1]);
@@ -100,8 +97,8 @@ export default function DrawScreen() {
   const latestMine = latest !== null && myId !== null && latest.created_by === myId;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Draw</Text>
+    <ScrollView style={[styles.screen, { backgroundColor: tokens.background }]} contentContainerStyle={styles.content}>
+      <Text style={[styles.title, { color: tokens.ink }]}>Draw</Text>
 
       <View style={styles.canvasBox}>
         <DrawingCanvas ref={canvasRef} color={color} size={size} />
@@ -116,7 +113,7 @@ export default function DrawScreen() {
               style={[
                 styles.swatch,
                 { backgroundColor: c },
-                color === c && styles.swatchActive,
+                color === c && { borderColor: tokens.ink },
               ]}
               accessibilityLabel={`Color ${c}`}
             />
@@ -127,7 +124,7 @@ export default function DrawScreen() {
             <Pressable
               key={s}
               onPress={() => setSize(s)}
-              style={[styles.sizeDot, size === s && styles.sizeActive]}
+              style={[styles.sizeDot, { backgroundColor: tokens.primaryTint }, size === s && { borderColor: tokens.primary, borderWidth: 2 }]}
               accessibilityLabel={`Brush size ${s}`}
             >
               <View
@@ -141,36 +138,36 @@ export default function DrawScreen() {
       <View style={styles.actions}>
         <Pressable
           onPress={() => canvasRef.current?.undo()}
-          style={styles.ghostBtn}
+          style={[styles.ghostBtn, { backgroundColor: tokens.card }]}
         >
-          <Text style={styles.ghostText}>Undo</Text>
+          <Text style={[styles.ghostText, { color: tokens.ink }]}>Undo</Text>
         </Pressable>
         <Pressable
           onPress={() => canvasRef.current?.clear()}
-          style={styles.ghostBtn}
+          style={[styles.ghostBtn, { backgroundColor: tokens.card }]}
         >
-          <Text style={styles.ghostText}>Clear</Text>
+          <Text style={[styles.ghostText, { color: tokens.ink }]}>Clear</Text>
         </Pressable>
         <Pressable
           onPress={send}
           disabled={sending}
-          style={[styles.sendBtn, sending && styles.sendDisabled]}
+          style={[styles.sendBtn, { backgroundColor: tokens.primary }, sending && styles.sendDisabled]}
         >
           {sending ? (
-            <ActivityIndicator color={COLORS.white} size="small" />
+            <ActivityIndicator color={tokens.onPrimary} size="small" />
           ) : (
-            <Text style={styles.sendText}>Send</Text>
+            <Text style={[styles.sendText, { color: tokens.onPrimary }]}>Send</Text>
           )}
         </Pressable>
       </View>
 
-      {error !== null && <Text style={styles.error}>{error}</Text>}
-      {notice !== null && <Text style={styles.notice}>{notice}</Text>}
+      {error !== null && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
+      {notice !== null && <Text style={[styles.notice, { color: tokens.primary }]}>{notice}</Text>}
 
-      <Text style={styles.sectionTitle}>Latest</Text>
-      <View style={styles.latestCard}>
+      <Text style={[styles.sectionTitle, { color: tokens.ink }]}>Latest</Text>
+      <View style={[styles.latestCard, { backgroundColor: tokens.card }]}>
         {latest === null ? (
-          <Text style={styles.hint}>
+          <Text style={[styles.hint, { color: tokens.muted }]}>
             No drawings yet. Send the first doodle.
           </Text>
         ) : (
@@ -181,7 +178,7 @@ export default function DrawScreen() {
               height={180}
               style={styles.latestArt}
             />
-            <Text style={styles.latestMeta}>
+            <Text style={[styles.latestMeta, { color: tokens.muted }]}>
               {latestMine ? 'You' : latest.creator_name} ·{' '}
               {formatWhen(latest.created_at)}
             </Text>
@@ -194,9 +191,9 @@ export default function DrawScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: NAVY },
+  screen: { flex: 1 },
   content: { padding: 16 },
-  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 12 },
+  title: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '800', marginBottom: 12 },
   canvasBox: { height: 300, borderRadius: 16, overflow: 'hidden' },
   toolbar: {
     flexDirection: 'row',
@@ -212,51 +209,46 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  swatchActive: { borderColor: COLORS.white },
+
   sizes: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   sizeDot: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: CARD,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sizeActive: { borderColor: TEAL, borderWidth: 2 },
-  sizeInner: { backgroundColor: COLORS.white, borderRadius: 99 },
+  sizeInner: { backgroundColor: '#FFFFFF', borderRadius: 99 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
   ghostBtn: {
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 12,
-    backgroundColor: CARD,
   },
-  ghostText: { color: COLORS.white, fontWeight: '700' },
+  ghostText: { fontFamily: FONTS.body, fontWeight: '700' },
   sendBtn: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: TEAL,
     alignItems: 'center',
   },
   sendDisabled: { opacity: 0.6 },
-  sendText: { color: COLORS.white, fontWeight: '800', fontSize: 16 },
-  error: { color: '#F97066', marginTop: 10, fontSize: 14 },
-  notice: { color: TEAL, marginTop: 10, fontSize: 14 },
+  sendText: { fontFamily: FONTS.body, fontWeight: '800', fontSize: 16 },
+  error: { fontFamily: FONTS.body, marginTop: 10, fontSize: 14 },
+  notice: { fontFamily: FONTS.body, marginTop: 10, fontSize: 14 },
   sectionTitle: {
-    color: COLORS.white,
+    fontFamily: FONTS.heading,
     fontSize: 18,
     fontWeight: '800',
     marginTop: 18,
     marginBottom: 8,
   },
   latestCard: {
-    backgroundColor: CARD,
     borderRadius: 16,
     padding: 12,
   },
-  latestArt: { borderRadius: 8, backgroundColor: COLORS.white },
-  latestMeta: { color: MUTED, fontSize: 13, marginTop: 8 },
-  hint: { color: MUTED, fontSize: 15, textAlign: 'center', paddingVertical: 24 },
+  latestArt: { borderRadius: 8, backgroundColor: '#FFFFFF' },
+  latestMeta: { fontFamily: FONTS.body, fontSize: 13, marginTop: 8 },
+  hint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', paddingVertical: 24 },
   spacer: { height: 24 },
 });
