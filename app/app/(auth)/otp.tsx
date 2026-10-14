@@ -9,13 +9,12 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 const RESEND_COOLDOWN_SECONDS = 30;
 
 export default function OtpScreen() {
+  const { tokens } = useTheme();
   const { phone } = useLocalSearchParams<{ phone?: string }>();
   const phoneNumber = Array.isArray(phone) ? phone[0] : phone ?? '';
   const { verifyOtp, signInWithPhone } = useAuth();
@@ -61,15 +60,20 @@ export default function OtpScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <View style={styles.inner}>
-        <Text style={styles.title}>Check your messages</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: tokens.ink }]}>
+          Check your messages
+        </Text>
+        <Text style={[styles.subtitle, { color: tokens.primary }]}>
           We sent a 6-digit code to {phoneNumber || 'your phone'}.
         </Text>
 
         <TextInput
-          style={styles.codeInput}
+          style={[
+            styles.codeInput,
+            { backgroundColor: tokens.card, color: tokens.ink },
+          ]}
           value={code}
           onChangeText={(t) => setCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
           keyboardType="number-pad"
@@ -77,32 +81,46 @@ export default function OtpScreen() {
           autoFocus
           editable={!busy}
           placeholder="••••••"
-          placeholderTextColor={COLORS.muted}
+          placeholderTextColor={tokens.muted}
         />
 
         <Pressable
-          style={[styles.button, code.length < 6 && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            { backgroundColor: tokens.primary },
+            code.length < 6 && styles.buttonDisabled,
+          ]}
           onPress={onVerify}
           disabled={busy || code.length < 6}
         >
           {busy ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={tokens.onPrimary} />
           ) : (
-            <Text style={styles.buttonText}>Verify</Text>
+            <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
+              Verify
+            </Text>
           )}
         </Pressable>
 
         <Pressable onPress={onResend} disabled={resending || cooldown > 0}>
           {resending ? (
-            <ActivityIndicator color={TEAL} />
+            <ActivityIndicator color={tokens.primary} />
           ) : (
-            <Text style={[styles.link, cooldown > 0 && styles.linkDisabled]}>
+            <Text
+              style={[
+                styles.link,
+                { color: cooldown > 0 ? tokens.muted : tokens.ink },
+                cooldown > 0 && styles.linkNoUnderline,
+              ]}
+            >
               {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
             </Text>
           )}
         </Pressable>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? (
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -111,7 +129,6 @@ export default function OtpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: NAVY,
   },
   inner: {
     flex: 1,
@@ -119,31 +136,27 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   title: {
-    color: COLORS.white,
+    fontFamily: FONTS.headingBold,
     fontSize: 28,
-    fontWeight: '700',
     textAlign: 'center',
   },
   subtitle: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 15,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 32,
   },
   codeInput: {
-    backgroundColor: COLORS.white,
+    fontFamily: FONTS.headingBold,
     borderRadius: 14,
     paddingVertical: 16,
     fontSize: 28,
-    fontWeight: '700',
-    color: NAVY,
     textAlign: 'center',
     letterSpacing: 12,
     marginBottom: 20,
   },
   button: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -153,23 +166,20 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: COLORS.white,
+    fontFamily: FONTS.bodySemi,
     fontSize: 16,
-    fontWeight: '600',
   },
   link: {
-    color: COLORS.white,
+    fontFamily: FONTS.bodySemi,
     fontSize: 15,
-    fontWeight: '500',
     textDecorationLine: 'underline',
     textAlign: 'center',
   },
-  linkDisabled: {
-    color: COLORS.muted,
+  linkNoUnderline: {
     textDecorationLine: 'none',
   },
   error: {
-    color: '#FF9D9D',
+    fontFamily: FONTS.body,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 16,
