@@ -37,7 +37,8 @@
           "color":"#123B63"
         }
       ],
-      "./plugins/withPairWidgets"
+      "./plugins/withPairWidgets",
+      "./plugins/withPairWidgetsIOS"
     ],
     "scheme":"pairbuddy",
     "slug":"pair-buddy",

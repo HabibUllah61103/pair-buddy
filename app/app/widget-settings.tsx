@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import {
   WIDGET_DESCRIPTIONS,
@@ -50,7 +50,11 @@ export default function WidgetSettingsScreen() {
       // Choice is saved; the widget itself just needs a dev build to render.
       setNotice(`${refreshed.error} Your choice is saved and will apply in the build.`);
     } else {
-      setNotice('Widget updated. Add it from your home screen: long-press, Widgets, Pair Buddy.');
+      setNotice(
+        Platform.OS === 'ios'
+          ? 'Widget updated. Add it from your home screen: long-press, Edit, Add Widget, Pair Buddy.'
+          : 'Widget updated. Add it from your home screen: long-press, Widgets, Pair Buddy.'
+      );
     }
   }, [selected, saving]);
 
@@ -58,7 +62,7 @@ export default function WidgetSettingsScreen() {
     <ScrollView style={styles.scroll} contentContainerStyle={styles.root}>
       <Text style={styles.title}>Home widgets</Text>
       <Text style={styles.subtitle}>
-        Pick what your Android home-screen widget shows. Your choice syncs to your account.
+        Pick what your home-screen widget shows. Your choice syncs to your account.
       </Text>
 
       {loading ? (
@@ -90,8 +94,9 @@ export default function WidgetSettingsScreen() {
 
       {!nativeAvailable && (
         <Text style={styles.cardHint}>
-          Widgets render on Android in a development build (npx expo prebuild / run:android).
-          They are not available inside Expo Go.
+          Widgets render in a development build (Android: npx expo run:android;
+          iOS: npx expo run:ios on a Mac with Xcode). They are not available
+          inside Expo Go.
         </Text>
       )}
 
