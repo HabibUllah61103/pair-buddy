@@ -5,13 +5,11 @@ import { useAuth } from '../src/lib/auth';
 import { getOnboardingComplete } from '../src/lib/onboarding';
 import { getMyCoupleId, NOT_CONFIGURED } from '../src/lib/pairing';
 import { getCoupleMemberCount } from '../src/lib/sparks';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
+import { useTheme } from '../src/lib/theme-provider';
+import { FONTS } from '../src/theme';
 
 export default function HomeScreen() {
+  const { tokens } = useTheme();
   const { loading: authLoading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [unconfigured, setUnconfigured] = useState(false);
@@ -44,17 +42,17 @@ export default function HomeScreen() {
 
   if (authLoading || checking) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={TEAL} />
+      <View style={[styles.loading, { backgroundColor: tokens.background }]}>
+        <ActivityIndicator color={tokens.primary} />
       </View>
     );
   }
 
   if (unconfigured) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Pair Buddy</Text>
-        <Text style={styles.hint}>
+      <View style={[styles.container, { backgroundColor: tokens.background }]}>
+        <Text style={[styles.title, { color: tokens.ink }]}>Pair Buddy</Text>
+        <Text style={[styles.hint, { color: tokens.muted }]}>
           The backend is not configured yet. Add EXPO_PUBLIC_SUPABASE_URL and
           EXPO_PUBLIC_SUPABASE_ANON_KEY to app/.env — see supabase/README.md.
         </Text>
@@ -63,8 +61,8 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.loading}>
-      <ActivityIndicator color={TEAL} />
+    <View style={[styles.loading, { backgroundColor: tokens.background }]}>
+      <ActivityIndicator color={tokens.primary} />
     </View>
   );
 }
@@ -72,25 +70,22 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   title: {
-    color: COLORS.white,
+    fontFamily: FONTS.headingBold,
     fontSize: 32,
-    fontWeight: '800',
     marginBottom: 12,
   },
   hint: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
