@@ -6,9 +6,11 @@ import { getStreak } from '../../src/lib/sparks';
 import { getPartner } from '../../src/lib/location';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FONTS } from '../../src/theme';
-import GlassHeader from '../../src/components/glass-header';
+import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress, PulseView } from '../../src/components/animated';
+import { CelebrationBurst } from '../../src/components/celebration';
+import { RewardPop } from '../../src/components/reward-pop';
 import { RichIcon } from '../../src/components/rich-icon';
 import {
   clearFailed,
@@ -34,6 +36,7 @@ export default function MoreScreen() {
   const [partnerName, setPartnerName] = useState<string | null>(null);
   const [partnerLoading, setPartnerLoading] = useState(true);
   const { theme, themes, modeSetting, setThemeId, setModeSetting, tokens, mode } = useTheme();
+  const isStreakMilestone = streak !== null && streak >= 7;
 
   useEffect(() => {
     getStreak().then((r) => {
@@ -84,7 +87,7 @@ export default function MoreScreen() {
         resizeMode="cover"
       />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.root}>
-        <GlassHeader
+        <GradientHeader
           title="More"
           subtitle="Settings, themes & your partner"
           tokens={tokens}
@@ -100,12 +103,21 @@ export default function MoreScreen() {
             <Text style={[styles.cardLabel, { color: tokens.primary }]}>Daily Spark streak</Text>
             {streak === null ? (
               <ActivityIndicator color={tokens.primary} />
+            ) : isStreakMilestone ? (
+              <RewardPop visible>
+                <Text style={[styles.streakValue, { color: tokens.ink }]}>
+                  {streak} day{streak === 1 ? '' : 's'}
+                </Text>
+              </RewardPop>
             ) : (
               <PulseView>
                 <Text style={[styles.streakValue, { color: tokens.ink }]}>
                   {streak} day{streak === 1 ? '' : 's'}
                 </Text>
               </PulseView>
+            )}
+            {isStreakMilestone && (
+              <CelebrationBurst trigger colors={tokens.gradient} />
             )}
             {streak !== null && streak >= 7 && (
               <Image
