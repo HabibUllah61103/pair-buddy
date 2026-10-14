@@ -1,38 +1,47 @@
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
 import { getOnboardingComplete } from '../src/lib/onboarding';
+import { getMyCoupleId, NOT_CONFIGURED } from '../src/lib/pairing';
+import { getCoupleMemberCount } from '../src/lib/sparks';
 
 const NAVY = '#123B63';
 const TEAL = '#14B8A6';
 const MUTED = '#8AA0B8';
 
 export default function HomeScreen() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [checking, setChecking] = useState(true);
-  const [onboarded, setOnboarded] = useState(false);
+  const [unconfigured, setUnconfigured] = useState(false);
 
   useEffect(() => {
-    getOnboardingComplete().then((done) => {
-      setOnboarded(done);
-      setChecking(false);
-    });
+    void (async () => {
+      const done = await getOnboardingComplete();
+      if (!done) {
+        router.replace('/(onboarding)');
+        return;
+      }
+      const couple = await getMyCoupleId();
+      if (couple.error === NOT_CONFIGURED) {
+        setUnconfigured(true);
+        setChecking(false);
+        return;
+      }
+      if (!couple.data) {
+        router.replace('/(pairing)/invite');
+        return;
+      }
+      const members = await getCoupleMemberCount();
+      if ((members.data ?? 0) < 2) {
+        router.replace('/(pairing)/invite');
+        return;
+      }
+      router.replace('/(tabs)/spark');
+    })();
   }, []);
 
-  useEffect(() => {
-    if (!authLoading && !checking && !onboarded) {
-      router.replace('/(onboarding)');
-    }
-  }, [authLoading, checking, onboarded]);
-
-  if (authLoading || checking || !onboarded) {
+  if (authLoading || checking) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={TEAL} />
@@ -40,22 +49,21 @@ export default function HomeScreen() {
     );
   }
 
-  const handleSignOut = () => {
-    void signOut();
-  };
+  if (unconfigured) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Pair Buddy</Text>
+        <Text style={styles.hint}>
+          The backend is not configured yet. Add EXPO_PUBLIC_SUPABASE_URL and
+          EXPO_PUBLIC_SUPABASE_ANON_KEY to app/.env — see supabase/README.md.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Pair Buddy</Text>
-      <Text style={styles.subtitle}>
-        Signed in as {user?.email ?? user?.phone ?? 'you'}
-      </Text>
-      <Text style={styles.hint}>
-        Home screen lands here next: daily spark, memories, and your partner.
-      </Text>
-      <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutText}>Sign out</Text>
-      </Pressable>
+    <View style={styles.loading}>
+      <ActivityIndicator color={TEAL} />
     </View>
   );
 }
@@ -78,29 +86,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 32,
     fontWeight: '800',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: TEAL,
-    fontSize: 15,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   hint: {
     color: MUTED,
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 32,
-  },
-  signOutButton: {
-    borderWidth: 1.5,
-    borderColor: '#3A5470',
-    borderRadius: 14,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-  },
-  signOutText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
+    lineHeight: 22,
   },
 });
