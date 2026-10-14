@@ -31,6 +31,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon, type RichIconName } from '../../src/components/rich-icon';
 
@@ -429,9 +430,12 @@ export default function DrawScreen() {
       <FadeInView delay={80}>
         <View style={[styles.latestCard, { backgroundColor: tokens.card }]}>
           {latest === null ? (
-            <Text style={[styles.hint, { color: tokens.muted }]}>
-              No drawings yet. Send the first doodle.
-            </Text>
+            <View style={styles.emptyLatest}>
+              <HeartsIllustration expression="wink" variant="breathe" size={120} />
+              <Text style={[styles.hint, { color: tokens.muted }]}>
+                No drawings yet. Send the first doodle.
+              </Text>
+            </View>
           ) : (
             <>
               <SvgUri
@@ -608,5 +612,6 @@ const styles = StyleSheet.create({
   historyArt: { borderRadius: 6, backgroundColor: '#FFFFFF' },
   historyMeta: { fontFamily: FONTS.body, fontSize: 11, marginTop: 6 },
   hint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', paddingVertical: 24 },
+  emptyLatest: { alignItems: 'center', gap: 4, paddingVertical: 8 },
   spacer: { height: 24 },
 });
