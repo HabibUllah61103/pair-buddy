@@ -16,11 +16,9 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import type { OnboardingDraft } from '../../lib/onboarding';
-import { COLORS } from '../../theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
+import { useTheme } from '../../lib/theme-provider';
+import type { ThemeTokens } from '../../lib/tokens';
+import { FONTS } from '../../theme';
 
 export type StepProps = {
   draft: OnboardingDraft;
@@ -41,6 +39,7 @@ function StepShell({
   nextLabel = 'Continue',
   nextDisabled = false,
   showBack = true,
+  tokens,
 }: {
   title: string;
   subtitle: string;
@@ -50,25 +49,32 @@ function StepShell({
   nextLabel?: string;
   nextDisabled?: boolean;
   showBack?: boolean;
+  tokens: ThemeTokens;
 }) {
   return (
-    <View style={styles.shell}>
+    <View style={[styles.shell, { backgroundColor: tokens.background }]}>
       <View style={styles.body}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={[styles.title, { color: tokens.ink }]}>{title}</Text>
+        <Text style={[styles.subtitle, { color: tokens.primary }]}>{subtitle}</Text>
         {children}
       </View>
       <View style={styles.footer}>
         <Pressable
-          style={[styles.primaryButton, nextDisabled && styles.buttonDisabled]}
+          style={[
+            styles.primaryButton,
+            { backgroundColor: tokens.primary },
+            nextDisabled && styles.buttonDisabled,
+          ]}
           onPress={onNext}
           disabled={nextDisabled}
         >
-          <Text style={styles.primaryButtonText}>{nextLabel}</Text>
+          <Text style={[styles.primaryButtonText, { color: tokens.onPrimary }]}>
+            {nextLabel}
+          </Text>
         </Pressable>
         {showBack ? (
           <Pressable style={styles.backButton} onPress={onBack}>
-            <Text style={styles.backText}>Back</Text>
+            <Text style={[styles.backText, { color: tokens.muted }]}>Back</Text>
           </Pressable>
         ) : null}
       </View>
@@ -80,17 +86,29 @@ function Chip({
   label,
   selected,
   onPress,
+  tokens,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
+  tokens: ThemeTokens;
 }) {
   return (
     <Pressable
-      style={[styles.chip, selected && styles.chipSelected]}
+      style={[
+        styles.chip,
+        { borderColor: tokens.border },
+        selected && { backgroundColor: tokens.primary, borderColor: tokens.primary },
+      ]}
       onPress={onPress}
     >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+      <Text
+        style={[
+          styles.chipText,
+          { color: selected ? tokens.onPrimary : tokens.ink },
+          selected && styles.chipTextSelected,
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -118,6 +136,7 @@ function formatDate(iso: string): string {
 // ---------------------------------------------------------------------------
 
 export function WelcomeStep({ onNext }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="Welcome to Pair Buddy"
@@ -126,11 +145,13 @@ export function WelcomeStep({ onNext }: StepProps) {
       onBack={() => {}}
       nextLabel="Let's go"
       showBack={false}
+      tokens={tokens}
     />
   );
 }
 
 export function NameStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   const valid = draft.name.trim().length >= 2;
   return (
     <StepShell
@@ -139,11 +160,12 @@ export function NameStep({ draft, update, onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!valid}
+      tokens={tokens}
     >
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: tokens.card, color: tokens.ink }]}
         placeholder="Your name"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={tokens.muted}
         value={draft.name}
         onChangeText={(t) => update({ name: t })}
         autoFocus
@@ -154,6 +176,7 @@ export function NameStep({ draft, update, onNext, onBack }: StepProps) {
 }
 
 export function BirthdateStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
   const age = draft.birthdate ? ageOn(draft.birthdate) : null;
   const valid = age !== null && age >= 13;
@@ -171,9 +194,19 @@ export function BirthdateStep({ draft, update, onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!valid}
+      tokens={tokens}
     >
-      <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-        <Text style={[styles.inputText, !draft.birthdate && styles.placeholder]}>
+      <Pressable
+        style={[styles.input, { backgroundColor: tokens.card }]}
+        onPress={() => setShowPicker(true)}
+      >
+        <Text
+          style={[
+            styles.inputText,
+            { color: tokens.ink },
+            !draft.birthdate && { color: tokens.muted },
+          ]}
+        >
           {formatDate(draft.birthdate)}
         </Text>
       </Pressable>
@@ -187,7 +220,9 @@ export function BirthdateStep({ draft, update, onNext, onBack }: StepProps) {
         />
       )}
       {draft.birthdate && age !== null && age < 13 ? (
-        <Text style={styles.hint}>Pair Buddy is for ages 13 and up.</Text>
+        <Text style={[styles.hint, { color: tokens.danger }]}>
+          Pair Buddy is for ages 13 and up.
+        </Text>
       ) : null}
     </StepShell>
   );
@@ -196,6 +231,7 @@ export function BirthdateStep({ draft, update, onNext, onBack }: StepProps) {
 const GENDERS = ['Woman', 'Man', 'Non-binary', 'Prefer not to say'];
 
 export function GenderStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="How do you identify?"
@@ -203,10 +239,17 @@ export function GenderStep({ draft, update, onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!draft.gender}
+      tokens={tokens}
     >
       <View style={styles.chips}>
         {GENDERS.map((g) => (
-          <Chip key={g} label={g} selected={draft.gender === g} onPress={() => update({ gender: g })} />
+          <Chip
+            key={g}
+            label={g}
+            selected={draft.gender === g}
+            onPress={() => update({ gender: g })}
+            tokens={tokens}
+          />
         ))}
       </View>
     </StepShell>
@@ -214,6 +257,7 @@ export function GenderStep({ draft, update, onNext, onBack }: StepProps) {
 }
 
 export function PhotoStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   const [error, setError] = useState<string | null>(null);
 
   const pickPhoto = async () => {
@@ -241,21 +285,27 @@ export function PhotoStep({ draft, update, onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextLabel={draft.avatarUri ? 'Continue' : 'Skip for now'}
+      tokens={tokens}
     >
       <View style={styles.photoWrap}>
         {draft.avatarUri ? (
           <Image source={{ uri: draft.avatarUri }} style={styles.photo} />
         ) : (
-          <View style={styles.photoPlaceholder}>
-            <Text style={styles.photoPlaceholderText}>No photo yet</Text>
+          <View style={[styles.photoPlaceholder, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.photoPlaceholderText, { color: tokens.muted }]}>
+              No photo yet
+            </Text>
           </View>
         )}
-        <Pressable style={styles.secondaryButton} onPress={pickPhoto}>
-          <Text style={styles.secondaryButtonText}>
+        <Pressable
+          style={[styles.secondaryButton, { backgroundColor: tokens.card }]}
+          onPress={pickPhoto}
+        >
+          <Text style={[styles.secondaryButtonText, { color: tokens.ink }]}>
             {draft.avatarUri ? 'Choose a different photo' : 'Choose a photo'}
           </Text>
         </Pressable>
-        {error ? <Text style={styles.hint}>{error}</Text> : null}
+        {error ? <Text style={[styles.hint, { color: tokens.danger }]}>{error}</Text> : null}
       </View>
     </StepShell>
   );
@@ -264,6 +314,7 @@ export function PhotoStep({ draft, update, onNext, onBack }: StepProps) {
 const RELATIONSHIP_TYPES = ['Dating', 'Engaged', 'Married', 'Long-term partners'];
 
 export function RelationshipTypeStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="What best describes you two?"
@@ -271,6 +322,7 @@ export function RelationshipTypeStep({ draft, update, onNext, onBack }: StepProp
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!draft.relationshipType}
+      tokens={tokens}
     >
       <View style={styles.chips}>
         {RELATIONSHIP_TYPES.map((t) => (
@@ -279,6 +331,7 @@ export function RelationshipTypeStep({ draft, update, onNext, onBack }: StepProp
             label={t}
             selected={draft.relationshipType === t}
             onPress={() => update({ relationshipType: t })}
+            tokens={tokens}
           />
         ))}
       </View>
@@ -294,6 +347,7 @@ const RELATIONSHIP_GOALS = [
 ];
 
 export function RelationshipGoalStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="What do you want more of?"
@@ -301,6 +355,7 @@ export function RelationshipGoalStep({ draft, update, onNext, onBack }: StepProp
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!draft.relationshipGoal}
+      tokens={tokens}
     >
       <View style={styles.chips}>
         {RELATIONSHIP_GOALS.map((g) => (
@@ -309,6 +364,7 @@ export function RelationshipGoalStep({ draft, update, onNext, onBack }: StepProp
             label={g}
             selected={draft.relationshipGoal === g}
             onPress={() => update({ relationshipGoal: g })}
+            tokens={tokens}
           />
         ))}
       </View>
@@ -317,6 +373,7 @@ export function RelationshipGoalStep({ draft, update, onNext, onBack }: StepProp
 }
 
 export function AnniversaryStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
 
   const onChange = (event: DateTimePickerEvent, date?: Date) => {
@@ -332,9 +389,19 @@ export function AnniversaryStep({ draft, update, onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!draft.anniversaryDate}
+      tokens={tokens}
     >
-      <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-        <Text style={[styles.inputText, !draft.anniversaryDate && styles.placeholder]}>
+      <Pressable
+        style={[styles.input, { backgroundColor: tokens.card }]}
+        onPress={() => setShowPicker(true)}
+      >
+        <Text
+          style={[
+            styles.inputText,
+            { color: tokens.ink },
+            !draft.anniversaryDate && { color: tokens.muted },
+          ]}
+        >
           {formatDate(draft.anniversaryDate)}
         </Text>
       </Pressable>
@@ -362,6 +429,7 @@ const COMMITMENTS = [
 ];
 
 export function DailyCommitmentStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="Pick your daily ritual"
@@ -369,6 +437,7 @@ export function DailyCommitmentStep({ draft, update, onNext, onBack }: StepProps
       onNext={onNext}
       onBack={onBack}
       nextDisabled={!draft.dailyCommitment}
+      tokens={tokens}
     >
       <View style={styles.chips}>
         {COMMITMENTS.map((c) => (
@@ -377,6 +446,7 @@ export function DailyCommitmentStep({ draft, update, onNext, onBack }: StepProps
             label={c}
             selected={draft.dailyCommitment === c}
             onPress={() => update({ dailyCommitment: c })}
+            tokens={tokens}
           />
         ))}
       </View>
@@ -385,6 +455,7 @@ export function DailyCommitmentStep({ draft, update, onNext, onBack }: StepProps
 }
 
 export function PartnerInviteStep({ onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   return (
     <StepShell
       title="Bring your partner in"
@@ -392,11 +463,13 @@ export function PartnerInviteStep({ onNext, onBack }: StepProps) {
       onNext={onNext}
       onBack={onBack}
       nextLabel="I'll invite them later"
+      tokens={tokens}
     />
   );
 }
 
 export function RemindersStep({ draft, update, onNext, onBack }: StepProps) {
+  const { tokens } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
 
   const onTimeChange = (event: DateTimePickerEvent, date?: Date) => {
@@ -415,18 +488,24 @@ export function RemindersStep({ draft, update, onNext, onBack }: StepProps) {
       subtitle="We'll remind you about your daily ritual. Nothing noisy, just a tap on the shoulder."
       onNext={onNext}
       onBack={onBack}
+      tokens={tokens}
     >
-      <View style={styles.reminderRow}>
-        <Text style={styles.reminderLabel}>Daily reminder</Text>
+      <View style={[styles.reminderRow, { backgroundColor: tokens.card }]}>
+        <Text style={[styles.reminderLabel, { color: tokens.ink }]}>Daily reminder</Text>
         <Switch
           value={draft.reminderEnabled}
           onValueChange={(v) => update({ reminderEnabled: v })}
-          trackColor={{ false: '#3A5470', true: TEAL }}
+          trackColor={{ false: tokens.border, true: tokens.primary }}
         />
       </View>
       {draft.reminderEnabled ? (
-        <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-          <Text style={styles.inputText}>{draft.reminderTime}</Text>
+        <Pressable
+          style={[styles.input, { backgroundColor: tokens.card }]}
+          onPress={() => setShowPicker(true)}
+        >
+          <Text style={[styles.inputText, { color: tokens.ink }]}>
+            {draft.reminderTime}
+          </Text>
         </Pressable>
       ) : null}
       {showPicker && (
@@ -442,25 +521,34 @@ export function RemindersStep({ draft, update, onNext, onBack }: StepProps) {
 }
 
 export function SuccessStep({ onFinish, finishing, finishError }: StepProps) {
+  const { tokens } = useTheme();
   return (
-    <View style={styles.shell}>
+    <View style={[styles.shell, { backgroundColor: tokens.background }]}>
       <View style={styles.body}>
-        <Text style={styles.title}>You're all set</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: tokens.ink }]}>You're all set</Text>
+        <Text style={[styles.subtitle, { color: tokens.primary }]}>
           Your space is ready. Invite your partner and answer your first question together.
         </Text>
-        {finishError ? <Text style={styles.error}>{finishError}</Text> : null}
+        {finishError ? (
+          <Text style={[styles.error, { color: tokens.danger }]}>{finishError}</Text>
+        ) : null}
       </View>
       <View style={styles.footer}>
         <Pressable
-          style={[styles.primaryButton, finishing && styles.buttonDisabled]}
+          style={[
+            styles.primaryButton,
+            { backgroundColor: tokens.primary },
+            finishing && styles.buttonDisabled,
+          ]}
           onPress={onFinish}
           disabled={finishing}
         >
           {finishing ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={tokens.onPrimary} />
           ) : (
-            <Text style={styles.primaryButtonText}>Finish</Text>
+            <Text style={[styles.primaryButtonText, { color: tokens.onPrimary }]}>
+              Finish
+            </Text>
           )}
         </Pressable>
       </View>
@@ -475,7 +563,6 @@ export function SuccessStep({ onFinish, finishing, finishError }: StepProps) {
 const styles = StyleSheet.create({
   shell: {
     flex: 1,
-    backgroundColor: NAVY,
     padding: 28,
     justifyContent: 'space-between',
   },
@@ -484,13 +571,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: COLORS.white,
+    fontFamily: FONTS.headingBold,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 10,
   },
   subtitle: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 15,
     marginBottom: 28,
     lineHeight: 22,
@@ -500,13 +587,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   primaryButton: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: COLORS.white,
+    fontFamily: FONTS.body,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -518,34 +604,30 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   backText: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 15,
     fontWeight: '500',
   },
   secondaryButton: {
-    backgroundColor: COLORS.white,
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
     marginTop: 16,
   },
   secondaryButtonText: {
-    color: NAVY,
+    fontFamily: FONTS.body,
     fontSize: 15,
     fontWeight: '600',
   },
   input: {
-    backgroundColor: COLORS.white,
+    fontFamily: FONTS.body,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   inputText: {
+    fontFamily: FONTS.body,
     fontSize: 16,
-    color: NAVY,
-  },
-  placeholder: {
-    color: MUTED,
   },
   chips: {
     flexDirection: 'row',
@@ -554,31 +636,25 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1.5,
-    borderColor: '#3A5470',
     borderRadius: 24,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
-  chipSelected: {
-    backgroundColor: TEAL,
-    borderColor: TEAL,
-  },
   chipText: {
-    color: COLORS.white,
+    fontFamily: FONTS.body,
     fontSize: 15,
     fontWeight: '500',
   },
   chipTextSelected: {
-    color: COLORS.white,
     fontWeight: '700',
   },
   hint: {
-    color: '#FF9D9D',
+    fontFamily: FONTS.body,
     fontSize: 13,
     marginTop: 10,
   },
   error: {
-    color: '#FF9D9D',
+    fontFamily: FONTS.body,
     fontSize: 14,
     marginTop: 12,
   },
@@ -594,26 +670,24 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: '#1E3A5C',
     alignItems: 'center',
     justifyContent: 'center',
   },
   photoPlaceholderText: {
-    color: MUTED,
+    fontFamily: FONTS.body,
     fontSize: 14,
   },
   reminderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1E3A5C',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 12,
   },
   reminderLabel: {
-    color: COLORS.white,
+    fontFamily: FONTS.body,
     fontSize: 16,
     fontWeight: '500',
   },
