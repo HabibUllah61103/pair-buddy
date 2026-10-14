@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import { useAuth } from '../../src/lib/auth';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -115,7 +115,7 @@ export default function OtpScreen() {
               ]}
             >
               {busy ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
               ) : (
                 <Text style={styles.buttonText}>Verify</Text>
               )}
@@ -129,7 +129,7 @@ export default function OtpScreen() {
           >
             <View style={styles.resendWrap}>
               {resending ? (
-                <ActivityIndicator color={tokens.primary} />
+                <LoadingHeart tokens={tokens} size={16} />
               ) : (
                 <Text
                   style={[
