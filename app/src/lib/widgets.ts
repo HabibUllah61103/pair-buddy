@@ -31,7 +31,7 @@ export const WIDGET_DESCRIPTIONS: Record<WidgetType, string> = {
   distance: 'How far apart you and your partner are right now.',
 };
 
-/** The payload the native widget binds into its RemoteViews layouts. */
+/** The payload the native widget binds into its views (Android RemoteViews / iOS WidgetKit). */
 export type WidgetPayload = {
   type: WidgetType;
   title: string;
@@ -79,11 +79,19 @@ function toConfig(row: any): WidgetConfig {
   };
 }
 
-/** The native module exists only in a dev build (prebuild applied). */
+/**
+ * The native module exists only in a dev build (prebuild applied).
+ * Android exposes PairWidgetModule (SharedPreferences + RemoteViews);
+ * iOS exposes PairWidgetDataModule (App Group container + WidgetKit).
+ */
 function getNativeModule(): { setWidgetData: (json: string) => void } | null {
   try {
-    const mod = (NativeModules as any).PairWidgetModule;
-    return mod && typeof mod.setWidgetData === 'function' ? mod : null;
+    const modules = NativeModules as any;
+    for (const name of ['PairWidgetModule', 'PairWidgetDataModule']) {
+      const mod = modules[name];
+      if (mod && typeof mod.setWidgetData === 'function') return mod;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -95,7 +103,8 @@ export function isWidgetNativeAvailable(): boolean {
 }
 
 /**
- * Push a payload to every installed Android widget instance.
+ * Push a payload to the installed widgets: Android re-renders its RemoteViews
+ * instances, iOS reloads the WidgetKit timelines.
  * No-op with a friendly error when running without the native module.
  */
 export async function setWidgetData(payload: WidgetPayload): Promise<PairResult<null>> {
