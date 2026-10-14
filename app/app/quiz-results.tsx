@@ -11,6 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { answersMatch, getPackResults, packTitle, type QuestionResult } from '../src/lib/quiz';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { HeartsIllustration } from '../src/components/hearts-illustration';
 
 function ResultRow({ item }: { item: QuestionResult }) {
   const { tokens } = useTheme();
@@ -81,6 +82,12 @@ export default function QuizResultsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
+          <HeartsIllustration
+            expression="excited"
+            variant="celebrate"
+            size={140}
+            style={styles.celebrate}
+          />
           <Text style={[styles.summary, { color: tokens.muted }]}>
             {matches} of {results.length} matched
           </Text>
@@ -110,6 +117,7 @@ const styles = StyleSheet.create({
   },
   retryText: { fontFamily: FONTS.body, fontWeight: '700' },
   list: { paddingBottom: 32 },
+  celebrate: { alignSelf: 'center', marginBottom: 4 },
   summary: { fontFamily: FONTS.body, fontSize: 14, marginBottom: 12 },
   card: { borderRadius: 14, padding: 16, marginBottom: 12 },
   question: { fontFamily: FONTS.heading, fontSize: 16, fontWeight: '600', lineHeight: 23 },
