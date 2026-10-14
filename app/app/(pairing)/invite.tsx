@@ -136,7 +136,7 @@ export default function InviteScreen() {
           ]}
         >
           <Image
-            source={require('../assets/mascot-waiting.png')}
+            source={require('../../assets/mascot-waiting.png')}
             style={styles.mascot}
             resizeMode="contain"
           />
