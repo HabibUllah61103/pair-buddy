@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { previewInvite, redeemInvite, NOT_CONFIGURED } from '../src/lib/pairing';
-import { isValidInviteCode } from '../src/lib/deeplinks';
+import { previewInvite, redeemInvite, NOT_CONFIGURED } from '../../src/lib/pairing';
+import { isValidInviteCode } from '../../src/lib/deeplinks';
 import { COLORS } from '../../src/theme';
 
 const NAVY = COLORS.navy;

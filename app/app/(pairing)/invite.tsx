@@ -16,7 +16,7 @@ import {
   inviteShareText,
   retireInvite,
   NOT_CONFIGURED,
-} from '../src/lib/pairing';
+} from '../../src/lib/pairing';
 
 const NAVY = '#123B63';
 const TEAL = '#14B8A6';
