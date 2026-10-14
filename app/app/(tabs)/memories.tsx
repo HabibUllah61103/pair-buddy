@@ -23,7 +23,7 @@ import {
 } from '../../src/lib/memories';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
@@ -136,7 +136,7 @@ export default function MemoriesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Memories"
         subtitle="Photos you have shared with each other"
         tokens={tokens}
@@ -146,7 +146,9 @@ export default function MemoriesScreen() {
             accessibilityLabel="Add a memory"
           >
             <LinearGradient
-              colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0.2)']}
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={styles.addButton}
             >
               <RichIcon name="add" size={26} tokens={tokens} variant="plain" color="#FFFFFF" />
