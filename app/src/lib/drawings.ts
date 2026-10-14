@@ -133,6 +133,31 @@ export async function getLatestDrawing(): Promise<PairResult<Drawing>> {
   }
 }
 
+/** Recent drawings for my couple, newest first. */
+export async function getDrawings(
+  limit = 20,
+): Promise<PairResult<Drawing[]>> {
+  const client = getClient();
+  if (!client) return { data: null, error: NOT_CONFIGURED };
+  try {
+    const couple = await getMyCoupleId();
+    if (couple.error || !couple.data) {
+      return { data: null, error: couple.error ?? 'No couple found.' };
+    }
+    const { data, error } = await client
+      .from('drawings')
+      .select(SELECT)
+      .eq('couple_id', couple.data)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    const rows = (data as DrawingRow[] | null) ?? [];
+    return { data: rows.map(toDrawing), error: null };
+  } catch (e) {
+    return { data: null, error: toMessage(e, 'Could not load drawings.') };
+  }
+}
+
 /**
  * Live updates for new drawings in my couple. Resolves to an unsubscribe
  * function. Requires drawings in the supabase_realtime publication.

@@ -14,7 +14,7 @@ import DrawingCanvas, {
   type DrawingCanvasHandle,
 } from '../../src/components/drawing-canvas';
 import {
-  getLatestDrawing,
+  getDrawings,
   getMyUserId,
   saveDrawing,
   subscribeDrawings,
@@ -37,24 +37,30 @@ export default function DrawScreen() {
   const canvasRef = useRef<DrawingCanvasHandle>(null);
   const [color, setColor] = useState(DRAW_COLORS[0]);
   const [size, setSize] = useState(DRAW_SIZES[1]);
-  const [latest, setLatest] = useState<Drawing | null>(null);
+  const [history, setHistory] = useState<Drawing[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+
+  const latest = history.length > 0 ? history[0] : null;
 
   useEffect(() => {
     let unsub: (() => void) | null = null;
     let alive = true;
     (async () => {
-      const [uid, first] = await Promise.all([getMyUserId(), getLatestDrawing()]);
+      const [uid, res] = await Promise.all([getMyUserId(), getDrawings(20)]);
       if (!alive) return;
       setMyId(uid);
-      if (first.error) setError(first.error);
-      else setLatest(first.data);
+      if (res.error) setError(res.error);
+      else setHistory(res.data ?? []);
       const sub = await subscribeDrawings((drawing) => {
         if (alive) {
-          setLatest(drawing);
+          setHistory((prev) => [
+            drawing,
+            ...prev.filter((d) => d.id !== drawing.id),
+          ]);
           setNotice('Your partner sent a new drawing.');
         }
       });
@@ -87,11 +93,28 @@ export default function DrawScreen() {
         return;
       }
       canvas.clear();
-      setLatest(result.data);
+      setEditing(false);
+      setHistory((prev) => [
+        result.data as Drawing,
+        ...prev.filter((d) => d.id !== (result.data as Drawing).id),
+      ]);
       setNotice('Sent to your partner.');
     } finally {
       setSending(false);
     }
+  };
+
+  const loadForEdit = (d: Drawing) => {
+    setError(null);
+    canvasRef.current?.loadFromDataUrl(d.image_url);
+    setEditing(true);
+    setNotice('Editing — Send to save as new.');
+  };
+
+  const clearCanvas = () => {
+    canvasRef.current?.clear();
+    setEditing(false);
+    setNotice(null);
   };
 
   const latestMine = latest !== null && myId !== null && latest.created_by === myId;
@@ -100,7 +123,7 @@ export default function DrawScreen() {
     <ScrollView style={[styles.screen, { backgroundColor: tokens.background }]} contentContainerStyle={styles.content}>
       <Text style={[styles.title, { color: tokens.ink }]}>Draw</Text>
 
-      <View style={styles.canvasBox}>
+      <View style={[styles.canvasBox, editing && { borderWidth: 2, borderColor: tokens.primary }]}>
         <DrawingCanvas ref={canvasRef} color={color} size={size} />
       </View>
 
@@ -143,7 +166,7 @@ export default function DrawScreen() {
           <Text style={[styles.ghostText, { color: tokens.ink }]}>Undo</Text>
         </Pressable>
         <Pressable
-          onPress={() => canvasRef.current?.clear()}
+          onPress={clearCanvas}
           style={[styles.ghostBtn, { backgroundColor: tokens.card }]}
         >
           <Text style={[styles.ghostText, { color: tokens.ink }]}>Clear</Text>
@@ -185,6 +208,47 @@ export default function DrawScreen() {
           </>
         )}
       </View>
+
+      {history.length > 1 && (
+        <>
+          <Text style={[styles.sectionTitle, { color: tokens.ink }]}>
+            History
+          </Text>
+          <Text style={[styles.historyHint, { color: tokens.muted }]}>
+            Tap a drawing to edit it — Send saves it as a new drawing.
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.historyRow}
+          >
+            {history.slice(1).map((d) => (
+              <Pressable
+                key={d.id}
+                onPress={() => loadForEdit(d)}
+                style={[styles.historyCard, { backgroundColor: tokens.card }]}
+              >
+                <SvgUri
+                  uri={d.image_url}
+                  width={104}
+                  height={78}
+                  style={styles.historyArt}
+                />
+                <Text
+                  style={[styles.historyMeta, { color: tokens.muted }]}
+                  numberOfLines={1}
+                >
+                  {myId !== null && d.created_by === myId
+                    ? 'You'
+                    : d.creator_name}
+                  {' · '}
+                  {formatWhen(d.created_at)}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
+      )}
       <View style={styles.spacer} />
     </ScrollView>
   );
@@ -249,6 +313,15 @@ const styles = StyleSheet.create({
   },
   latestArt: { borderRadius: 8, backgroundColor: '#FFFFFF' },
   latestMeta: { fontFamily: FONTS.body, fontSize: 13, marginTop: 8 },
+  historyHint: { fontFamily: FONTS.body, fontSize: 13, marginBottom: 8 },
+  historyRow: { gap: 10, paddingBottom: 4 },
+  historyCard: {
+    borderRadius: 12,
+    padding: 8,
+    width: 120,
+  },
+  historyArt: { borderRadius: 6, backgroundColor: '#FFFFFF' },
+  historyMeta: { fontFamily: FONTS.body, fontSize: 11, marginTop: 6 },
   hint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', paddingVertical: 24 },
   spacer: { height: 24 },
 });
