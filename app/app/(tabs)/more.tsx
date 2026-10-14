@@ -6,6 +6,8 @@ import { getStreak } from '../../src/lib/sparks';
 import { getPartner } from '../../src/lib/location';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FONTS } from '../../src/theme';
+import { GradientHeader } from '../../src/components/gradient-header';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   clearFailed,
   getFailedCount,
@@ -62,9 +64,18 @@ export default function MoreScreen() {
 
   return (
     <ScrollView style={[styles.scroll, { backgroundColor: tokens.background }]} contentContainerStyle={styles.root}>
-      <Text style={[styles.title, { color: tokens.ink }]}>More</Text>
+      <GradientHeader
+        title="More"
+        subtitle="Settings, themes & your partner"
+        tokens={tokens}
+      />
 
-      <View style={[styles.card, { backgroundColor: tokens.card }]}>
+      <LinearGradient
+        colors={tokens.gradientSoft}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.card, styles.streakCard]}
+      >
         <Text style={[styles.cardLabel, { color: tokens.primary }]}>Daily Spark streak</Text>
         {streak === null ? (
           <ActivityIndicator color={tokens.primary} />
@@ -83,7 +94,7 @@ export default function MoreScreen() {
         <Text style={[styles.cardHint, { color: tokens.muted }]}>
           Answer the spark together every day to keep it going.
         </Text>
-      </View>
+      </LinearGradient>
 
       <Pressable
         style={[styles.rowButton, { backgroundColor: tokens.card }]}
@@ -137,13 +148,19 @@ export default function MoreScreen() {
               </Text>
             )}
             <Pressable
-              style={[styles.retryButton, { backgroundColor: tokens.primary }]}
               disabled={syncing}
               onPress={() => void onRetry()}
             >
-              <Text style={[styles.retryText, { color: tokens.onPrimary }]}>
-                {syncing ? 'Retrying...' : 'Retry now'}
-              </Text>
+              <LinearGradient
+                colors={tokens.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.retryButton}
+              >
+                <Text style={styles.retryText}>
+                  {syncing ? 'Retrying...' : 'Retry now'}
+                </Text>
+              </LinearGradient>
             </Pressable>
             {failed > 0 && !syncing && (
               <Pressable onPress={() => void onClearFailed()}>
@@ -229,11 +246,25 @@ export default function MoreScreen() {
   );
 }
 
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  root: { padding: 20 },
-  title: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '800', marginBottom: 16 },
-  card: { borderRadius: 16, padding: 18, marginBottom: 14 },
+  root: { padding: 20, paddingTop: 20 },
+  card: {
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 14,
+    backgroundColor: undefined,
+    ...BUBBLY_SHADOW,
+  },
+  streakCard: { borderWidth: 0 },
   cardLabel: {
     fontFamily: FONTS.body,
     fontSize: 12,
@@ -241,19 +272,19 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  streakValue: { fontFamily: FONTS.heading, fontSize: 28, fontWeight: '800' },
+  streakValue: { fontFamily: FONTS.headingBold, fontSize: 32 },
   mascot: { width: 120, height: 120, alignSelf: 'center', marginTop: 8 },
-  partnerName: { fontFamily: FONTS.heading, fontSize: 22, fontWeight: '800' },
+  partnerName: { fontFamily: FONTS.headingBold, fontSize: 24 },
   cardHint: { fontFamily: FONTS.body, fontSize: 14, marginTop: 8, lineHeight: 20 },
   syncValue: { fontFamily: FONTS.heading, fontSize: 20, fontWeight: '800' },
   syncFailed: { fontFamily: FONTS.body, fontSize: 14, marginTop: 6, lineHeight: 20 },
   retryButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderRadius: 18,
+    paddingVertical: 14,
     alignItems: 'center',
     marginTop: 12,
   },
-  retryText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
   clearText: {
     fontFamily: FONTS.body,
     fontSize: 14,
@@ -262,10 +293,11 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   rowButton: {
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    borderRadius: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     marginBottom: 12,
+    ...BUBBLY_SHADOW,
   },
   rowButtonText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
   signedInAs: { fontFamily: FONTS.body, fontSize: 14, textAlign: 'center', marginBottom: 16, marginTop: 12 },

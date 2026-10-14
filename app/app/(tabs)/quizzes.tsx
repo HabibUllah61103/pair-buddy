@@ -12,6 +12,8 @@ import { router } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { GradientHeader } from '../../src/components/gradient-header';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const PACK_COLORS: Record<string, string> = {
   fun: '#FF6B5E',
@@ -65,9 +67,14 @@ export default function QuizzesScreen() {
           router.push({ pathname: '/quiz-play', params: { category: item.category } })
         }
       >
-        <View style={[styles.cover, { backgroundColor: color }]}>
-          <Ionicons name="albums" size={28} color={tokens.white} />
-        </View>
+        <LinearGradient
+          colors={[color, color + 'CC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cover}
+        >
+          <Ionicons name="albums" size={28} color="#FFFFFF" />
+        </LinearGradient>
         <View style={styles.info}>
           <Text style={[styles.title, { color: tokens.ink }]}>{item.title}</Text>
           <Text style={[styles.subtitle, { color: tokens.muted }]}>
@@ -84,17 +91,25 @@ export default function QuizzesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <Text style={[styles.header, { color: tokens.ink }]}>Quiz Packs</Text>
-      <Text style={[styles.lede, { color: tokens.muted }]}>
-        Play through a pack together and compare answers.
-      </Text>
+      <GradientHeader
+        title="Quiz Packs"
+        subtitle="Play through a pack together and compare answers"
+        tokens={tokens}
+      />
       {loading ? (
         <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
-          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
-            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
+          <Pressable onPress={() => void load()}>
+            <LinearGradient
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.retry}
+            >
+              <Text style={styles.retryText}>Try again</Text>
+            </LinearGradient>
           </Pressable>
         </View>
       ) : (
@@ -109,38 +124,47 @@ export default function QuizzesScreen() {
   );
 }
 
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 64, paddingHorizontal: 20 },
-  header: { fontFamily: FONTS.headingBold, fontSize: 28 },
-  lede: { fontFamily: FONTS.body, fontSize: 15, marginTop: 6, marginBottom: 20 },
+  container: { flex: 1 },
   loader: { marginTop: 40 },
   center: { alignItems: 'center', marginTop: 40 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retry: {
     marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 18,
+    alignItems: 'center',
   },
-  retryText: { fontFamily: FONTS.bodyBold },
-  list: { paddingBottom: 32 },
+  retryText: { fontFamily: FONTS.bodyBold, color: '#FFFFFF', fontSize: 16 },
+  list: { paddingBottom: 32, paddingTop: 20 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 14,
+    marginHorizontal: 20,
+    ...BUBBLY_SHADOW,
   },
   cover: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
   },
   info: { flex: 1 },
-  title: { fontFamily: FONTS.bodyBold, fontSize: 17 },
+  title: { fontFamily: FONTS.headingBold, fontSize: 19 },
   subtitle: { fontFamily: FONTS.body, fontSize: 13, marginTop: 4 },
   barTrack: {
     height: 6,

@@ -24,6 +24,8 @@ import {
 } from '../../src/lib/memories';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { GradientHeader } from '../../src/components/gradient-header';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Phase = 'loading' | 'error' | 'ready';
 
@@ -126,27 +128,34 @@ export default function MemoriesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={[styles.header, { color: tokens.ink }]}>Memories</Text>
-          <Text style={[styles.lede, { color: tokens.muted }]}>Photos you have shared with each other.</Text>
-        </View>
-        <Pressable
-          style={[styles.addButton, { backgroundColor: tokens.primary }]}
-          onPress={() => void pickPhoto()}
-          accessibilityLabel="Add a memory"
-        >
-          <Ionicons name="add" size={26} color={tokens.onPrimary} />
-        </Pressable>
-      </View>
+      <GradientHeader
+        title="Memories"
+        subtitle="Photos you have shared with each other"
+        tokens={tokens}
+        right={
+          <Pressable
+            onPress={() => void pickPhoto()}
+            accessibilityLabel="Add a memory"
+          >
+            <LinearGradient
+              colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0.2)']}
+              style={styles.addButton}
+            >
+              <Ionicons name="add" size={26} color="#FFFFFF" />
+            </LinearGradient>
+          </Pressable>
+        }
+      />
 
       {phase === 'loading' ? (
         <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : phase === 'error' ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
-          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
-            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
+          <Pressable onPress={() => void load()}>
+            <LinearGradient colors={tokens.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.retry}>
+              <Text style={styles.retryText}>Try again</Text>
+            </LinearGradient>
           </Pressable>
         </View>
       ) : memories.length === 0 ? (
@@ -261,15 +270,16 @@ export default function MemoriesScreen() {
                 <Text style={[styles.closeText, { color: tokens.muted }]}>Cancel</Text>
               </Pressable>
               <Pressable
-                style={[styles.uploadButton, { backgroundColor: tokens.primary }]}
                 onPress={() => void upload()}
                 disabled={uploading}
               >
-                {uploading ? (
-                  <ActivityIndicator color={tokens.onPrimary} size="small" />
-                ) : (
-                  <Text style={[styles.uploadText, { color: tokens.onPrimary }]}>Save memory</Text>
-                )}
+                <LinearGradient colors={tokens.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.uploadButton}>
+                  {uploading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.uploadText}>Save memory</Text>
+                  )}
+                </LinearGradient>
               </Pressable>
             </View>
           </View>
@@ -279,21 +289,20 @@ export default function MemoriesScreen() {
   );
 }
 
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 64 },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  header: { fontFamily: FONTS.headingBold, fontSize: 28 },
-  lede: { fontFamily: FONTS.body, fontSize: 15, marginTop: 6 },
+  container: { flex: 1 },
   addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -301,15 +310,16 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 16 },
   retry: {
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
-  retryText: { fontFamily: FONTS.bodyBold },
+  retryText: { fontFamily: FONTS.bodyBold, color: '#FFFFFF', fontSize: 16 },
   mascot: { width: 180, height: 180, alignSelf: 'center', marginBottom: 8 },
-  emptyTitle: { fontFamily: FONTS.heading, fontSize: 20, marginTop: 16 },
+  emptyTitle: { fontFamily: FONTS.headingBold, fontSize: 24, marginTop: 16 },
   emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginTop: 8 },
-  list: { paddingHorizontal: 14, paddingBottom: 24 },
+  list: { paddingHorizontal: 14, paddingBottom: 24, paddingTop: 20 },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -319,8 +329,9 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
+    ...BUBBLY_SHADOW,
   },
   modalImage: { width: '100%', aspectRatio: 1 },
   imageFallback: { alignItems: 'center', justifyContent: 'center' },
@@ -363,11 +374,11 @@ const styles = StyleSheet.create({
   },
   sheetActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
   uploadButton: {
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     minWidth: 130,
     alignItems: 'center',
   },
-  uploadText: { fontFamily: FONTS.bodyBold },
+  uploadText: { fontFamily: FONTS.bodyBold, color: '#FFFFFF', fontSize: 16 },
 });

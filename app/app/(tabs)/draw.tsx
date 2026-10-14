@@ -22,6 +22,8 @@ import {
 } from '../../src/lib/drawings';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { GradientHeader } from '../../src/components/gradient-header';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -120,8 +122,13 @@ export default function DrawScreen() {
   const latestMine = latest !== null && myId !== null && latest.created_by === myId;
 
   return (
-    <ScrollView style={[styles.screen, { backgroundColor: tokens.background }]} contentContainerStyle={styles.content}>
-      <Text style={[styles.title, { color: tokens.ink }]}>Draw</Text>
+    <View style={[styles.screen, { backgroundColor: tokens.background }]}>
+      <GradientHeader
+        title="Draw"
+        subtitle="Sketch something sweet together"
+        tokens={tokens}
+      />
+      <ScrollView contentContainerStyle={styles.content}>
 
       <View style={[styles.canvasBox, editing && { borderWidth: 2, borderColor: tokens.primary }]}>
         <DrawingCanvas ref={canvasRef} color={color} size={size} />
@@ -174,13 +181,20 @@ export default function DrawScreen() {
         <Pressable
           onPress={send}
           disabled={sending}
-          style={[styles.sendBtn, { backgroundColor: tokens.primary }, sending && styles.sendDisabled]}
+          style={sending && styles.sendDisabled}
         >
-          {sending ? (
-            <ActivityIndicator color={tokens.onPrimary} size="small" />
-          ) : (
-            <Text style={[styles.sendText, { color: tokens.onPrimary }]}>Send</Text>
-          )}
+          <LinearGradient
+            colors={tokens.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sendBtn}
+          >
+            {sending ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.sendText}>Send</Text>
+            )}
+          </LinearGradient>
         </Pressable>
       </View>
 
@@ -250,15 +264,28 @@ export default function DrawScreen() {
         </>
       )}
       <View style={styles.spacer} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: 16 },
-  title: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '800', marginBottom: 12 },
-  canvasBox: { height: 300, borderRadius: 16, overflow: 'hidden' },
+  content: { padding: 20 },
+  canvasBox: {
+    height: 300,
+    borderRadius: 24,
+    overflow: 'hidden',
+    ...BUBBLY_SHADOW,
+  },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -267,9 +294,9 @@ const styles = StyleSheet.create({
   },
   swatches: { flexDirection: 'row', gap: 10 },
   swatch: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -285,31 +312,31 @@ const styles = StyleSheet.create({
   sizeInner: { backgroundColor: '#FFFFFF', borderRadius: 99 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
   ghostBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 18,
   },
   ghostText: { fontFamily: FONTS.body, fontWeight: '700' },
   sendBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 18,
     alignItems: 'center',
   },
   sendDisabled: { opacity: 0.6 },
-  sendText: { fontFamily: FONTS.body, fontWeight: '800', fontSize: 16 },
+  sendText: { fontFamily: FONTS.body, fontWeight: '800', fontSize: 16, color: '#FFFFFF' },
   error: { fontFamily: FONTS.body, marginTop: 10, fontSize: 14 },
   notice: { fontFamily: FONTS.body, marginTop: 10, fontSize: 14 },
   sectionTitle: {
-    fontFamily: FONTS.heading,
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: 18,
-    marginBottom: 8,
+    fontFamily: FONTS.headingBold,
+    fontSize: 22,
+    marginTop: 20,
+    marginBottom: 10,
   },
   latestCard: {
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 24,
+    padding: 16,
+    ...BUBBLY_SHADOW,
   },
   latestArt: { borderRadius: 8, backgroundColor: '#FFFFFF' },
   latestMeta: { fontFamily: FONTS.body, fontSize: 13, marginTop: 8 },
