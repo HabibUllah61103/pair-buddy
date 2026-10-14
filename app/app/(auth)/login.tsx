@@ -12,14 +12,13 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import type { AuthResult } from '../../src/lib/auth';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
 type Action = 'google' | 'apple' | 'phone';
 
 export default function LoginScreen() {
+  const { tokens } = useTheme();
   const { signInWithGoogle, signInWithApple, signInWithPhone } = useAuth();
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [phone, setPhone] = useState('');
@@ -59,14 +58,22 @@ export default function LoginScreen() {
     primary = false
   ) => (
     <Pressable
-      style={[styles.button, primary ? styles.primaryButton : styles.secondaryButton]}
+      style={[
+        styles.button,
+        { backgroundColor: primary ? tokens.primary : tokens.card },
+      ]}
       onPress={onPress}
       disabled={busy !== null}
     >
       {busy === key ? (
-        <ActivityIndicator color={primary ? COLORS.white : NAVY} />
+        <ActivityIndicator color={primary ? tokens.onPrimary : tokens.ink} />
       ) : (
-        <Text style={[styles.buttonText, primary ? styles.primaryText : styles.secondaryText]}>
+        <Text
+          style={[
+            styles.buttonText,
+            { color: primary ? tokens.onPrimary : tokens.ink },
+          ]}
+        >
           {label}
         </Text>
       )}
@@ -75,12 +82,14 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: tokens.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>Pair Buddy</Text>
-        <Text style={styles.subtitle}>Your private space for two.</Text>
+        <Text style={[styles.title, { color: tokens.ink }]}>Pair Buddy</Text>
+        <Text style={[styles.subtitle, { color: tokens.primary }]}>
+          Your private space for two.
+        </Text>
 
         <View style={styles.buttons}>
           {renderButton('google', 'Continue with Google', onGoogle, true)}
@@ -89,9 +98,12 @@ export default function LoginScreen() {
           {showPhoneInput ? (
             <View style={styles.phoneBlock}>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: tokens.card, color: tokens.ink },
+                ]}
                 placeholder="+92 300 1234567"
-                placeholderTextColor={COLORS.muted}
+                placeholderTextColor={tokens.muted}
                 keyboardType="phone-pad"
                 autoComplete="tel"
                 value={phone}
@@ -100,7 +112,9 @@ export default function LoginScreen() {
               />
               {renderButton('phone', 'Send code', onSendCode)}
               <Pressable onPress={() => setShowPhoneInput(false)} disabled={busy !== null}>
-                <Text style={styles.link}>Back to other options</Text>
+                <Text style={[styles.link, { color: tokens.ink }]}>
+                  Back to other options
+                </Text>
               </Pressable>
             </View>
           ) : (
@@ -109,14 +123,18 @@ export default function LoginScreen() {
               onPress={() => setShowPhoneInput(true)}
               disabled={busy !== null}
             >
-              <Text style={styles.link}>Continue with phone number</Text>
+              <Text style={[styles.link, { color: tokens.ink }]}>
+                Continue with phone number
+              </Text>
             </Pressable>
           )}
         </View>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? (
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+        ) : null}
 
-        <Text style={styles.footnote}>
+        <Text style={[styles.footnote, { color: tokens.muted }]}>
           By continuing you agree to keep things kind. Free forever, no paywalls.
         </Text>
       </View>
@@ -127,7 +145,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: NAVY,
   },
   inner: {
     flex: 1,
@@ -135,13 +152,12 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   title: {
-    color: COLORS.white,
+    fontFamily: FONTS.headingBold,
     fontSize: 36,
-    fontWeight: '800',
     textAlign: 'center',
   },
   subtitle: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 16,
     textAlign: 'center',
     marginTop: 8,
@@ -155,30 +171,17 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
   },
-  primaryButton: {
-    backgroundColor: TEAL,
-  },
-  secondaryButton: {
-    backgroundColor: COLORS.white,
-  },
   buttonText: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 16,
-    fontWeight: '600',
-  },
-  primaryText: {
-    color: COLORS.white,
-  },
-  secondaryText: {
-    color: NAVY,
   },
   textButton: {
     alignItems: 'center',
     paddingVertical: 10,
   },
   link: {
-    color: COLORS.white,
+    fontFamily: FONTS.bodySemi,
     fontSize: 15,
-    fontWeight: '500',
     textDecorationLine: 'underline',
     textAlign: 'center',
   },
@@ -186,21 +189,20 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   input: {
-    backgroundColor: COLORS.white,
+    fontFamily: FONTS.body,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: NAVY,
   },
   error: {
-    color: '#FF9D9D',
+    fontFamily: FONTS.body,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 16,
   },
   footnote: {
-    color: COLORS.muted,
+    fontFamily: FONTS.body,
     fontSize: 12,
     textAlign: 'center',
     marginTop: 32,
