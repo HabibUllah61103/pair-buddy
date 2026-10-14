@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { AuthProvider, useAuth } from '../src/lib/auth';
+import { ThemeProvider } from '../src/lib/theme-provider';
 import {
   extractInviteCode,
   setPendingInviteCode,
@@ -87,17 +88,19 @@ function AuthGuard({ children }: { children: ReactNode }) {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AuthGuard>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(onboarding)" />
-          <Stack.Screen name="(pairing)" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-      </AuthGuard>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(onboarding)" />
+            <Stack.Screen name="(pairing)" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </AuthGuard>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
