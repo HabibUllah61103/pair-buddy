@@ -53,6 +53,13 @@ export default function MoreScreen() {
 
       <Pressable
         style={styles.rowButton}
+        onPress={() => router.push('/discussion')}
+      >
+        <Text style={styles.rowButtonText}>Discussion</Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.rowButton}
         onPress={() => router.push('/(pairing)/invite')}
       >
         <Text style={styles.rowButtonText}>Invite partner</Text>
