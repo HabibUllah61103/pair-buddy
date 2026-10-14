@@ -4,7 +4,7 @@
       "package": "com.pairbuddy.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#123B63"
+        "backgroundColor": "#FFFFFF"
       }
     },
     "assetBundlePatterns": [
@@ -54,7 +54,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#123B63"
+      "backgroundColor": "#FFFFFF"
     },
     "userInterfaceStyle": "automatic",
     "version": "0.1.0",
