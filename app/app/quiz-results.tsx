@@ -11,6 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { answersMatch, getPackResults, packTitle, type QuestionResult } from '../src/lib/quiz';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { CelebrationBurst } from '../src/components/celebration';
 import { HeartsIllustration } from '../src/components/hearts-illustration';
 
 function ResultRow({ item }: { item: QuestionResult }) {
@@ -48,6 +49,7 @@ export default function QuizResultsScreen() {
   const [results, setResults] = useState<QuestionResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
 
   const load = useCallback(async () => {
     if (!category) return;
@@ -56,8 +58,10 @@ export default function QuizResultsScreen() {
     const res = await getPackResults(category);
     if (res.error || !res.data) {
       setError(res.error ?? 'Could not load results.');
+      setCelebrate(false);
     } else {
       setResults(res.data);
+      setCelebrate(true);
     }
     setLoading(false);
   }, [category]);
@@ -70,6 +74,7 @@ export default function QuizResultsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
       <Text style={[styles.header, { color: tokens.ink }]}>{packTitle(category ?? '')} — Results</Text>
       {loading ? (
         <ActivityIndicator color={tokens.primary} style={styles.loader} />

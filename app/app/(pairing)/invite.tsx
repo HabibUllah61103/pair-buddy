@@ -20,6 +20,7 @@ import {
 import { useTheme } from '../../src/lib/theme-provider';
 import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
+import { CelebrationBurst } from '../../src/components/celebration';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
@@ -39,6 +40,7 @@ export default function InviteScreen() {
     mode === 'dark'
       ? require('../../assets/bg-night-stars.png')
       : require('../../assets/bg-hearts-dreamy.png');
+>>>>>>> origin/main
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -117,6 +119,7 @@ export default function InviteScreen() {
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       {joined ? (
         <View style={styles.joinedWrap}>
+          <CelebrationBurst trigger={joined} colors={tokens.gradient} />
           <HeartsIllustration expression="surprised" variant="celebrate" size={160} />
           <Text style={[styles.joinedTitle, { color: tokens.ink }]}>Partner joined!</Text>
           <Text style={[styles.joinedHint, { color: tokens.muted }]}>
@@ -216,11 +219,55 @@ export default function InviteScreen() {
       )}
         </>
       )}
+      {paired && (
+        <>
+          <CelebrationBurst trigger={paired} colors={tokens.gradient} />
+          <View style={styles.pairedLayer} pointerEvents="none">
+            <RewardPop visible={paired}>
+              <View style={[styles.pairedCard, { backgroundColor: tokens.card }]}>
+                <Text style={[styles.pairedTitle, { color: tokens.ink }]}>
+                  Partner joined!
+                </Text>
+                <Text style={[styles.pairedSub, { color: tokens.muted }]}>
+                  Taking you to your space…
+                </Text>
+              </View>
+            </RewardPop>
+          </View>
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  pairedLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  pairedCard: {
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  pairedTitle: {
+    fontFamily: FONTS.headingBold,
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  pairedSub: {
+    fontFamily: FONTS.body,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     padding: 24,

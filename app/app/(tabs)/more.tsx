@@ -10,6 +10,8 @@ import { GradientHeader } from '../../src/components/gradient-header';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress, PulseView } from '../../src/components/animated';
+import { CelebrationBurst } from '../../src/components/celebration';
+import { RewardPop } from '../../src/components/reward-pop';
 import { RichIcon } from '../../src/components/rich-icon';
 import {
   clearFailed,
@@ -35,6 +37,7 @@ export default function MoreScreen() {
   const [partnerName, setPartnerName] = useState<string | null>(null);
   const [partnerLoading, setPartnerLoading] = useState(true);
   const { theme, themes, modeSetting, setThemeId, setModeSetting, tokens, mode } = useTheme();
+  const isStreakMilestone = streak !== null && streak >= 7;
 
   useEffect(() => {
     getStreak().then((r) => {
@@ -101,12 +104,21 @@ export default function MoreScreen() {
             <Text style={[styles.cardLabel, { color: tokens.primary }]}>Daily Spark streak</Text>
             {streak === null ? (
               <LoadingHeart tokens={tokens} size={24} />
+            ) : isStreakMilestone ? (
+              <RewardPop visible>
+                <Text style={[styles.streakValue, { color: tokens.ink }]}>
+                  {streak} day{streak === 1 ? '' : 's'}
+                </Text>
+              </RewardPop>
             ) : (
               <PulseView>
                 <Text style={[styles.streakValue, { color: tokens.ink }]}>
                   {streak} day{streak === 1 ? '' : 's'}
                 </Text>
               </PulseView>
+            )}
+            {isStreakMilestone && (
+              <CelebrationBurst trigger colors={tokens.gradient} />
             )}
             {streak !== null && streak >= 7 && (
               <Image

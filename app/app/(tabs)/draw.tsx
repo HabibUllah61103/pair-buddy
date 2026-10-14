@@ -28,9 +28,10 @@ import {
 } from '../../src/lib/drawings';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import GlassHeader from '../../src/components/glass-header';
+import { GradientHeader } from '../../src/components/gradient-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { AnimatedCheck } from '../../src/components/success-check';
 import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon, type RichIconName } from '../../src/components/rich-icon';
@@ -150,6 +151,7 @@ export default function DrawScreen() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
   const bgSource =
     mode === 'dark'
       ? require('../../assets/bg-night-stars.png')
@@ -210,6 +212,8 @@ export default function DrawScreen() {
         ...prev.filter((d) => d.id !== (result.data as Drawing).id),
       ]);
       setNotice('Sent to your partner.');
+      setShowCheck(true);
+      setTimeout(() => setShowCheck(false), 2600);
     } finally {
       setSending(false);
     }
@@ -256,7 +260,7 @@ export default function DrawScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GlassHeader
+      <GradientHeader
         title="Draw"
         subtitle="Sketch something sweet together"
         tokens={tokens}
@@ -496,6 +500,11 @@ export default function DrawScreen() {
       )}
       <View style={styles.spacer} />
       </ScrollView>
+      {showCheck && (
+        <View style={styles.checkLayer} pointerEvents="none">
+          <AnimatedCheck visible={showCheck} color={tokens.success} size={84} />
+        </View>
+      )}
     </View>
   );
 }
@@ -510,6 +519,11 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  checkLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bg: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.12,
