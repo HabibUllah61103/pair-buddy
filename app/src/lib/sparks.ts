@@ -124,8 +124,12 @@ export async function getTodaySpark(): Promise<PairResult<DailySpark>> {
   }
 }
 
-/** Record my answer (and optional guess of my partner's answer). Upserts. */
-export async function answerSpark(
+/**
+ * Record my answer (and optional guess of my partner's answer). Upserts.
+ * Direct write — used by the outbox replay. Screens should call
+ * answerSpark(), which queues this when offline.
+ */
+export async function answerSparkRaw(
   sparkId: string,
   answerText: string,
   guessPartnerAnswer?: string,
@@ -154,6 +158,26 @@ export async function answerSpark(
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not save your answer.') };
   }
+}
+
+/**
+ * Record my answer (and optional guess of my partner's answer). Upserts.
+ * When the device is offline the answer is queued on this device and sent
+ * when you reconnect (see docs/OFFLINE.md): the result then carries
+ * `queued: true` and a friendly `error` message, which screens already
+ * display through their existing error paths.
+ */
+export async function answerSpark(
+  sparkId: string,
+  answerText: string,
+  guessPartnerAnswer?: string,
+): Promise<PairResult<SparkAnswer> & { queued: boolean }> {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue(
+    'spark-answer',
+    { sparkId, answerText, guessPartnerAnswer: guessPartnerAnswer ?? null },
+    () => answerSparkRaw(sparkId, answerText, guessPartnerAnswer),
+  );
 }
 
 /** Spark plus both partners' answers with display names. */

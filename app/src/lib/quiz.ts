@@ -134,8 +134,12 @@ export async function getPackQuestions(
   }
 }
 
-/** Record my answer to a quiz question. Upserts on (couple, quiz, user). */
-export async function answerQuizQuestion(
+/**
+ * Record my answer to a quiz question. Upserts on (couple, quiz, user).
+ * Direct write — used by the outbox replay. Screens should call
+ * answerQuizQuestion(), which queues this when offline.
+ */
+export async function answerQuizQuestionRaw(
   quizId: string,
   answerText: string,
 ): Promise<PairResult<QuizAnswer>> {
@@ -166,6 +170,25 @@ export async function answerQuizQuestion(
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not save your answer.') };
   }
+}
+
+/**
+ * Record my answer to a quiz question. Upserts on (couple, quiz, user).
+ * When the device is offline the answer is queued on this device and sent
+ * when you reconnect (see docs/OFFLINE.md): the result then carries
+ * `queued: true` and a friendly `error` message, which screens already
+ * display through their existing error paths.
+ */
+export async function answerQuizQuestion(
+  quizId: string,
+  answerText: string,
+): Promise<PairResult<QuizAnswer> & { queued: boolean }> {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue(
+    'quiz-answer',
+    { quizId, answerText },
+    () => answerQuizQuestionRaw(quizId, answerText),
+  );
 }
 
 /**
