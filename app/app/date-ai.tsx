@@ -15,14 +15,8 @@ import {
   saveAiPlan,
   type AiDatePlan,
 } from '../src/lib/ai-dates';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A2F4D';
-const CHIP = '#24405F';
-const INPUT_BG = '#0F2540';
+import { useTheme } from '../src/lib/theme-provider';
+import { FONTS } from '../src/theme';
 
 const MOODS = ['romantic', 'fun', 'relaxed', 'adventurous'] as const;
 const BUDGETS = ['free', 'low', 'medium', 'splurge'] as const;
@@ -38,6 +32,7 @@ function toIsoDate(d: Date): string {
 }
 
 export default function DateAiScreen() {
+  const { tokens } = useTheme();
   const [mood, setMood] = useState<string | null>(null);
   const [budget, setBudget] = useState<string | null>(null);
   const [location, setLocation] = useState('');
@@ -88,95 +83,95 @@ export default function DateAiScreen() {
   }, [plan, saving, pickedDate]);
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.root}>
-      <Text style={styles.title}>AI date planner</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView style={[styles.scroll, { backgroundColor: tokens.background }]} contentContainerStyle={styles.root}>
+      <Text style={[styles.title, { color: tokens.ink }]}>AI date planner</Text>
+      <Text style={[styles.subtitle, { color: tokens.muted }]}>
         Tell us the vibe and the AI dreams up one date for the two of you.
       </Text>
 
-      <Text style={styles.sectionLabel}>Mood</Text>
+      <Text style={[styles.sectionLabel, { color: tokens.primary }]}>Mood</Text>
       <View style={styles.chipRow}>
         {MOODS.map((m) => (
           <Pressable
             key={m}
-            style={[styles.chip, mood === m && styles.chipActive]}
+            style={[styles.chip, { backgroundColor: tokens.primaryTint }, mood === m && { backgroundColor: tokens.primary }]}
             onPress={() => setMood(mood === m ? null : m)}
           >
-            <Text style={[styles.chipText, mood === m && styles.chipTextActive]}>
+            <Text style={[styles.chipText, { color: tokens.muted }, mood === m && { color: tokens.onPrimary }]}>
               {label(m)}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      <Text style={styles.sectionLabel}>Budget</Text>
+      <Text style={[styles.sectionLabel, { color: tokens.primary }]}>Budget</Text>
       <View style={styles.chipRow}>
         {BUDGETS.map((b) => (
           <Pressable
             key={b}
-            style={[styles.chip, budget === b && styles.chipActive]}
+            style={[styles.chip, { backgroundColor: tokens.primaryTint }, budget === b && { backgroundColor: tokens.primary }]}
             onPress={() => setBudget(budget === b ? null : b)}
           >
-            <Text style={[styles.chipText, budget === b && styles.chipTextActive]}>
+            <Text style={[styles.chipText, { color: tokens.muted }, budget === b && { color: tokens.onPrimary }]}>
               {label(b)}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      <Text style={styles.sectionLabel}>Location</Text>
+      <Text style={[styles.sectionLabel, { color: tokens.primary }]}>Location</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: tokens.primaryTint, color: tokens.ink }]}
         placeholder="Where are you? (optional)"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={tokens.muted}
         value={location}
         onChangeText={setLocation}
       />
 
-      <Text style={styles.sectionLabel}>Occasion</Text>
+      <Text style={[styles.sectionLabel, { color: tokens.primary }]}>Occasion</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: tokens.primaryTint, color: tokens.ink }]}
         placeholder="Anniversary, first date, just because... (optional)"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={tokens.muted}
         value={occasion}
         onChangeText={setOccasion}
       />
 
       <Pressable
-        style={[styles.generateButton, generating && styles.generateButtonDisabled]}
+        style={[styles.generateButton, { backgroundColor: tokens.primary }, generating && styles.generateButtonDisabled]}
         onPress={() => void generate()}
         disabled={generating}
       >
         {generating ? (
-          <ActivityIndicator color={COLORS.white} />
+          <ActivityIndicator color={tokens.onPrimary} />
         ) : (
-          <Text style={styles.generateText}>Generate a date</Text>
+          <Text style={[styles.generateText, { color: tokens.onPrimary }]}>Generate a date</Text>
         )}
       </Pressable>
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>}
 
       {plan && (
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Your date</Text>
-          <Text style={styles.planTitle}>{plan.title}</Text>
-          <Text style={styles.planDescription}>{plan.description}</Text>
+        <View style={[styles.card, { backgroundColor: tokens.card }]}>
+          <Text style={[styles.cardLabel, { color: tokens.primary }]}>Your date</Text>
+          <Text style={[styles.planTitle, { color: tokens.ink }]}>{plan.title}</Text>
+          <Text style={[styles.planDescription, { color: tokens.ink }]}>{plan.description}</Text>
           <View style={styles.metaRow}>
-            {plan.category && <Text style={styles.meta}>{label(plan.category)}</Text>}
-            {plan.estimatedCost ? <Text style={styles.meta}>{plan.estimatedCost}</Text> : null}
+            {plan.category && <Text style={[styles.meta, { backgroundColor: tokens.primaryTint, color: tokens.primary }]}>{label(plan.category)}</Text>}
+            {plan.estimatedCost ? <Text style={[styles.meta, { backgroundColor: tokens.primaryTint, color: tokens.primary }]}>{plan.estimatedCost}</Text> : null}
           </View>
           {plan.tips.length > 0 && (
             <View style={styles.tips}>
               {plan.tips.map((tip, i) => (
-                <Text key={i} style={styles.tip}>
+                <Text key={i} style={[styles.tip, { color: tokens.muted }]}>
                   {'\u2022'} {tip}
                 </Text>
               ))}
             </View>
           )}
 
-          <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
-            <Text style={styles.dateButtonText}>
+          <Pressable style={[styles.dateButton, { borderColor: tokens.border }]} onPress={() => setShowPicker(true)}>
+            <Text style={[styles.dateButtonText, { color: tokens.ink }]}>
               {pickedDate ? `On ${toIsoDate(pickedDate)}` : 'Pick a date (optional)'}
             </Text>
           </Pressable>
@@ -190,16 +185,16 @@ export default function DateAiScreen() {
             />
           )}
 
-          {saveError && <Text style={styles.error}>{saveError}</Text>}
+          {saveError && <Text style={[styles.error, { color: tokens.danger }]}>{saveError}</Text>}
           <Pressable
-            style={[styles.saveButton, saving && styles.generateButtonDisabled]}
+            style={[styles.saveButton, { backgroundColor: tokens.primary }, saving && styles.generateButtonDisabled]}
             onPress={() => void save()}
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color={COLORS.white} />
+              <ActivityIndicator color={tokens.onPrimary} />
             ) : (
-              <Text style={styles.saveButtonText}>Save as plan</Text>
+              <Text style={[styles.saveButtonText, { color: tokens.onPrimary }]}>Save as plan</Text>
             )}
           </Pressable>
         </View>
@@ -209,12 +204,12 @@ export default function DateAiScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: NAVY },
+  scroll: { flex: 1 },
   root: { padding: 20, paddingBottom: 40 },
-  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 6 },
-  subtitle: { color: MUTED, fontSize: 15, lineHeight: 21, marginBottom: 20 },
+  title: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '800', marginBottom: 6 },
+  subtitle: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 21, marginBottom: 20 },
   sectionLabel: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -223,69 +218,61 @@ const styles = StyleSheet.create({
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    backgroundColor: CHIP,
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  chipActive: { backgroundColor: TEAL },
-  chipText: { color: COLORS.white, fontSize: 14, fontWeight: '600' },
-  chipTextActive: { color: NAVY },
+  chipText: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '600' },
   input: {
-    backgroundColor: INPUT_BG,
+    fontFamily: FONTS.body,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    color: COLORS.white,
     fontSize: 15,
   },
   generateButton: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 22,
   },
   generateButtonDisabled: { opacity: 0.6 },
-  generateText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
-  error: { color: '#F97066', fontSize: 14, marginTop: 12, lineHeight: 20 },
-  card: { backgroundColor: CARD, borderRadius: 16, padding: 18, marginTop: 20 },
+  generateText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
+  error: { fontFamily: FONTS.body, fontSize: 14, marginTop: 12, lineHeight: 20 },
+  card: { borderRadius: 16, padding: 18, marginTop: 20 },
   cardLabel: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  planTitle: { color: COLORS.white, fontSize: 20, fontWeight: '800', marginBottom: 8 },
-  planDescription: { color: COLORS.white, fontSize: 15, lineHeight: 22 },
+  planTitle: { fontFamily: FONTS.heading, fontSize: 20, fontWeight: '800', marginBottom: 8 },
+  planDescription: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 22 },
   metaRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   meta: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 13,
     fontWeight: '600',
-    backgroundColor: CHIP,
     borderRadius: 10,
     paddingVertical: 5,
     paddingHorizontal: 10,
   },
   tips: { marginTop: 12 },
-  tip: { color: MUTED, fontSize: 14, lineHeight: 21, marginTop: 4 },
+  tip: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 21, marginTop: 4 },
   dateButton: {
     marginTop: 14,
     borderWidth: 1.5,
-    borderColor: '#3A5470',
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
   },
-  dateButtonText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
+  dateButtonText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600' },
   saveButton: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 12,
   },
-  saveButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
+  saveButtonText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
 });

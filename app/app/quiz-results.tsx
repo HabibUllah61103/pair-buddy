@@ -9,35 +9,30 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { answersMatch, getPackResults, packTitle, type QuestionResult } from '../src/lib/quiz';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const CARD = '#1B3A5F';
-const TEAL = COLORS.teal;
-const CORAL = '#FF6B5E';
-const WHITE = COLORS.white;
-const MUTED = COLORS.muted;
+import { useTheme } from '../src/lib/theme-provider';
+import { FONTS } from '../src/theme';
 
 function ResultRow({ item }: { item: QuestionResult }) {
+  const { tokens } = useTheme();
   const matched = answersMatch(item.myAnswer, item.partnerAnswer);
   return (
-    <View style={styles.card}>
-      <Text style={styles.question}>{item.quiz.title}</Text>
+    <View style={[styles.card, { backgroundColor: tokens.card }]}>
+      <Text style={[styles.question, { color: tokens.ink }]}>{item.quiz.title}</Text>
       {matched ? (
-        <View style={styles.matchChip}>
-          <Text style={styles.matchText}>You matched!</Text>
+        <View style={[styles.matchChip, { backgroundColor: tokens.primary }]}>
+          <Text style={[styles.matchText, { color: tokens.onPrimary }]}>You matched!</Text>
         </View>
       ) : null}
       <View style={styles.answers}>
         <View style={styles.answerCol}>
-          <Text style={styles.label}>You</Text>
-          <Text style={styles.answer}>
+          <Text style={[styles.label, { color: tokens.muted }]}>You</Text>
+          <Text style={[styles.answer, { color: tokens.ink }]}>
             {item.myAnswer ?? 'No answer yet'}
           </Text>
         </View>
         <View style={styles.answerCol}>
-          <Text style={styles.label}>{item.partnerName}</Text>
-          <Text style={styles.answer}>
+          <Text style={[styles.label, { color: tokens.muted }]}>{item.partnerName}</Text>
+          <Text style={[styles.answer, { color: tokens.ink }]}>
             {item.partnerAnswer ?? 'Waiting for answer'}
           </Text>
         </View>
@@ -47,6 +42,7 @@ function ResultRow({ item }: { item: QuestionResult }) {
 }
 
 export default function QuizResultsScreen() {
+  const { tokens } = useTheme();
   const { category } = useLocalSearchParams<{ category: string }>();
   const [results, setResults] = useState<QuestionResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,27 +68,27 @@ export default function QuizResultsScreen() {
   const matches = results.filter((r) => answersMatch(r.myAnswer, r.partnerAnswer)).length;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{packTitle(category ?? '')} — Results</Text>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.header, { color: tokens.ink }]}>{packTitle(category ?? '')} — Results</Text>
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={() => void load()}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
-          <Text style={styles.summary}>
+          <Text style={[styles.summary, { color: tokens.muted }]}>
             {matches} of {results.length} matched
           </Text>
           {results.map((r) => (
             <ResultRow key={r.quiz.id} item={r} />
           ))}
-          <Pressable style={styles.back} onPress={() => router.replace('/(tabs)/quizzes')}>
-            <Text style={styles.backText}>Back to packs</Text>
+          <Pressable style={[styles.back, { backgroundColor: tokens.primary }]} onPress={() => router.replace('/(tabs)/quizzes')}>
+            <Text style={[styles.backText, { color: tokens.onPrimary }]}>Back to packs</Text>
           </Pressable>
         </ScrollView>
       )}
@@ -101,42 +97,39 @@ export default function QuizResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: NAVY, paddingTop: 64, paddingHorizontal: 20 },
-  header: { color: WHITE, fontSize: 24, fontWeight: '700', marginBottom: 16 },
+  container: { flex: 1, paddingTop: 64, paddingHorizontal: 20 },
+  header: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '700', marginBottom: 16 },
   loader: { marginTop: 40 },
   center: { alignItems: 'center', marginTop: 40 },
-  error: { color: CORAL, fontSize: 15, textAlign: 'center' },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retry: {
     marginTop: 16,
-    backgroundColor: TEAL,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  retryText: { color: NAVY, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.body, fontWeight: '700' },
   list: { paddingBottom: 32 },
-  summary: { color: MUTED, fontSize: 14, marginBottom: 12 },
-  card: { backgroundColor: CARD, borderRadius: 14, padding: 16, marginBottom: 12 },
-  question: { color: WHITE, fontSize: 16, fontWeight: '600', lineHeight: 23 },
+  summary: { fontFamily: FONTS.body, fontSize: 14, marginBottom: 12 },
+  card: { borderRadius: 14, padding: 16, marginBottom: 12 },
+  question: { fontFamily: FONTS.heading, fontSize: 16, fontWeight: '600', lineHeight: 23 },
   matchChip: {
     alignSelf: 'flex-start',
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
     marginTop: 8,
   },
-  matchText: { color: NAVY, fontSize: 13, fontWeight: '700' },
+  matchText: { fontFamily: FONTS.body, fontSize: 13, fontWeight: '700' },
   answers: { flexDirection: 'row', marginTop: 12 },
   answerCol: { flex: 1, paddingRight: 8 },
-  label: { color: MUTED, fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  answer: { color: WHITE, fontSize: 14, lineHeight: 20 },
+  label: { fontFamily: FONTS.body, fontSize: 12, fontWeight: '700', marginBottom: 4 },
+  answer: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 20 },
   back: {
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
   },
-  backText: { color: NAVY, fontSize: 16, fontWeight: '700' },
+  backText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
 });

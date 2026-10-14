@@ -16,13 +16,8 @@ import {
   saveIdeaAsPlan,
   type DateIdea,
 } from '../src/lib/dates';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
-const CARD = '#1A2F4D';
-const CHIP = '#24405F';
+import { useTheme } from '../src/lib/theme-provider';
+import { FONTS } from '../src/theme';
 
 const CATEGORIES: Array<string | null> = [null, ...DATE_CATEGORIES];
 
@@ -38,6 +33,7 @@ function toIsoDate(d: Date): string {
 }
 
 export default function DateIdeasScreen() {
+  const { tokens } = useTheme();
   const [category, setCategory] = useState<string | null>(null);
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,14 +104,14 @@ export default function DateIdeasScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: tokens.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text style={styles.back}>Back</Text>
+          <Text style={[styles.back, { color: tokens.primary }]}>Back</Text>
         </Pressable>
-        <Text style={styles.title}>Date ideas</Text>
+        <Text style={[styles.title, { color: tokens.ink }]}>Date ideas</Text>
         <Pressable onPress={() => router.push('/date-plans')} hitSlop={12}>
-          <Text style={styles.back}>My plans</Text>
+          <Text style={[styles.back, { color: tokens.primary }]}>My plans</Text>
         </Pressable>
       </View>
 
@@ -123,10 +119,10 @@ export default function DateIdeasScreen() {
         {CATEGORIES.map((c) => (
           <Pressable
             key={c ?? 'all'}
-            style={[styles.chip, category === c && styles.chipActive]}
+            style={[styles.chip, { backgroundColor: tokens.primaryTint }, category === c && { backgroundColor: tokens.primary }]}
             onPress={() => setCategory(c)}
           >
-            <Text style={[styles.chipText, category === c && styles.chipTextActive]}>
+            <Text style={[styles.chipText, { color: tokens.muted }, category === c && { color: tokens.onPrimary }]}>
               {categoryLabel(c)}
             </Text>
           </Pressable>
@@ -134,12 +130,12 @@ export default function DateIdeasScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={load}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={load}>
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : (
@@ -148,17 +144,17 @@ export default function DateIdeasScreen() {
           keyExtractor={(i) => i.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <Pressable style={styles.card} onPress={() => openIdea(item)}>
-              <Text style={styles.cardCategory}>{categoryLabel(item.category)}</Text>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardDesc} numberOfLines={2}>
+            <Pressable style={[styles.card, { backgroundColor: tokens.card }]} onPress={() => openIdea(item)}>
+              <Text style={[styles.cardCategory, { color: tokens.primary }]}>{categoryLabel(item.category)}</Text>
+              <Text style={[styles.cardTitle, { color: tokens.ink }]}>{item.title}</Text>
+              <Text style={[styles.cardDesc, { color: tokens.muted }]} numberOfLines={2}>
                 {item.description}
               </Text>
             </Pressable>
           )}
           ListEmptyComponent={
             <View style={styles.center}>
-              <Text style={styles.empty}>No ideas in this category yet.</Text>
+              <Text style={[styles.empty, { color: tokens.muted }]}>No ideas in this category yet.</Text>
             </View>
           }
         />
@@ -166,15 +162,15 @@ export default function DateIdeasScreen() {
 
       <Modal visible={selected !== null} animationType="slide" transparent onRequestClose={closeModal}>
         <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: tokens.card }]}>
             {selected && (
               <>
-                <Text style={styles.cardCategory}>{categoryLabel(selected.category)}</Text>
-                <Text style={styles.modalTitle}>{selected.title}</Text>
-                <Text style={styles.modalDesc}>{selected.description}</Text>
+                <Text style={[styles.cardCategory, { color: tokens.primary }]}>{categoryLabel(selected.category)}</Text>
+                <Text style={[styles.modalTitle, { color: tokens.ink }]}>{selected.title}</Text>
+                <Text style={[styles.modalDesc, { color: tokens.muted }]}>{selected.description}</Text>
 
-                <Pressable style={styles.dateRow} onPress={() => setShowPicker(true)}>
-                  <Text style={styles.dateRowText}>
+                <Pressable style={[styles.dateRow, { backgroundColor: tokens.primaryTint }]} onPress={() => setShowPicker(true)}>
+                  <Text style={[styles.dateRowText, { color: tokens.ink }]}>
                     {pickedDate ? `Planned for ${toIsoDate(pickedDate)}` : 'Pick a date (optional)'}
                   </Text>
                 </Pressable>
@@ -188,20 +184,20 @@ export default function DateIdeasScreen() {
                   />
                 )}
 
-                {saveError && <Text style={styles.error}>{saveError}</Text>}
+                {saveError && <Text style={[styles.error, { color: tokens.danger }]}>{saveError}</Text>}
                 {saved ? (
-                  <Text style={styles.savedNote}>Saved to your plans.</Text>
+                  <Text style={[styles.savedNote, { color: tokens.primary }]}>Saved to your plans.</Text>
                 ) : (
-                  <Pressable style={styles.saveButton} onPress={save} disabled={saving}>
+                  <Pressable style={[styles.saveButton, { backgroundColor: tokens.primary }]} onPress={save} disabled={saving}>
                     {saving ? (
-                      <ActivityIndicator color={COLORS.white} />
+                      <ActivityIndicator color={tokens.onPrimary} />
                     ) : (
-                      <Text style={styles.saveButtonText}>Save as plan</Text>
+                      <Text style={[styles.saveButtonText, { color: tokens.onPrimary }]}>Save as plan</Text>
                     )}
                   </Pressable>
                 )}
                 <Pressable style={styles.closeButton} onPress={closeModal}>
-                  <Text style={styles.closeButtonText}>Close</Text>
+                  <Text style={[styles.closeButtonText, { color: tokens.muted }]}>Close</Text>
                 </Pressable>
               </>
             )}
@@ -213,7 +209,7 @@ export default function DateIdeasScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: NAVY },
+  root: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -222,8 +218,8 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 12,
   },
-  back: { color: TEAL, fontSize: 16, fontWeight: '600' },
-  title: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
+  back: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  title: { fontFamily: FONTS.heading, fontSize: 20, fontWeight: '800' },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -232,78 +228,70 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   chip: {
-    backgroundColor: CHIP,
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  chipActive: { backgroundColor: TEAL },
-  chipText: { color: MUTED, fontSize: 14, fontWeight: '600' },
-  chipTextActive: { color: COLORS.white },
+  chipText: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '600' },
   loader: { marginTop: 40 },
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   card: {
-    backgroundColor: CARD,
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
   },
   cardCategory: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  cardTitle: { color: COLORS.white, fontSize: 17, fontWeight: '700', marginBottom: 6 },
-  cardDesc: { color: MUTED, fontSize: 14, lineHeight: 20 },
+  cardTitle: { fontFamily: FONTS.heading, fontSize: 17, fontWeight: '700', marginBottom: 6 },
+  cardDesc: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 20 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  error: { color: '#E2605C', fontSize: 15, textAlign: 'center', marginBottom: 12 },
-  empty: { color: MUTED, fontSize: 15, textAlign: 'center' },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 12 },
+  empty: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retry: {
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  retryText: { color: COLORS.white, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.body, fontWeight: '700' },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: '#16324F',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     maxHeight: '85%',
   },
-  modalTitle: { color: COLORS.white, fontSize: 22, fontWeight: '800', marginBottom: 10 },
-  modalDesc: { color: MUTED, fontSize: 15, lineHeight: 22, marginBottom: 18 },
+  modalTitle: { fontFamily: FONTS.heading, fontSize: 22, fontWeight: '800', marginBottom: 10 },
+  modalDesc: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 22, marginBottom: 18 },
   dateRow: {
-    backgroundColor: CHIP,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 14,
   },
-  dateRowText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
+  dateRowText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600' },
   saveButton: {
-    backgroundColor: TEAL,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 10,
   },
-  saveButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
+  saveButtonText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
   savedNote: {
-    color: TEAL,
+    fontFamily: FONTS.body,
     fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 10,
   },
   closeButton: { paddingVertical: 10, alignItems: 'center' },
-  closeButtonText: { color: MUTED, fontSize: 15, fontWeight: '600' },
+  closeButtonText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600' },
 });

@@ -16,16 +16,11 @@ import {
   packTitle,
   type Quiz,
 } from '../src/lib/quiz';
-import { COLORS } from '../src/theme';
-
-const NAVY = COLORS.navy;
-const CARD = '#1B3A5F';
-const TEAL = COLORS.teal;
-const CORAL = '#FF6B5E';
-const WHITE = COLORS.white;
-const MUTED = COLORS.muted;
+import { useTheme } from '../src/lib/theme-provider';
+import { FONTS } from '../src/theme';
 
 export default function QuizPlayScreen() {
+  const { tokens } = useTheme();
   const { category } = useLocalSearchParams<{ category: string }>();
   const [questions, setQuestions] = useState<Quiz[]>([]);
   const [index, setIndex] = useState(0);
@@ -97,15 +92,15 @@ export default function QuizPlayScreen() {
   const current = questions[index];
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.packName}>{packTitle(category ?? '')}</Text>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.packName, { color: tokens.ink }]}>{packTitle(category ?? '')}</Text>
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error && questions.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={() => void load()}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : current ? (
@@ -114,20 +109,20 @@ export default function QuizPlayScreen() {
             {questions.map((q, i) => (
               <View
                 key={q.id}
-                style={[styles.dot, i === index && styles.dotActive]}
+                style={[styles.dot, { backgroundColor: tokens.border }, i === index && { backgroundColor: tokens.primary }]}
               />
             ))}
           </View>
-          <Text style={styles.counter}>
+          <Text style={[styles.counter, { color: tokens.muted }]}>
             Question {index + 1} of {questions.length}
           </Text>
-          <View style={styles.card}>
-            <Text style={styles.question}>{current.title}</Text>
+          <View style={[styles.card, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.question, { color: tokens.ink }]}>{current.title}</Text>
           </View>
           {saved ? (
-            <View style={styles.savedBox}>
-              <Text style={styles.savedText}>Answer saved.</Text>
-              <Text style={styles.partnerStatus}>
+            <View style={[styles.savedBox, { backgroundColor: tokens.card }]}>
+              <Text style={[styles.savedText, { color: tokens.primary }]}>Answer saved.</Text>
+              <Text style={[styles.partnerStatus, { color: tokens.muted }]}>
                 {partnerAnswered === null
                   ? ''
                   : partnerAnswered
@@ -138,36 +133,36 @@ export default function QuizPlayScreen() {
           ) : (
             <>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: tokens.primaryTint, color: tokens.ink }]}
                 placeholder="Your answer"
-                placeholderTextColor={MUTED}
+                placeholderTextColor={tokens.muted}
                 value={answer}
                 onChangeText={setAnswer}
                 multiline
               />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text> : null}
             </>
           )}
           <View style={styles.actions}>
             {saved ? (
-              <Pressable style={styles.primary} onPress={next}>
-                <Text style={styles.primaryText}>
+              <Pressable style={[styles.primary, { backgroundColor: tokens.primary }]} onPress={next}>
+                <Text style={[styles.primaryText, { color: tokens.onPrimary }]}>
                   {index + 1 >= questions.length ? 'See results' : 'Next'}
                 </Text>
               </Pressable>
             ) : (
               <>
                 <Pressable
-                  style={[styles.primary, saving && styles.disabled]}
+                  style={[styles.primary, { backgroundColor: tokens.primary }, saving && styles.disabled]}
                   onPress={() => void submit()}
                   disabled={saving}
                 >
-                  <Text style={styles.primaryText}>
+                  <Text style={[styles.primaryText, { color: tokens.onPrimary }]}>
                     {saving ? 'Saving...' : 'Save answer'}
                   </Text>
                 </Pressable>
                 <Pressable style={styles.skip} onPress={next}>
-                  <Text style={styles.skipText}>Skip</Text>
+                  <Text style={[styles.skipText, { color: tokens.muted }]}>Skip</Text>
                 </Pressable>
               </>
             )}
@@ -179,54 +174,49 @@ export default function QuizPlayScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: NAVY, paddingTop: 64, paddingHorizontal: 20 },
-  packName: { color: WHITE, fontSize: 24, fontWeight: '700', marginBottom: 16 },
+  container: { flex: 1, paddingTop: 64, paddingHorizontal: 20 },
+  packName: { fontFamily: FONTS.heading, fontSize: 24, fontWeight: '700', marginBottom: 16 },
   loader: { marginTop: 40 },
   center: { alignItems: 'center', marginTop: 40 },
-  error: { color: CORAL, fontSize: 15, textAlign: 'center', marginTop: 8 },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginTop: 8 },
   retry: {
     marginTop: 16,
-    backgroundColor: TEAL,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  retryText: { color: NAVY, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.body, fontWeight: '700' },
   body: { paddingBottom: 32 },
   dots: { flexDirection: 'row', marginBottom: 12 },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#1E3A5C',
     marginRight: 6,
   },
-  dotActive: { backgroundColor: TEAL },
-  counter: { color: MUTED, fontSize: 13, marginBottom: 12 },
-  card: { backgroundColor: CARD, borderRadius: 14, padding: 20, marginBottom: 16 },
-  question: { color: WHITE, fontSize: 19, fontWeight: '600', lineHeight: 27 },
+  counter: { fontFamily: FONTS.body, fontSize: 13, marginBottom: 12 },
+  card: { borderRadius: 14, padding: 20, marginBottom: 16 },
+  question: { fontFamily: FONTS.heading, fontSize: 19, fontWeight: '600', lineHeight: 27 },
   input: {
-    backgroundColor: CARD,
+    fontFamily: FONTS.body,
     borderRadius: 12,
-    color: WHITE,
     fontSize: 16,
     minHeight: 100,
     padding: 14,
     textAlignVertical: 'top',
   },
-  savedBox: { backgroundColor: CARD, borderRadius: 12, padding: 16 },
-  savedText: { color: TEAL, fontSize: 16, fontWeight: '700' },
-  partnerStatus: { color: MUTED, fontSize: 14, marginTop: 6 },
+  savedBox: { borderRadius: 12, padding: 16 },
+  savedText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
+  partnerStatus: { fontFamily: FONTS.body, fontSize: 14, marginTop: 6 },
   actions: { flexDirection: 'row', marginTop: 20 },
   primary: {
     flex: 1,
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   disabled: { opacity: 0.6 },
-  primaryText: { color: NAVY, fontSize: 16, fontWeight: '700' },
+  primaryText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
   skip: { marginLeft: 12, justifyContent: 'center', paddingHorizontal: 16 },
-  skipText: { color: MUTED, fontSize: 16 },
+  skipText: { fontFamily: FONTS.body, fontSize: 16 },
 });
