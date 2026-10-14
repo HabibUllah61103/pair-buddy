@@ -21,6 +21,8 @@ import {
 import { useTheme } from '../../src/lib/theme-provider';
 import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
+import { CelebrationBurst } from '../../src/components/celebration';
+import { RewardPop } from '../../src/components/reward-pop';
 
 export default function InviteScreen() {
   const { tokens } = useTheme();
@@ -30,6 +32,7 @@ export default function InviteScreen() {
   const [working, setWorking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paired, setPaired] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,15 +63,18 @@ export default function InviteScreen() {
     let alive = true;
     const timer = setInterval(async () => {
       const members = await getCoupleMemberCount();
-      if (alive && (members.data ?? 0) >= 2) {
-        router.replace('/');
+      if (alive && (members.data ?? 0) >= 2 && !paired) {
+        setPaired(true);
+        setTimeout(() => {
+          if (alive) router.replace('/');
+        }, 2400);
       }
     }, 4000);
     return () => {
       alive = false;
       clearInterval(timer);
     };
-  }, []);
+  }, [paired]);
 
   const onCopy = useCallback(async () => {
     if (!code) return;
@@ -178,11 +184,55 @@ export default function InviteScreen() {
           </Pressable>
         </View>
       )}
+      {paired && (
+        <>
+          <CelebrationBurst trigger={paired} colors={tokens.gradient} />
+          <View style={styles.pairedLayer} pointerEvents="none">
+            <RewardPop visible={paired}>
+              <View style={[styles.pairedCard, { backgroundColor: tokens.card }]}>
+                <Text style={[styles.pairedTitle, { color: tokens.ink }]}>
+                  Partner joined!
+                </Text>
+                <Text style={[styles.pairedSub, { color: tokens.muted }]}>
+                  Taking you to your space…
+                </Text>
+              </View>
+            </RewardPop>
+          </View>
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  pairedLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  pairedCard: {
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  pairedTitle: {
+    fontFamily: FONTS.headingBold,
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  pairedSub: {
+    fontFamily: FONTS.body,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     padding: 24,
