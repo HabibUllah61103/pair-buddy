@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   StyleSheet,
   Switch,
@@ -28,6 +27,7 @@ import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { FadeInView, PulseView } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 const STALENESS_STYLE: Record<Staleness, { label: string; tone: 'live' | 'recent' | 'stale' }> = {
@@ -151,7 +151,7 @@ export default function DistanceScreen() {
 
       <View style={styles.body}>
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Finding your partner\u2026" />
       ) : (
         <>
           <FadeInView delay={0}>
@@ -217,7 +217,7 @@ export default function DistanceScreen() {
                   </Text>
                 </View>
                 {busy ? (
-                  <ActivityIndicator color={tokens.primary} />
+                  <LoadingHeart tokens={tokens} size={20} />
                 ) : (
                   <Switch
                     value={sharing}
