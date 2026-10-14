@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
 import { getOnboardingComplete } from '../src/lib/onboarding';
@@ -7,6 +7,7 @@ import { getMyCoupleId, NOT_CONFIGURED } from '../src/lib/pairing';
 import { getCoupleMemberCount } from '../src/lib/sparks';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { LoadingHeart } from '../src/components/loading-heart';
 
 export default function HomeScreen() {
   const { tokens } = useTheme();
@@ -50,7 +51,7 @@ export default function HomeScreen() {
   if (authLoading || checking) {
     return (
       <View style={[styles.loading, { backgroundColor: tokens.background }]}>
-        <ActivityIndicator color={tokens.primary} />
+        <LoadingHeart tokens={tokens} message="Getting things ready\u2026" />
       </View>
     );
   }
@@ -69,7 +70,7 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.loading, { backgroundColor: tokens.background }]}>
-      <ActivityIndicator color={tokens.primary} />
+      <LoadingHeart tokens={tokens} />
     </View>
   );
 }

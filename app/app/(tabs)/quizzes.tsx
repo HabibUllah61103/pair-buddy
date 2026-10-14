@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -106,7 +105,11 @@ export default function QuizzesScreen() {
         tokens={tokens}
       />
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <View style={styles.skeletonList}>
+          <SkeletonCard tokens={tokens} />
+          <SkeletonCard tokens={tokens} />
+          <SkeletonCard tokens={tokens} />
+        </View>
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
@@ -148,6 +151,10 @@ const styles = StyleSheet.create({
     opacity: 0.12,
   },
   loader: { marginTop: 40 },
+  skeletonList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   center: { alignItems: 'center', marginTop: 40 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retryWrap: { marginTop: 16 },

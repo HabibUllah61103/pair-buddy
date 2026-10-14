@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +15,7 @@ import type { AuthResult } from '../../src/lib/auth';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 type Action = 'google' | 'apple' | 'phone';
@@ -68,7 +68,11 @@ export default function LoginScreen() {
     const disabled = busy !== null;
     const content =
       busy === key ? (
-        <ActivityIndicator color={primary ? tokens.onPrimary : tokens.ink} />
+        <LoadingHeart
+          tokens={tokens}
+          size={20}
+          color={primary ? tokens.onPrimary : tokens.ink}
+        />
       ) : (
         <Text
           style={[

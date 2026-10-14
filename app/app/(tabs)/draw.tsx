@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -26,6 +25,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { LoadingHeart } from '../../src/components/loading-heart';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -198,7 +198,7 @@ export default function DrawScreen() {
             style={styles.sendBtn}
           >
             {sending ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <LoadingHeart tokens={tokens} size={20} color="#FFFFFF" />
             ) : (
               <Text style={styles.sendText}>Send</Text>
             )}
