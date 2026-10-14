@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { getStreak } from '../../src/lib/sparks';
 import { getPartner } from '../../src/lib/location';
+import { useTheme } from '../../src/lib/theme-provider';
 import {
   clearFailed,
   getFailedCount,
@@ -25,6 +26,7 @@ export default function MoreScreen() {
   const [syncing, setSyncing] = useState(false);
   const [partnerName, setPartnerName] = useState<string | null>(null);
   const [partnerLoading, setPartnerLoading] = useState(true);
+  const { theme, themes, modeSetting, setThemeId, setModeSetting } = useTheme();
 
   useEffect(() => {
     getStreak().then((r) => {
@@ -172,6 +174,48 @@ export default function MoreScreen() {
         </Pressable>
       )}
 
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>Theme</Text>
+        <View style={styles.themeGrid}>
+          {themes.map((td) => (
+            <Pressable
+              key={td.id}
+              onPress={() => setThemeId(td.id)}
+              style={[
+                styles.themeDot,
+                { backgroundColor: td.primary },
+                td.id === theme.id && styles.themeDotSelected,
+              ]}
+              accessibilityLabel={td.name}
+            >
+              {td.id === theme.id && <Text style={styles.themeDotCheck}>✓</Text>}
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.themeName}>{theme.name}</Text>
+        <View style={styles.modeRow}>
+          {(['light', 'dark', 'system'] as const).map((m) => (
+            <Pressable
+              key={m}
+              onPress={() => setModeSetting(m)}
+              style={[
+                styles.modePill,
+                modeSetting === m && styles.modePillSelected,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.modePillText,
+                  modeSetting === m && styles.modePillTextSelected,
+                ]}
+              >
+                {m[0].toUpperCase() + m.slice(1)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       <Text style={styles.signedInAs}>
         Signed in as {user?.email ?? user?.phone ?? 'you'}
       </Text>
@@ -223,6 +267,23 @@ const styles = StyleSheet.create({
   },
   rowButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   signedInAs: { color: MUTED, fontSize: 14, textAlign: 'center', marginBottom: 16, marginTop: 12 },
+  themeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 4 },
+  themeDot: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'transparent',
+  },
+  themeDotSelected: { borderColor: '#FFFFFF' },
+  themeDotCheck: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
+  themeName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', marginTop: 12 },
+  modeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  modePill: {
+    paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999,
+    borderWidth: 1, borderColor: MUTED,
+  },
+  modePillSelected: { backgroundColor: TEAL, borderColor: TEAL },
+  modePillText: { color: MUTED, fontSize: 14, fontWeight: '600' },
+  modePillTextSelected: { color: '#062A22' },
   signOutButton: {
     borderWidth: 1.5,
     borderColor: '#3A5470',
