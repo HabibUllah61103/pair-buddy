@@ -10,11 +10,18 @@ import { FONTS } from '../src/theme';
 
 export default function HomeScreen() {
   const { tokens } = useTheme();
-  const { loading: authLoading } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [unconfigured, setUnconfigured] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+    // Signed-out users must sign in before anything else — otherwise they'd
+    // reach onboarding with no session and get stuck at "Finish".
+    if (!session) {
+      router.replace('/(auth)/login');
+      return;
+    }
     void (async () => {
       const done = await getOnboardingComplete();
       if (!done) {
@@ -38,7 +45,7 @@ export default function HomeScreen() {
       }
       router.replace('/(tabs)/spark');
     })();
-  }, []);
+  }, [session, authLoading]);
 
   if (authLoading || checking) {
     return (
