@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -31,16 +31,23 @@ function AuthGuard({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  // Read the current segments through a ref so the redirect effect below does
+  // NOT subscribe to navigation state. Subscribing (segments in the dep array)
+  // creates a feedback loop: router.replace() mutates the navigation state,
+  // which re-renders this guard, which re-runs the effect, which calls
+  // router.replace() again -> "Maximum update depth exceeded".
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
 
   useEffect(() => {
     if (loading) return;
-    const inAuthGroup = segments[0] === '(auth)';
+    const inAuthGroup = segmentsRef.current[0] === '(auth)';
     if (!session && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {
       router.replace('/');
     }
-  }, [session, loading, segments, router]);
+  }, [session, loading, router]);
 
   // Push setup: register the device token once per signed-in session so the
   // partner can be notified; reset on sign-out so the next sign-in re-registers.
