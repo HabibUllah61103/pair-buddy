@@ -26,7 +26,7 @@ import {
 } from '../../src/lib/location';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { FadeInView, PulseView } from '../../src/components/animated';
 import { RichIcon } from '../../src/components/rich-icon';
 
@@ -143,7 +143,7 @@ export default function DistanceScreen() {
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Distance"
         subtitle="How far apart are your hearts?"
         tokens={tokens}
