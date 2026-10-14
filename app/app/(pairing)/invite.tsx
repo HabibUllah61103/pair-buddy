@@ -21,6 +21,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
@@ -32,6 +33,7 @@ export default function InviteScreen() {
   const [working, setWorking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [joined, setJoined] = useState(false);
 
   const bgSource =
     mode === 'dark'
@@ -61,14 +63,17 @@ export default function InviteScreen() {
     load();
   }, [load]);
 
-  // Poll for the partner joining: once both members are in, leave the
-  // invite screen for the main app. Polling stops on unmount.
+  // Poll for the partner joining: once both members are in, celebrate,
+  // then leave the invite screen for the main app. Polling stops on unmount.
   useEffect(() => {
     let alive = true;
     const timer = setInterval(async () => {
       const members = await getCoupleMemberCount();
       if (alive && (members.data ?? 0) >= 2) {
-        router.replace('/');
+        setJoined(true);
+        setTimeout(() => {
+          if (alive) router.replace('/');
+        }, 2400);
       }
     }, 4000);
     return () => {
@@ -110,6 +115,16 @@ export default function InviteScreen() {
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
+      {joined ? (
+        <View style={styles.joinedWrap}>
+          <HeartsIllustration expression="surprised" variant="celebrate" size={160} />
+          <Text style={[styles.joinedTitle, { color: tokens.ink }]}>Partner joined!</Text>
+          <Text style={[styles.joinedHint, { color: tokens.muted }]}>
+            You&apos;re officially a pair now.
+          </Text>
+        </View>
+      ) : (
+        <>
       <FadeInView delay={0} style={styles.headerWrap}>
         <Text style={[styles.title, { color: tokens.ink }]}>Invite your partner</Text>
         <Text style={[styles.subtitle, { color: tokens.muted }]}>
@@ -199,6 +214,8 @@ export default function InviteScreen() {
           </View>
         </FadeInView>
       )}
+        </>
+      )}
     </View>
   );
 }
@@ -246,6 +263,23 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   mascot: { width: 160, height: 160, alignSelf: 'center', marginBottom: 8 },
+  joinedWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  joinedTitle: {
+    fontFamily: FONTS.headingBold,
+    fontSize: 28,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  joinedHint: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    textAlign: 'center',
+  },
   code: {
     fontFamily: FONTS.headingBold,
     fontSize: 44,

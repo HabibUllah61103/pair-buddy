@@ -25,6 +25,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
@@ -170,11 +171,7 @@ export default function MemoriesScreen() {
         </View>
       ) : memories.length === 0 ? (
         <FadeInView delay={100} style={styles.center}>
-          <Image
-            source={require('../../assets/mascot-empty.png')}
-            style={styles.mascot}
-            resizeMode="contain"
-          />
+          <HeartsIllustration expression="curious" variant="breathe" size={140} />
           <Text style={[styles.emptyTitle, { color: tokens.ink }]}>No memories yet</Text>
           <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Add your first photo together using the + button.

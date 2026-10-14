@@ -21,6 +21,7 @@ import { useTheme } from '../../src/lib/theme-provider';
 import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
@@ -216,11 +217,7 @@ export default function SparkScreen() {
       {phase === 'waiting' && (
         <FadeInView delay={80}>
           <View style={[styles.card, { backgroundColor: tokens.card }]}>
-            <Image
-              source={require('../../assets/mascot-waiting.png')}
-              style={styles.mascot}
-              resizeMode="contain"
-            />
+            <HeartsIllustration expression="sleepy" variant="breathe" size={140} />
             <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
             <Text style={[styles.waitingText, { color: tokens.muted }]}>
               Waiting for your partner. You will both see the answers as soon as

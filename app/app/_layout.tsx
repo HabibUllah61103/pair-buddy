@@ -15,8 +15,6 @@ import {
 } from '@expo-google-fonts/nunito';
 import * as Linking from 'expo-linking';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { HeartIcon } from 'phosphor-react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -33,6 +31,7 @@ import {
 import { initPush, resetPushInit } from '../src/lib/push';
 import { FONTS } from '../src/theme';
 import { FadeInView } from '../src/components/animated';
+import { HeartsIllustration } from '../src/components/hearts-illustration';
 import { LoadingHeart } from '../src/components/loading-heart';
 
 function AuthGuard({ children }: { children: ReactNode }) {
@@ -132,14 +131,7 @@ function ThemedSplash() {
     <View style={[styles.splash, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <FadeInView delay={0}>
-        <LinearGradient
-          colors={tokens.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.badge}
-        >
-          <HeartIcon size={44} color="#FFFFFF" weight="duotone" />
-        </LinearGradient>
+        <HeartsIllustration expression="happy" variant="entrance" size={200} />
       </FadeInView>
       <FadeInView delay={140}>
         <Text style={[styles.splashTitle, { color: tokens.ink, fontFamily: FONTS.headingBold }]}>
@@ -238,18 +230,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     opacity: 0.35,
-  },
-  badge: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 8,
   },
   splashTitle: {
     fontSize: 38,
