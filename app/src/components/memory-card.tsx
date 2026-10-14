@@ -1,8 +1,8 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import type { Memory } from '../lib/memories';
 import { FONTS } from '../theme';
 import { useTheme } from '../lib/theme-provider';
+import { RichIcon } from './rich-icon';
 
 export function formatMemoryDate(iso: string): string {
   const d = new Date(iso);
@@ -40,7 +40,7 @@ export default function MemoryCard({ memory, onPress }: Props) {
             { backgroundColor: tokens.wash },
           ]}
         >
-          <Ionicons name="image-outline" size={32} color={tokens.muted} />
+          <RichIcon name="image-outline" size={32} tokens={tokens} variant="plain" color={tokens.muted} />
         </View>
       )}
       <View style={styles.meta}>
