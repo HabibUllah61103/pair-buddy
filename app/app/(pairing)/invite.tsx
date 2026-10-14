@@ -16,7 +16,7 @@ import {
   inviteShareText,
   retireInvite,
   NOT_CONFIGURED,
-} from '../../src/lib/pairing';
+} from '../src/lib/pairing';
 
 const NAVY = '#123B63';
 const TEAL = '#14B8A6';
@@ -52,6 +52,22 @@ export default function InviteScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Poll for the partner joining: once both members are in, leave the
+  // invite screen for the main app. Polling stops on unmount.
+  useEffect(() => {
+    let alive = true;
+    const timer = setInterval(async () => {
+      const members = await getCoupleMemberCount();
+      if (alive && (members.data ?? 0) >= 2) {
+        router.replace('/');
+      }
+    }, 4000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   const onCopy = useCallback(async () => {
     if (!code) return;
