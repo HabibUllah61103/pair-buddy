@@ -28,6 +28,8 @@ Queued (idempotent writes — safe to replay):
 - `quiz-answer` — quiz answer (`answerQuizQuestion`, upsert on
   `couple_id,quiz_id,user_id`)
 - `plan-create` — date plan (`createPlan`)
+- `idea-plan` — save an idea as a plan (`saveIdeaAsPlan`; the idea is
+  re-fetched from the bank at replay time, when the device is back online)
 
 Reserved kinds with no handler yet (`memory-meta`, `drawing-save`,
 `location-stop`) stay queued until a handler is registered via
@@ -66,21 +68,34 @@ answers are upserts keyed on `(spark_id, user_id)` /
 Discussion messages and date plans are independent inserts, so replay cannot
 clobber the partner's data.
 
-## Adopting `runOrQueue` in a screen
+## Adopting `runOrQueue`
+
+Adoption is lib-level, not per screen. Each write function wraps its direct
+write with `runOrQueue`:
 
 ```ts
-import { runOrQueue } from '../src/lib/offline';
+// src/lib/discussion.ts
+export async function sendMessageRaw(body: string) { /* direct write */ }
 
-// before
-const r = await sendMessage(body);
-// after
-const r = await runOrQueue('discussion-send', { body }, () => sendMessage(body));
-if (r.queued) {
-  // r.error is OFFLINE_QUEUED: tell the user it will send later
+export async function sendMessage(body: string) {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue('discussion-send', { body }, () => sendMessageRaw(body));
 }
 ```
 
-The four handlers above are wired; screens adopt `runOrQueue` per write path.
+Screens keep calling the public function (`sendMessage`, `answerSpark`,
+`answerQuizQuestion`, `createPlan`, `saveIdeaAsPlan`) and get queuing
+automatically — no screen changes were needed. When a write is queued the
+result carries `queued: true` and `error` is the friendly
+"You are offline. Saved on this device..." message, which every screen
+already displays through its existing `if (res.error)` path.
+
+The outbox replay (`processOutbox`) calls the `Raw` variants directly.
+Never wrap a `Raw` function and never call a wrapped function from a
+handler: a failed replay would enqueue a duplicate op. The same applies to
+internal callers — `saveIdeaAsPlanRaw` calls `createPlanRaw`, and
+`saveAiPlan` (ai-dates.ts) intentionally calls the wrapped `createPlan` so
+a dropped connection between AI generation and saving still queues.
 
 ## Testing
 

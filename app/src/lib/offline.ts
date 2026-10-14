@@ -16,6 +16,7 @@ export type OutboxKind =
   | 'discussion-send'
   | 'memory-meta'
   | 'plan-create'
+  | 'idea-plan'
   | 'drawing-save'
   | 'location-stop';
 
@@ -118,8 +119,15 @@ export async function listPending(): Promise<OutboxOp[]> {
  * of losing it. Returns { queued: true } when the op was stored in the
  * outbox. Non-network errors are returned untouched.
  *
- * Adoption: replace `const r = await sendMessage(body)` with
- * `const r = await runOrQueue('discussion-send', { body }, () => sendMessage(body))`.
+ * Adoption is lib-level: each write function wraps its direct write, e.g.
+ * `sendMessage` calls `runOrQueue('discussion-send', { body }, () =>
+ * sendMessageRaw(body))`. Screens keep calling the public function and get
+ * queuing automatically; `r.queued` tells them the write is pending and
+ * `r.error` carries the friendly offline message.
+ *
+ * IMPORTANT: outbox replay calls the Raw variants directly (see
+ * ensureHandlers). Never wrap a Raw function or call a wrapped function
+ * from a handler — a failed replay would enqueue a duplicate op.
  */
 export async function runOrQueue<T>(
   kind: OutboxKind,
@@ -143,27 +151,37 @@ let handlersReady = false;
  * Wire each queued kind to its lib write. Lazy-required so importing
  * offline.ts never pulls the network stack (or creates import cycles) until
  * a replay actually runs.
+ *
+ * Handlers call the Raw direct-write variants, never the public wrapped
+ * functions: a wrapped function would re-queue on a failed replay and
+ * duplicate the op.
  */
 function ensureHandlers(): void {
   if (handlersReady) return;
   handlersReady = true;
-  const { sendMessage } = require('./discussion') as typeof import('./discussion');
-  const { answerSpark } = require('./sparks') as typeof import('./sparks');
-  const { answerQuizQuestion } = require('./quiz') as typeof import('./quiz');
-  const { createPlan } = require('./dates') as typeof import('./dates');
-  handlers.set('discussion-send', (p) => sendMessage(String(p.body ?? '')));
+  const { sendMessageRaw } = require('./discussion') as typeof import('./discussion');
+  const { answerSparkRaw } = require('./sparks') as typeof import('./sparks');
+  const { answerQuizQuestionRaw } = require('./quiz') as typeof import('./quiz');
+  const { createPlanRaw, saveIdeaAsPlanRaw } = require('./dates') as typeof import('./dates');
+  handlers.set('discussion-send', (p) => sendMessageRaw(String(p.body ?? '')));
   handlers.set('spark-answer', (p) =>
-    answerSpark(
+    answerSparkRaw(
       String(p.sparkId ?? ''),
       String(p.answerText ?? ''),
       p.guessPartnerAnswer == null ? undefined : String(p.guessPartnerAnswer),
     ),
   );
   handlers.set('quiz-answer', (p) =>
-    answerQuizQuestion(String(p.quizId ?? ''), String(p.answerText ?? '')),
+    answerQuizQuestionRaw(String(p.quizId ?? ''), String(p.answerText ?? '')),
   );
   handlers.set('plan-create', (p) =>
-    createPlan(p.plan as Parameters<typeof createPlan>[0]),
+    createPlanRaw(p.plan as Parameters<typeof createPlanRaw>[0]),
+  );
+  handlers.set('idea-plan', (p) =>
+    saveIdeaAsPlanRaw(
+      String(p.ideaId ?? ''),
+      (p.plannedFor as string | null | undefined) ?? null,
+    ),
   );
   // 'memory-meta', 'drawing-save', 'location-stop' are reserved kinds for
   // future handlers; ops of those kinds stay queued until one is registered.

@@ -150,8 +150,12 @@ export async function getMessages(
   }
 }
 
-/** Send a message to my couple. Empty bodies are rejected client-side. */
-export async function sendMessage(
+/**
+ * Send a message to my couple. Empty bodies are rejected client-side.
+ * Direct write — used by the outbox replay. Screens should call
+ * sendMessage(), which queues this when offline.
+ */
+export async function sendMessageRaw(
   body: string,
 ): Promise<PairResult<DiscussionMessage>> {
   const client = getClient();
@@ -175,6 +179,20 @@ export async function sendMessage(
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not send your message.') };
   }
+}
+
+/**
+ * Send a message to my couple. Empty bodies are rejected client-side.
+ * When the device is offline the message is queued on this device and sent
+ * when you reconnect (see docs/OFFLINE.md): the result then carries
+ * `queued: true` and a friendly `error` message, which the chat screen
+ * already displays through its existing error path (the draft is kept).
+ */
+export async function sendMessage(
+  body: string,
+): Promise<PairResult<DiscussionMessage> & { queued: boolean }> {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue('discussion-send', { body }, () => sendMessageRaw(body));
 }
 
 /**

@@ -117,8 +117,12 @@ export async function getPlans(): Promise<PairResult<DatePlan[]>> {
   }
 }
 
-/** Save a new plan for my couple. */
-export async function createPlan(plan: NewPlan): Promise<PairResult<DatePlan>> {
+/**
+ * Save a new plan for my couple.
+ * Direct write — used by the outbox replay. Callers should use
+ * createPlan(), which queues this when offline.
+ */
+export async function createPlanRaw(plan: NewPlan): Promise<PairResult<DatePlan>> {
   const client = getClient();
   if (!client) return { data: null, error: NOT_CONFIGURED };
   const title = plan.title.trim();
@@ -147,6 +151,20 @@ export async function createPlan(plan: NewPlan): Promise<PairResult<DatePlan>> {
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not save your plan.') };
   }
+}
+
+/**
+ * Save a new plan for my couple.
+ * When the device is offline the plan is queued on this device and saved
+ * when you reconnect (see docs/OFFLINE.md): the result then carries
+ * `queued: true` and a friendly `error` message, which screens already
+ * display through their existing error paths.
+ */
+export async function createPlan(
+  plan: NewPlan,
+): Promise<PairResult<DatePlan> & { queued: boolean }> {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue('plan-create', { plan }, () => createPlanRaw(plan));
 }
 
 /** Update a plan I created (RLS: authors only). */
@@ -189,8 +207,13 @@ export async function deletePlan(id: string): Promise<PairResult<null>> {
   }
 }
 
-/** Turn an idea from the bank into a saved plan, optionally with a date. */
-export async function saveIdeaAsPlan(
+/**
+ * Turn an idea from the bank into a saved plan, optionally with a date.
+ * Direct write — used by the outbox replay (the idea is re-fetched then,
+ * when the device is back online). Screens should call saveIdeaAsPlan(),
+ * which queues this when offline.
+ */
+export async function saveIdeaAsPlanRaw(
   ideaId: string,
   plannedFor?: string | null,
 ): Promise<PairResult<DatePlan>> {
@@ -205,7 +228,7 @@ export async function saveIdeaAsPlan(
     if (error) throw error;
     if (!data) return { data: null, error: 'That idea no longer exists.' };
     const idea = data as { title: string; description: string; category: string };
-    return createPlan({
+    return createPlanRaw({
       title: idea.title,
       description: idea.description,
       category: idea.category,
@@ -214,6 +237,25 @@ export async function saveIdeaAsPlan(
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not save that idea.') };
   }
+}
+
+/**
+ * Turn an idea from the bank into a saved plan, optionally with a date.
+ * When the device is offline the idea id is queued on this device; at
+ * replay time the idea is re-fetched and saved as a plan (see
+ * docs/OFFLINE.md). The result carries `queued: true` and a friendly
+ * `error` message when queued.
+ */
+export async function saveIdeaAsPlan(
+  ideaId: string,
+  plannedFor?: string | null,
+): Promise<PairResult<DatePlan> & { queued: boolean }> {
+  const { runOrQueue } = require('./offline') as typeof import('./offline');
+  return runOrQueue(
+    'idea-plan',
+    { ideaId, plannedFor: plannedFor ?? null },
+    () => saveIdeaAsPlanRaw(ideaId, plannedFor),
+  );
 }
 
 /** Today as YYYY-MM-DD in local time, for splitting upcoming vs past plans. */
