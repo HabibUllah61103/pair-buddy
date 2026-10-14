@@ -36,7 +36,8 @@
         {
           "color":"#123B63"
         }
-      ]
+      ],
+      "./plugins/withPairWidgets"
     ],
     "scheme":"pairbuddy",
     "slug":"pair-buddy",

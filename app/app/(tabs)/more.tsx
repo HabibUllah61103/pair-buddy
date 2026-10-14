@@ -94,6 +94,13 @@ export default function MoreScreen() {
         <Text style={styles.rowButtonText}>Discussion</Text>
       </Pressable>
 
+      <Pressable
+        style={styles.rowButton}
+        onPress={() => router.push('/widget-settings')}
+      >
+        <Text style={styles.rowButtonText}>Home widgets</Text>
+      </Pressable>
+
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Pending sync</Text>
         {pending === 0 && failed === 0 ? (
