@@ -508,12 +508,12 @@ function withWidgetPackage(config) {
           `$1${javaImport}\n`
         );
       }
-      const anchor =
-        '// Packages that cannot be autolinked yet can be added manually here';
-      if (next.includes(anchor)) {
+      const anchorRe =
+        /\/\/ Packages that cannot be autolinked yet can be added manually here(, for example:)?/;
+      if (anchorRe.test(next)) {
         next = next.replace(
-          anchor,
-          `${anchor}\n      packages.add(new PairWidgetPackage());`
+          anchorRe,
+          (m) => `${m}\n      packages.add(new PairWidgetPackage());`
         );
       } else if (next.includes('new PackageList(this).getPackages()')) {
         next = next.replace(
@@ -537,12 +537,14 @@ function withWidgetPackage(config) {
         if (lastImport >= 0) lines.splice(lastImport + 1, 0, importLine);
         next = lines.join('\n');
       }
-      const anchor =
-        '// Packages that cannot be autolinked yet can be added manually here';
-      if (next.includes(anchor)) {
+      // The stock comment may end with ", for example:"; swallow it so no
+      // dangling text remains after the inserted statement.
+      const anchorRe =
+        /\/\/ Packages that cannot be autolinked yet can be added manually here(, for example:)?/;
+      if (anchorRe.test(next)) {
         next = next.replace(
-          anchor,
-          `${anchor}\n          add(PairWidgetPackage())`
+          anchorRe,
+          (m) => `${m}\n          packages.add(PairWidgetPackage())`
         );
       } else if (next.includes('PackageList(this).packages.apply {')) {
         next = next.replace(
