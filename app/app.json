@@ -1,5 +1,4 @@
 {
-  "//eas": "TODO (release): run `eas init` (or copy the project ID from expo.dev) and replace YOUR_EAS_PROJECT_ID with the real EAS project ID. Expo push tokens do not work until this is set.",
   "expo": {
     "android": {
       "package": "com.pairbuddy.app",
@@ -16,7 +15,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "a623b480-66a6-49ef-9bdf-03b0a6fb964c"
       }
     },
     "ios": {
