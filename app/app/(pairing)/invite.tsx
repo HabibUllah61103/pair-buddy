@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Pressable,
   Share,
   StyleSheet,
   Text,
@@ -10,6 +9,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   createInvite,
   ensureInvite,
@@ -21,15 +21,22 @@ import {
 import { useTheme } from '../../src/lib/theme-provider';
 import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
+import { FadeInView, SpringPress } from '../../src/components/animated';
+import { RichIcon } from '../../src/components/rich-icon';
 
 export default function InviteScreen() {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
   const [code, setCode] = useState<string | null>(null);
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const bgSource =
+    mode === 'dark'
+      ? require('../../assets/bg-night-stars.png')
+      : require('../../assets/bg-hearts-dreamy.png');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -102,81 +109,95 @@ export default function InviteScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <Text style={[styles.title, { color: tokens.ink }]}>Invite your partner</Text>
-      <Text style={[styles.subtitle, { color: tokens.muted }]}>
-        Share this code with them. It expires in 7 days and can only be used once.
-      </Text>
+      <Image source={bgSource} style={styles.bg} resizeMode="cover" />
+      <FadeInView delay={0} style={styles.headerWrap}>
+        <Text style={[styles.title, { color: tokens.ink }]}>Invite your partner</Text>
+        <Text style={[styles.subtitle, { color: tokens.muted }]}>
+          Share this code with them. It expires in 7 days and can only be used once.
+        </Text>
+      </FadeInView>
 
       {loading ? (
         <ActivityIndicator color={tokens.primary} size="large" style={styles.loader} />
       ) : error ? (
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: tokens.card, borderColor: tokens.border },
-          ]}
-        >
-          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
-          {error === NOT_CONFIGURED ? null : (
-            <Pressable
-              style={[styles.button, { backgroundColor: tokens.primary }]}
-              onPress={load}
-            >
-              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
-                Try again
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      ) : (
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: tokens.card, borderColor: tokens.border },
-          ]}
-        >
-          <Image
-            source={require('../../assets/mascot-waiting.png')}
-            style={styles.mascot}
-            resizeMode="contain"
-          />
-          <Text style={[styles.code, { color: tokens.ink }]}>{code}</Text>
-          <View style={styles.row}>
-            <Pressable
-              style={[
-                styles.button,
-                styles.half,
-                { backgroundColor: tokens.primary },
-              ]}
-              onPress={onCopy}
-            >
-              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
-                {copied ? 'Copied!' : 'Copy code'}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.button,
-                styles.half,
-                styles.share,
-                { backgroundColor: 'transparent', borderColor: tokens.primary },
-              ]}
-              onPress={onShare}
-            >
-              <Text style={[styles.shareText, { color: tokens.primary }]}>Share</Text>
-            </Pressable>
+        <FadeInView delay={120}>
+          <View style={[styles.card, styles.cardShadow, { backgroundColor: tokens.card }]}>
+            <RichIcon name="heart" size={24} tokens={tokens} variant="soft" />
+            <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+            {error === NOT_CONFIGURED ? null : (
+              <SpringPress onPress={load}>
+                <LinearGradient
+                  colors={tokens.gradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.button, styles.buttonShadow]}
+                >
+                  <Text style={styles.buttonText}>Try again</Text>
+                </LinearGradient>
+              </SpringPress>
+            )}
           </View>
-          <Pressable onPress={onRegenerate} disabled={working} style={styles.regen}>
-            <Text style={[styles.regenText, { color: tokens.primary }]}>
-              {working ? 'Making a new code…' : 'Get a new code'}
-            </Text>
-          </Pressable>
-          <Pressable onPress={() => router.push('/(pairing)/join')} style={styles.joinLink}>
-            <Text style={[styles.joinLinkText, { color: tokens.primary }]}>
-              Have a code? Join your partner →
-            </Text>
-          </Pressable>
-        </View>
+        </FadeInView>
+      ) : (
+        <FadeInView delay={120}>
+          <View style={[styles.card, styles.cardShadow, { backgroundColor: tokens.card }]}>
+            <Image
+              source={require('../../assets/mascot-waiting.png')}
+              style={styles.mascot}
+              resizeMode="contain"
+            />
+            <Text style={[styles.code, { color: tokens.ink }]}>{code}</Text>
+            <View style={styles.row}>
+              <View style={styles.half}>
+                <SpringPress onPress={onCopy}>
+                  <LinearGradient
+                    colors={tokens.gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.button, styles.buttonShadow]}
+                  >
+                    <Text style={styles.buttonText}>
+                      {copied ? 'Copied!' : 'Copy code'}
+                    </Text>
+                  </LinearGradient>
+                </SpringPress>
+              </View>
+              <View style={styles.half}>
+                <SpringPress onPress={onShare}>
+                  <View
+                    style={[
+                      styles.button,
+                      styles.share,
+                      styles.cardShadow,
+                      { backgroundColor: tokens.primaryTint, borderColor: tokens.primary },
+                    ]}
+                  >
+                    <Text style={[styles.shareText, { color: tokens.primary }]}>Share</Text>
+                  </View>
+                </SpringPress>
+              </View>
+            </View>
+            <SpringPress onPress={working ? undefined : onRegenerate}>
+              <View style={styles.regen}>
+                {working ? (
+                  <ActivityIndicator color={tokens.primary} size="small" />
+                ) : (
+                  <Text style={[styles.regenText, { color: tokens.primary }]}>
+                    Get a new code
+                  </Text>
+                )}
+              </View>
+            </SpringPress>
+            <SpringPress onPress={() => router.push('/(pairing)/join')}>
+              <View style={styles.joinLink}>
+                <Text style={[styles.joinLinkText, { color: tokens.primary }]}>
+                  Have a code? Join your partner
+                </Text>
+                <RichIcon name="arrow-forward" size={16} tokens={tokens} variant="plain" />
+              </View>
+            </SpringPress>
+          </View>
+        </FadeInView>
       )}
     </View>
   );
@@ -188,9 +209,16 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.12,
+  },
+  headerWrap: {
+    marginBottom: 8,
+  },
   title: {
     fontFamily: FONTS.headingBold,
-    fontSize: 28,
+    fontSize: 30,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -205,17 +233,24 @@ const styles = StyleSheet.create({
     marginVertical: 40,
   },
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 24,
+    borderRadius: 24,
+    padding: 28,
     alignItems: 'center',
+    gap: 8,
+  },
+  cardShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 4,
   },
   mascot: { width: 160, height: 160, alignSelf: 'center', marginBottom: 8 },
   code: {
     fontFamily: FONTS.headingBold,
     fontSize: 44,
     letterSpacing: 10,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   row: {
     flexDirection: 'row',
@@ -226,13 +261,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   button: {
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 20,
+    paddingVertical: 15,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
   },
   buttonText: {
     fontFamily: FONTS.bodyBold,
     fontSize: 16,
+    color: '#FFFFFF',
   },
   share: {
     borderWidth: 1.5,
@@ -242,16 +286,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   regen: {
-    marginTop: 16,
-    padding: 8,
+    marginTop: 12,
+    padding: 10,
+    alignItems: 'center',
   },
   regenText: {
     fontFamily: FONTS.bodySemi,
     fontSize: 14,
   },
   joinLink: {
-    marginTop: 8,
-    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 4,
+    padding: 10,
   },
   joinLinkText: {
     fontFamily: FONTS.bodySemi,
@@ -262,7 +311,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 16,
+    marginVertical: 12,
     lineHeight: 22,
   },
 });
