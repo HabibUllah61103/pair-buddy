@@ -32,6 +32,11 @@ export type DrawingCanvasHandle = {
   clear: () => void;
   undo: () => void;
   isEmpty: () => boolean;
+  /**
+   * Replace the canvas contents with the strokes parsed from an SVG data
+   * URL previously produced by getDataUrl(). Malformed input is ignored.
+   */
+  loadFromDataUrl: (dataUrl: string) => void;
 };
 
 type Props = {
@@ -84,6 +89,33 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
         setStrokes((prev) => prev.slice(0, -1));
       },
       isEmpty: () => strokes.length === 0,
+      loadFromDataUrl: (dataUrl: string) => {
+        try {
+          const prefix = 'data:image/svg+xml;utf8,';
+          if (!dataUrl.startsWith(prefix)) return;
+          const svg = decodeURIComponent(dataUrl.slice(prefix.length));
+          const loaded: Stroke[] = [];
+          // Matches the exact <path .../> serialization in getDataUrl().
+          // The background <rect> is not a <path>, so it is skipped.
+          const pathRe = /<path\s+([^>]*?)\/>/g;
+          let m: RegExpExecArray | null;
+          while ((m = pathRe.exec(svg)) !== null) {
+            const attrs = m[1];
+            const d = /d="([^"]*)"/.exec(attrs)?.[1];
+            const colorAttr = /stroke="([^"]*)"/.exec(attrs)?.[1];
+            const widthAttr = /stroke-width="([^"]*)"/.exec(attrs)?.[1];
+            if (!d || !colorAttr || !widthAttr) continue;
+            const width = parseFloat(widthAttr);
+            if (!Number.isFinite(width)) continue;
+            loaded.push({ id: nextId.current++, d, color: colorAttr, width });
+          }
+          drawing.current = false;
+          current.current = null;
+          setStrokes(loaded);
+        } catch {
+          // Malformed data URL — leave the canvas as-is.
+        }
+      },
     }));
 
     const begin = (x: number, y: number) => {
