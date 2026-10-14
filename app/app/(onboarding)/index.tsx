@@ -1,4 +1,6 @@
 import type { JSX } from 'react';
+import { useEffect } from 'react';
+import { router } from 'expo-router';
 import { useOnboarding } from '../src/lib/onboarding';
 import type { StepProps } from '../src/components/onboarding/steps';
 import {
@@ -41,7 +43,16 @@ export default function OnboardingScreen() {
     finish,
     finishing,
     error,
+    complete,
   } = useOnboarding();
+
+  // Once finish() succeeds, leave the onboarding stack. The root index
+  // routes to the pairing invite (or the main tabs once both partners join).
+  useEffect(() => {
+    if (complete) {
+      router.replace('/');
+    }
+  }, [complete]);
 
   const Step = STEP_COMPONENTS[step];
 
