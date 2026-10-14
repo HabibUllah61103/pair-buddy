@@ -8,7 +8,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
 import { FONTS } from '../../src/theme';
@@ -81,7 +80,7 @@ export default function QuizzesScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.cover}
           >
-            <Ionicons name="albums" size={28} color="#FFFFFF" />
+            <RichIcon name="albums" size={28} tokens={tokens} variant="plain" color="#FFFFFF" />
           </LinearGradient>
           <View style={styles.info}>
             <Text style={[styles.title, { color: tokens.ink }]}>{item.title}</Text>

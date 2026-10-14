@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/lib/theme-provider';
+import { RichIcon } from '../../src/components/rich-icon';
 
 export default function TabsLayout() {
   const { tokens } = useTheme();
@@ -20,8 +20,15 @@ export default function TabsLayout() {
         name="spark"
         options={{
           title: 'Spark',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="sparkles" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="sparkles"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />
@@ -29,8 +36,15 @@ export default function TabsLayout() {
         name="quizzes"
         options={{
           title: 'Quizzes',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="albums" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="albums"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />
@@ -38,8 +52,15 @@ export default function TabsLayout() {
         name="memories"
         options={{
           title: 'Memories',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="images" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="images"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />
@@ -47,8 +68,15 @@ export default function TabsLayout() {
         name="draw"
         options={{
           title: 'Draw',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pencil" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="pencil"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />
@@ -56,8 +84,15 @@ export default function TabsLayout() {
         name="distance"
         options={{
           title: 'Distance',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="location" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="location"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />
@@ -65,8 +100,15 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: 'More',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <RichIcon
+              name="ellipsis-horizontal"
+              size={size}
+              tokens={tokens}
+              variant="plain"
+              color={color}
+              active={focused}
+            />
           ),
         }}
       />

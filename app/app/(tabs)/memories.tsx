@@ -11,7 +11,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import MemoryCard, { formatMemoryDate } from '../../src/components/memory-card';
@@ -150,7 +149,7 @@ export default function MemoriesScreen() {
               colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0.2)']}
               style={styles.addButton}
             >
-              <Ionicons name="add" size={26} color="#FFFFFF" />
+              <RichIcon name="add" size={26} tokens={tokens} variant="plain" color="#FFFFFF" />
             </LinearGradient>
           </SpringPress>
         }
