@@ -18,6 +18,7 @@ import DateTimePicker, {
 import type { OnboardingDraft } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme-provider';
 import { FadeInView, SpringPress } from '../animated';
+import { HeartsIllustration } from '../hearts-illustration';
 import type { ThemeTokens } from '../../lib/tokens';
 import { FONTS } from '../../theme';
 
@@ -160,7 +161,11 @@ export function WelcomeStep({ onNext }: StepProps) {
       nextLabel="Let's go"
       showBack={false}
       tokens={tokens}
-    />
+    >
+      <View style={styles.welcomeArt}>
+        <HeartsIllustration expression="happy" variant="entrance" size={160} />
+      </View>
+    </StepShell>
   );
 }
 
@@ -585,6 +590,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 28,
     justifyContent: 'space-between',
+  },
+  welcomeArt: {
+    alignItems: 'center',
+    marginTop: 24,
   },
   bg: {
     ...StyleSheet.absoluteFillObject,
