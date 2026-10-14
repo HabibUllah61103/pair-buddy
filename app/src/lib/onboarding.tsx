@@ -211,23 +211,16 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       });
       if (profileError) throw profileError;
 
-      const { data: couple, error: coupleError } = await client
-        .from('couples')
-        .insert({
-          anniversary_date: draftValue.anniversaryDate || null,
-          relationship_type: draftValue.relationshipType || null,
-          relationship_goal: draftValue.relationshipGoal || null,
-        })
-        .select('id')
-        .single();
+      const { data: coupleId, error: coupleError } = await client.rpc(
+        'create_couple',
+        {
+          p_anniversary_date: draftValue.anniversaryDate || null,
+          p_relationship_type: draftValue.relationshipType || null,
+          p_relationship_goal: draftValue.relationshipGoal || null,
+        }
+      );
       if (coupleError) throw coupleError;
-
-      const { error: memberError } = await client.from('couple_members').insert({
-        couple_id: (couple as { id: string }).id,
-        user_id: user.id,
-        role: 'inviter',
-      });
-      if (memberError) throw memberError;
+      if (!coupleId) throw new Error('Could not create couple.');
 
       await AsyncStorage.setItem(COMPLETE_KEY, '1');
       await AsyncStorage.removeItem(DRAFT_KEY);
