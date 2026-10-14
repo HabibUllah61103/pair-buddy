@@ -61,7 +61,7 @@ function getClient(): SupabaseClient | null {
   } catch {
     cachedClient = null;
   }
-  return cachedClient;
+  return cachedClient ?? null;
 }
 
 export function isSupabaseConfigured(): boolean {

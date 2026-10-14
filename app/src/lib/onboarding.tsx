@@ -85,7 +85,7 @@ function getClient(): SupabaseClient | null {
   } catch {
     cachedClient = null;
   }
-  return cachedClient;
+  return cachedClient ?? null;
 }
 
 type OnboardingContextValue = {
