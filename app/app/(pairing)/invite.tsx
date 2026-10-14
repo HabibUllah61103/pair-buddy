@@ -17,12 +17,11 @@ import {
   retireInvite,
   NOT_CONFIGURED,
 } from '../../src/lib/pairing';
-
-const NAVY = '#123B63';
-const TEAL = '#14B8A6';
-const CORAL = '#FF6B5E';
+import { useTheme } from '../../src/lib/theme-provider';
+import { FONTS } from '../../src/theme';
 
 export default function InviteScreen() {
+  const { tokens } = useTheme();
   const [code, setCode] = useState<string | null>(null);
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,41 +99,75 @@ export default function InviteScreen() {
   }, [code, coupleId, working]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Invite your partner</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.title, { color: tokens.ink }]}>Invite your partner</Text>
+      <Text style={[styles.subtitle, { color: tokens.muted }]}>
         Share this code with them. It expires in 7 days and can only be used once.
       </Text>
 
       {loading ? (
-        <ActivityIndicator color={TEAL} size="large" style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} size="large" style={styles.loader} />
       ) : error ? (
-        <View style={styles.card}>
-          <Text style={styles.error}>{error}</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: tokens.card, borderColor: tokens.border },
+          ]}
+        >
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
           {error === NOT_CONFIGURED ? null : (
-            <Pressable style={styles.button} onPress={load}>
-              <Text style={styles.buttonText}>Try again</Text>
+            <Pressable
+              style={[styles.button, { backgroundColor: tokens.primary }]}
+              onPress={load}
+            >
+              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
+                Try again
+              </Text>
             </Pressable>
           )}
         </View>
       ) : (
-        <View style={styles.card}>
-          <Text style={styles.code}>{code}</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: tokens.card, borderColor: tokens.border },
+          ]}
+        >
+          <Text style={[styles.code, { color: tokens.ink }]}>{code}</Text>
           <View style={styles.row}>
-            <Pressable style={[styles.button, styles.half]} onPress={onCopy}>
-              <Text style={styles.buttonText}>{copied ? 'Copied!' : 'Copy code'}</Text>
+            <Pressable
+              style={[
+                styles.button,
+                styles.half,
+                { backgroundColor: tokens.primary },
+              ]}
+              onPress={onCopy}
+            >
+              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
+                {copied ? 'Copied!' : 'Copy code'}
+              </Text>
             </Pressable>
-            <Pressable style={[styles.button, styles.half, styles.share]} onPress={onShare}>
-              <Text style={styles.shareText}>Share</Text>
+            <Pressable
+              style={[
+                styles.button,
+                styles.half,
+                styles.share,
+                { backgroundColor: 'transparent', borderColor: tokens.primary },
+              ]}
+              onPress={onShare}
+            >
+              <Text style={[styles.shareText, { color: tokens.primary }]}>Share</Text>
             </Pressable>
           </View>
           <Pressable onPress={onRegenerate} disabled={working} style={styles.regen}>
-            <Text style={styles.regenText}>
+            <Text style={[styles.regenText, { color: tokens.primary }]}>
               {working ? 'Making a new code…' : 'Get a new code'}
             </Text>
           </Pressable>
           <Pressable onPress={() => router.push('/(pairing)/join')} style={styles.joinLink}>
-            <Text style={styles.joinLinkText}>Have a code? Join your partner →</Text>
+            <Text style={[styles.joinLinkText, { color: tokens.primary }]}>
+              Have a code? Join your partner →
+            </Text>
           </Pressable>
         </View>
       )}
@@ -145,19 +178,17 @@ export default function InviteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: NAVY,
     padding: 24,
     justifyContent: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    fontFamily: FONTS.headingBold,
     fontSize: 28,
-    fontWeight: '800',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#9FB3C8',
+    fontFamily: FONTS.body,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 32,
@@ -167,15 +198,14 @@ const styles = StyleSheet.create({
     marginVertical: 40,
   },
   card: {
-    backgroundColor: '#1B4A7A',
     borderRadius: 16,
+    borderWidth: 1,
     padding: 24,
     alignItems: 'center',
   },
   code: {
-    color: '#FFFFFF',
+    fontFamily: FONTS.headingBold,
     fontSize: 44,
-    fontWeight: '800',
     letterSpacing: 10,
     marginBottom: 24,
   },
@@ -188,47 +218,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   button: {
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#062A22',
+    fontFamily: FONTS.bodyBold,
     fontSize: 16,
-    fontWeight: '700',
   },
   share: {
-    backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: TEAL,
   },
   shareText: {
-    color: TEAL,
+    fontFamily: FONTS.bodyBold,
     fontSize: 16,
-    fontWeight: '700',
   },
   regen: {
     marginTop: 16,
     padding: 8,
   },
   regenText: {
-    color: CORAL,
+    fontFamily: FONTS.bodySemi,
     fontSize: 14,
-    fontWeight: '600',
   },
   joinLink: {
     marginTop: 8,
     padding: 8,
   },
   joinLinkText: {
-    color: TEAL,
+    fontFamily: FONTS.bodySemi,
     fontSize: 14,
-    fontWeight: '600',
     textAlign: 'center',
   },
   error: {
-    color: '#FFB4AB',
+    fontFamily: FONTS.body,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 16,

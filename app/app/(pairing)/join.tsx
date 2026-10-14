@@ -10,12 +10,11 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { previewInvite, redeemInvite, NOT_CONFIGURED } from '../../src/lib/pairing';
 import { isValidInviteCode } from '../../src/lib/deeplinks';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
+import { useTheme } from '../../src/lib/theme-provider';
+import { FONTS } from '../../src/theme';
 
 export default function JoinScreen() {
+  const { tokens } = useTheme();
   const { code: paramCode } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
   const [inviterName, setInviterName] = useState<string | null>(null);
@@ -73,18 +72,25 @@ export default function JoinScreen() {
   const canJoin = isValidInviteCode(code) && !previewError && !joining;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Join your partner</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.title, { color: tokens.ink }]}>Join your partner</Text>
+      <Text style={[styles.subtitle, { color: tokens.muted }]}>
         Enter the 6-character code they shared with you.
       </Text>
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: tokens.card,
+            borderColor: tokens.border,
+            color: tokens.ink,
+          },
+        ]}
         value={code}
         onChangeText={onChangeCode}
         placeholder="ABC123"
-        placeholderTextColor="#5A7391"
+        placeholderTextColor={tokens.muted}
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={6}
@@ -92,23 +98,37 @@ export default function JoinScreen() {
 
       <View style={styles.previewRow}>
         {previewing ? (
-          <ActivityIndicator color={TEAL} size="small" />
+          <ActivityIndicator color={tokens.primary} size="small" />
         ) : inviterName ? (
-          <Text style={styles.previewOk}>Invite from {inviterName}</Text>
+          <Text style={[styles.previewOk, { color: tokens.primary }]}>
+            Invite from {inviterName}
+          </Text>
         ) : previewError ? (
-          <Text style={styles.previewError}>{previewError}</Text>
+          <Text style={[styles.previewError, { color: tokens.danger }]}>
+            {previewError}
+          </Text>
         ) : null}
       </View>
 
-      {error && error !== NOT_CONFIGURED ? <Text style={styles.error}>{error}</Text> : null}
-      {error === NOT_CONFIGURED ? <Text style={styles.error}>{NOT_CONFIGURED}</Text> : null}
+      {error && error !== NOT_CONFIGURED ? (
+        <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+      ) : null}
+      {error === NOT_CONFIGURED ? (
+        <Text style={[styles.error, { color: tokens.danger }]}>{NOT_CONFIGURED}</Text>
+      ) : null}
 
       <Pressable
-        style={[styles.button, !canJoin && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          { backgroundColor: tokens.primary },
+          !canJoin && styles.buttonDisabled,
+        ]}
         onPress={onJoin}
         disabled={!canJoin}
       >
-        <Text style={styles.buttonText}>{joining ? 'Joining…' : 'Join'}</Text>
+        <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>
+          {joining ? 'Joining…' : 'Join'}
+        </Text>
       </Pressable>
     </View>
   );
@@ -117,30 +137,27 @@ export default function JoinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: NAVY,
     padding: 24,
     justifyContent: 'center',
   },
   title: {
-    color: COLORS.white,
+    fontFamily: FONTS.headingBold,
     fontSize: 28,
-    fontWeight: '800',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#9FB3C8',
+    fontFamily: FONTS.body,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,
   },
   input: {
-    backgroundColor: '#1B4A7A',
     borderRadius: 12,
-    color: COLORS.white,
+    borderWidth: 1,
+    fontFamily: FONTS.headingBold,
     fontSize: 28,
-    fontWeight: '800',
     letterSpacing: 8,
     textAlign: 'center',
     paddingVertical: 18,
@@ -152,23 +169,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   previewOk: {
-    color: TEAL,
+    fontFamily: FONTS.bodySemi,
     fontSize: 15,
-    fontWeight: '600',
   },
   previewError: {
-    color: '#FFB4AB',
+    fontFamily: FONTS.body,
     fontSize: 14,
   },
   error: {
-    color: '#FFB4AB',
+    fontFamily: FONTS.body,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
   },
   button: {
-    backgroundColor: TEAL,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -178,8 +193,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   buttonText: {
-    color: '#062A22',
+    fontFamily: FONTS.bodyBold,
     fontSize: 17,
-    fontWeight: '700',
   },
 });
