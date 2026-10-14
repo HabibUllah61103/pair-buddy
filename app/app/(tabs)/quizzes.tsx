@@ -10,26 +10,21 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
-import { COLORS } from '../../src/theme';
-
-const NAVY = COLORS.navy;
-const CARD = '#1B3A5F';
-const TEAL = COLORS.teal;
-const CORAL = '#FF6B5E';
-const WHITE = COLORS.white;
-const MUTED = COLORS.muted;
+import { FONTS } from '../../src/theme';
+import { useTheme } from '../../src/lib/theme-provider';
 
 const PACK_COLORS: Record<string, string> = {
-  fun: CORAL,
+  fun: '#FF6B5E',
   deep: '#7C6CF0',
   memories: '#F2A93B',
-  dreams: TEAL,
+  dreams: '#14B8A6',
   'daily-life': '#4FA3E3',
 };
 
 type PackWithProgress = QuizPack & { answeredBoth: number };
 
 export default function QuizzesScreen() {
+  const { tokens } = useTheme();
   const [packs, setPacks] = useState<PackWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,44 +57,44 @@ export default function QuizzesScreen() {
   const renderPack = ({ item }: { item: PackWithProgress }) => {
     const pct =
       item.questionCount > 0 ? item.answeredBoth / item.questionCount : 0;
-    const color = PACK_COLORS[item.category] ?? TEAL;
+    const color = PACK_COLORS[item.category] ?? tokens.primary;
     return (
       <Pressable
-        style={styles.card}
+        style={[styles.card, { backgroundColor: tokens.card }]}
         onPress={() =>
           router.push({ pathname: '/quiz-play', params: { category: item.category } })
         }
       >
         <View style={[styles.cover, { backgroundColor: color }]}>
-          <Ionicons name="albums" size={28} color={WHITE} />
+          <Ionicons name="albums" size={28} color={tokens.white} />
         </View>
         <View style={styles.info}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: tokens.ink }]}>{item.title}</Text>
+          <Text style={[styles.subtitle, { color: tokens.muted }]}>
             {item.questionCount} questions · {item.answeredBoth} answered together
           </Text>
-          <View style={styles.barTrack}>
-            <View style={[styles.barFill, { width: `${Math.round(pct * 100)}%` }]} />
+          <View style={[styles.barTrack, { backgroundColor: tokens.background }]}>
+            <View style={[styles.barFill, { backgroundColor: tokens.primary, width: `${Math.round(pct * 100)}%` }]} />
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={MUTED} />
+        <Ionicons name="chevron-forward" size={20} color={tokens.muted} />
       </Pressable>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Quiz Packs</Text>
-      <Text style={styles.lede}>
+    <View style={[styles.container, { backgroundColor: tokens.background }]}>
+      <Text style={[styles.header, { color: tokens.ink }]}>Quiz Packs</Text>
+      <Text style={[styles.lede, { color: tokens.muted }]}>
         Play through a pack together and compare answers.
       </Text>
       {loading ? (
-        <ActivityIndicator color={TEAL} style={styles.loader} />
+        <ActivityIndicator color={tokens.primary} style={styles.loader} />
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={() => void load()}>
-            <Text style={styles.retryText}>Try again</Text>
+          <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
+          <Pressable style={[styles.retry, { backgroundColor: tokens.primary }]} onPress={() => void load()}>
+            <Text style={[styles.retryText, { color: tokens.onPrimary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : (
@@ -115,25 +110,23 @@ export default function QuizzesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: NAVY, paddingTop: 64, paddingHorizontal: 20 },
-  header: { color: WHITE, fontSize: 28, fontWeight: '700' },
-  lede: { color: MUTED, fontSize: 15, marginTop: 6, marginBottom: 20 },
+  container: { flex: 1, paddingTop: 64, paddingHorizontal: 20 },
+  header: { fontFamily: FONTS.headingBold, fontSize: 28 },
+  lede: { fontFamily: FONTS.body, fontSize: 15, marginTop: 6, marginBottom: 20 },
   loader: { marginTop: 40 },
   center: { alignItems: 'center', marginTop: 40 },
-  error: { color: CORAL, fontSize: 15, textAlign: 'center' },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
   retry: {
     marginTop: 16,
-    backgroundColor: TEAL,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  retryText: { color: NAVY, fontWeight: '700' },
+  retryText: { fontFamily: FONTS.bodyBold },
   list: { paddingBottom: 32 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD,
     borderRadius: 14,
     padding: 14,
     marginBottom: 12,
@@ -147,14 +140,13 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   info: { flex: 1 },
-  title: { color: WHITE, fontSize: 17, fontWeight: '700' },
-  subtitle: { color: MUTED, fontSize: 13, marginTop: 4 },
+  title: { fontFamily: FONTS.bodyBold, fontSize: 17 },
+  subtitle: { fontFamily: FONTS.body, fontSize: 13, marginTop: 4 },
   barTrack: {
     height: 6,
-    backgroundColor: NAVY,
     borderRadius: 3,
     marginTop: 8,
     overflow: 'hidden',
   },
-  barFill: { height: 6, backgroundColor: TEAL, borderRadius: 3 },
+  barFill: { height: 6, borderRadius: 3 },
 });
