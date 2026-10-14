@@ -40,10 +40,14 @@ export const COLORS = {
 
 export type ColorName = keyof typeof COLORS;
 
-/** System font stack; Pair Buddy ships no custom fonts. */
+/** Brand fonts: Fredoka for headings, Nunito for body. Loaded in app/_layout.tsx. */
 export const FONTS = {
-  body: 'System',
-  heading: 'System',
+  body: 'Nunito_400Regular',
+  bodySemi: 'Nunito_600SemiBold',
+  bodyBold: 'Nunito_700Bold',
+  bodyExtra: 'Nunito_800ExtraBold',
+  heading: 'Fredoka_600SemiBold',
+  headingBold: 'Fredoka_700Bold',
 } as const;
 
 export const FONT_WEIGHTS = {
