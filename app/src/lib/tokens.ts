@@ -40,6 +40,10 @@ export interface ThemeTokens {
   white: string;
   /** Soft wash behind hero sections (tinted background). */
   wash: string;
+  /** Gradient colors for headers/hero sections [start, end]. */
+  gradient: [string, string];
+  /** Soft gradient for cards [start, end]. */
+  gradientSoft: [string, string];
 }
 
 const INK_LIGHT = '#1A2F4D';
@@ -65,6 +69,8 @@ export function buildTokens(def: ThemeDef, mode: ThemeMode): ThemeTokens {
       warning: '#F5B942',
       white: '#FFFFFF',
       wash: tint(p, 0.07),
+      gradient: [p, tint(p, 0.35)],
+      gradientSoft: [tint(p, 0.06), '#FFFFFF'],
     };
   }
   const primaryBright = tint(p, 0.82);
@@ -83,5 +89,7 @@ export function buildTokens(def: ThemeDef, mode: ThemeMode): ThemeTokens {
     warning: '#F5B942',
     white: '#FFFFFF',
     wash: mix(p, '#17121F', 0.16),
+    gradient: [tint(p, 0.75), p],
+    gradientSoft: [mix(p, '#201B2A', 0.12), mix(p, '#201B2A', 0.06)],
   };
 }
