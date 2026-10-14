@@ -3,17 +3,17 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { getStreak } from '../../src/lib/sparks';
+import { getPartner } from '../../src/lib/location';
 import {
   clearFailed,
   getFailedCount,
   getPendingCount,
   retryOutbox,
 } from '../../src/lib/sync';
-import { COLORS } from '../../src/theme';
 
-const NAVY = COLORS.navy;
-const TEAL = COLORS.teal;
-const MUTED = COLORS.muted;
+const NAVY = '#123B63';
+const TEAL = '#14B8A6';
+const MUTED = '#8AA0B8';
 const CARD = '#1A3A5C';
 const WARN = '#E8A13D';
 
@@ -23,6 +23,8 @@ export default function MoreScreen() {
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  const [partnerName, setPartnerName] = useState<string | null>(null);
+  const [partnerLoading, setPartnerLoading] = useState(true);
 
   useEffect(() => {
     getStreak().then((r) => {
@@ -38,6 +40,11 @@ export default function MoreScreen() {
   useFocusEffect(
     useCallback(() => {
       void refreshSync();
+      setPartnerLoading(true);
+      getPartner().then((r) => {
+        setPartnerName(r.data?.name ?? null);
+        setPartnerLoading(false);
+      });
     }, [refreshSync]),
   );
 
@@ -146,12 +153,24 @@ export default function MoreScreen() {
         </Text>
       </View>
 
-      <Pressable
-        style={styles.rowButton}
-        onPress={() => router.push('/(pairing)/invite')}
-      >
-        <Text style={styles.rowButtonText}>Invite partner</Text>
-      </Pressable>
+      {partnerLoading ? (
+        <View style={styles.card}>
+          <ActivityIndicator color={TEAL} />
+        </View>
+      ) : partnerName ? (
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Your partner</Text>
+          <Text style={styles.partnerName}>{partnerName}</Text>
+          <Text style={styles.cardHint}>Paired and sharing Pair Buddy together.</Text>
+        </View>
+      ) : (
+        <Pressable
+          style={styles.rowButton}
+          onPress={() => router.push('/(pairing)/invite')}
+        >
+          <Text style={styles.rowButtonText}>Invite partner</Text>
+        </Pressable>
+      )}
 
       <Text style={styles.signedInAs}>
         Signed in as {user?.email ?? user?.phone ?? 'you'}
@@ -166,7 +185,7 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: NAVY },
   root: { padding: 20 },
-  title: { color: COLORS.white, fontSize: 24, fontWeight: '800', marginBottom: 16 },
+  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginBottom: 16 },
   card: { backgroundColor: CARD, borderRadius: 16, padding: 18, marginBottom: 14 },
   cardLabel: {
     color: TEAL,
@@ -175,9 +194,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  streakValue: { color: COLORS.white, fontSize: 28, fontWeight: '800' },
+  streakValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
+  partnerName: { color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
   cardHint: { color: MUTED, fontSize: 14, marginTop: 8, lineHeight: 20 },
-  syncValue: { color: COLORS.white, fontSize: 20, fontWeight: '800' },
+  syncValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
   syncFailed: { color: WARN, fontSize: 14, marginTop: 6, lineHeight: 20 },
   retryButton: {
     backgroundColor: TEAL,
@@ -186,7 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
-  retryText: { color: COLORS.white, fontSize: 15, fontWeight: '700' },
+  retryText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   clearText: {
     color: MUTED,
     fontSize: 14,
@@ -201,7 +221,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginBottom: 12,
   },
-  rowButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
+  rowButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   signedInAs: { color: MUTED, fontSize: 14, textAlign: 'center', marginBottom: 16, marginTop: 12 },
   signOutButton: {
     borderWidth: 1.5,
@@ -210,5 +230,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  signOutText: { color: COLORS.white, fontSize: 15, fontWeight: '600' },
+  signOutText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
 });
