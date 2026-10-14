@@ -151,7 +151,11 @@ export default function MemoriesScreen() {
         </View>
       ) : memories.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="images-outline" size={48} color={tokens.muted} />
+          <Image
+            source={require('../../assets/mascot-empty.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
           <Text style={[styles.emptyTitle, { color: tokens.ink }]}>No memories yet</Text>
           <Text style={[styles.emptyHint, { color: tokens.muted }]}>
             Add your first photo together using the + button.
@@ -302,6 +306,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   retryText: { fontFamily: FONTS.bodyBold },
+  mascot: { width: 180, height: 180, alignSelf: 'center', marginBottom: 8 },
   emptyTitle: { fontFamily: FONTS.heading, fontSize: 20, marginTop: 16 },
   emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginTop: 8 },
   list: { paddingHorizontal: 14, paddingBottom: 24 },

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -185,6 +186,11 @@ export default function SparkScreen() {
 
       {phase === 'waiting' && (
         <View style={[styles.card, { backgroundColor: tokens.card }]}>
+          <Image
+            source={require('../../assets/mascot-waiting.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
           <Text style={[styles.waitingTitle, { color: tokens.ink }]}>Answer sent</Text>
           <Text style={[styles.waitingText, { color: tokens.muted }]}>
             Waiting for your partner. You will both see the answers as soon as
@@ -288,6 +294,7 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.5 },
   buttonText: { fontFamily: FONTS.bodyBold, fontSize: 16 },
   errorText: { fontFamily: FONTS.body, fontSize: 14, textAlign: 'center', marginBottom: 12 },
+  mascot: { width: 140, height: 140, alignSelf: 'center', marginBottom: 8 },
   waitingTitle: { fontFamily: FONTS.heading, fontSize: 18, marginBottom: 8 },
   waitingText: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 22 },
   answerBlock: { marginTop: 14 },

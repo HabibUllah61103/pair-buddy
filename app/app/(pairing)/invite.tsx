@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   Share,
   StyleSheet,
@@ -134,6 +135,11 @@ export default function InviteScreen() {
             { backgroundColor: tokens.card, borderColor: tokens.border },
           ]}
         >
+          <Image
+            source={require('../assets/mascot-waiting.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
           <Text style={[styles.code, { color: tokens.ink }]}>{code}</Text>
           <View style={styles.row}>
             <Pressable
@@ -204,6 +210,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
   },
+  mascot: { width: 160, height: 160, alignSelf: 'center', marginBottom: 8 },
   code: {
     fontFamily: FONTS.headingBold,
     fontSize: 44,
