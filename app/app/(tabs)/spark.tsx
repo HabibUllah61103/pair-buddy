@@ -20,6 +20,8 @@ import {
 } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
+import { GradientHeader } from '../../src/components/gradient-header';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Phase = 'loading' | 'error' | 'answer' | 'waiting' | 'results';
 
@@ -121,8 +123,15 @@ export default function SparkScreen() {
     return (
       <View style={[styles.center, { backgroundColor: tokens.background }]}>
         <Text style={[styles.errorText, { color: tokens.danger }]}>{error ?? 'Something went wrong.'}</Text>
-        <Pressable style={[styles.button, { backgroundColor: tokens.primary }]} onPress={handleRetry}>
-          <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>Try again</Text>
+        <Pressable onPress={handleRetry}>
+          <LinearGradient
+            colors={tokens.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Try again</Text>
+          </LinearGradient>
         </Pressable>
       </View>
     );
@@ -132,18 +141,22 @@ export default function SparkScreen() {
   const partnerAnswer = answers.find((a) => a.user_id !== myUserId) ?? null;
 
   return (
-    <ScrollView style={[styles.root, { backgroundColor: tokens.background }]} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.headerTitle, { color: tokens.ink }]}>Daily Spark</Text>
-        {streak > 0 && (
-          <View style={[styles.streakBadge, { backgroundColor: tokens.card }]}>
-            <Text style={[styles.streakText, { color: tokens.primary }]}>
-              {streak} day{streak === 1 ? '' : 's'} in a row
-            </Text>
-          </View>
-        )}
-      </View>
-
+    <View style={[styles.root, { backgroundColor: tokens.background }]}>
+      <GradientHeader
+        title="Daily Spark"
+        subtitle="One question a day, answered together"
+        tokens={tokens}
+        right={
+          streak > 0 ? (
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakText}>
+                {streak} day{streak === 1 ? '' : 's'} in a row
+              </Text>
+            </View>
+          ) : undefined
+        }
+      />
+    <ScrollView contentContainerStyle={styles.content}>
       <View style={[styles.questionCard, { backgroundColor: tokens.card }]}>
         <Text style={[styles.questionLabel, { color: tokens.primary }]}>Today&apos;s question</Text>
         <Text style={[styles.questionText, { color: tokens.ink }]}>{spark?.question_text}</Text>
@@ -171,15 +184,22 @@ export default function SparkScreen() {
           />
           {error && <Text style={[styles.errorText, { color: tokens.danger }]}>{error}</Text>}
           <Pressable
-            style={[styles.button, { backgroundColor: tokens.primary }, (!answerText.trim() || saving) && styles.buttonDisabled]}
             onPress={handleSubmit}
             disabled={!answerText.trim() || saving}
+            style={(!answerText.trim() || saving) && styles.buttonDisabled}
           >
-            {saving ? (
-              <ActivityIndicator color={tokens.onPrimary} />
-            ) : (
-              <Text style={[styles.buttonText, { color: tokens.onPrimary }]}>Send answer</Text>
-            )}
+            <LinearGradient
+              colors={tokens.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
+            >
+              {saving ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Send answer</Text>
+              )}
+            </LinearGradient>
           </Pressable>
         </View>
       )}
@@ -233,8 +253,17 @@ export default function SparkScreen() {
         </View>
       )}
     </ScrollView>
+    </View>
   );
 }
+
+const BUBBLY_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
@@ -245,23 +274,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  headerTitle: { fontFamily: FONTS.headingBold, fontSize: 24 },
   streakBadge: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  streakText: { fontFamily: FONTS.bodyBold, fontSize: 13 },
+  streakText: { fontFamily: FONTS.bodyBold, fontSize: 13, color: '#FFFFFF' },
   questionCard: {
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 20,
     marginBottom: 16,
+    ...BUBBLY_SHADOW,
   },
   questionLabel: {
     fontFamily: FONTS.bodyBold,
@@ -271,9 +295,10 @@ const styles = StyleSheet.create({
   },
   questionText: { fontFamily: FONTS.bodySemi, fontSize: 19, lineHeight: 27 },
   card: {
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 24,
+    padding: 20,
     marginBottom: 14,
+    ...BUBBLY_SHADOW,
   },
   label: { fontFamily: FONTS.bodySemi, fontSize: 13, marginBottom: 8, marginTop: 4 },
   input: {
@@ -286,16 +311,16 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: 18,
+    paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { fontFamily: FONTS.bodyBold, fontSize: 16 },
+  buttonText: { fontFamily: FONTS.bodyBold, fontSize: 16, color: '#FFFFFF' },
   errorText: { fontFamily: FONTS.body, fontSize: 14, textAlign: 'center', marginBottom: 12 },
   mascot: { width: 140, height: 140, alignSelf: 'center', marginBottom: 8 },
-  waitingTitle: { fontFamily: FONTS.heading, fontSize: 18, marginBottom: 8 },
+  waitingTitle: { fontFamily: FONTS.headingBold, fontSize: 22, marginBottom: 8 },
   waitingText: { fontFamily: FONTS.body, fontSize: 15, lineHeight: 22 },
   answerBlock: { marginTop: 14 },
   answerName: { fontFamily: FONTS.bodyBold, fontSize: 13, marginBottom: 4 },
