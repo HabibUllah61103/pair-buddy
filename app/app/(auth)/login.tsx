@@ -10,8 +10,8 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '../src/lib/auth';
-import type { AuthResult } from '../src/lib/auth';
+import { useAuth } from '../../src/lib/auth';
+import type { AuthResult } from '../../src/lib/auth';
 import { COLORS } from '../../src/theme';
 
 const NAVY = COLORS.navy;
