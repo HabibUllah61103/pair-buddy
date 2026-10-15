@@ -1,5 +1,5 @@
 import { BlurView } from 'expo-blur';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTheme } from '../../src/lib/theme-provider';
 import { RichIcon } from '../../src/components/rich-icon';
@@ -13,11 +13,24 @@ export default function TabsLayout() {
         tabBarActiveTintColor: tokens.primary,
         tabBarInactiveTintColor: tokens.muted,
         tabBarBackground: () => (
-          <BlurView
-            intensity={80}
-            tint={mode === 'dark' ? 'dark' : 'light'}
-            style={StyleSheet.absoluteFillObject}
-          />
+          <View style={StyleSheet.absoluteFillObject}>
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                {
+                  backgroundColor:
+                    mode === 'dark'
+                      ? 'rgba(22, 17, 28, 0.92)'
+                      : 'rgba(255, 255, 255, 0.92)',
+                },
+              ]}
+            />
+            <BlurView
+              intensity={60}
+              tint={mode === 'dark' ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFillObject}
+            />
+          </View>
         ),
         tabBarStyle: {
           backgroundColor: 'transparent',
