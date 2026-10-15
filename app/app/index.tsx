@@ -97,7 +97,7 @@ export default function HomeScreen() {
   if (authLoading || checking) {
     return (
       <View style={[styles.loading, { backgroundColor: tokens.background }]}>
-        <LoadingHeart tokens={tokens} message="Getting things ready\u2026" />
+        <LoadingHeart tokens={tokens} size={56} message="Getting things ready…" />
       </View>
     );
   }

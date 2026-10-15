@@ -140,7 +140,7 @@ export default function InviteScreen() {
       </FadeInView>
 
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Preparing your invite\u2026" />
+        <LoadingHeart tokens={tokens} size={56} message="Preparing your invite…" />
       ) : error ? (
         <FadeInView delay={120}>
           <View style={[styles.card, styles.cardShadow, { backgroundColor: tokens.card }]}>

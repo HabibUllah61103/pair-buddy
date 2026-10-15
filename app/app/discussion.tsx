@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -34,6 +35,7 @@ import {
 } from '../src/lib/discussion';
 import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
+import { giphyConfigured, searchStickers, trendingStickers, type GiphySticker } from '../src/lib/giphy';
 import { CoupleIllustration } from '../src/components/couple-illustration';
 import { LoadingHeart } from '../src/components/loading-heart';
 import { RichIcon } from '../src/components/rich-icon';
@@ -54,6 +56,8 @@ const STICKERS = [
 ] as const;
 
 function stickerSource(name: string) {
+  // GIPHY stickers are stored as full URLs in the body.
+  if (name.startsWith('http')) return { uri: name };
   return STICKERS.find((s) => s.name === name)?.source ?? STICKERS[0].source;
 }
 
@@ -365,10 +369,12 @@ function MessageBubble({
 export default function DiscussionScreen() {
   const router = useRouter();
   const { tokens } = useTheme();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<DiscussionMessage[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [partnerName, setPartnerName] = useState('Partner');
+  const [partnerAvatar, setPartnerAvatar] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
@@ -378,6 +384,10 @@ export default function DiscussionScreen() {
   const [actionMessage, setActionMessage] = useState<DiscussionMessage | null>(null);
   const [reactMessage, setReactMessage] = useState<DiscussionMessage | null>(null);
   const [stickerOpen, setStickerOpen] = useState(false);
+  const [stickerTab, setStickerTab] = useState<'hearts' | 'giphy'>('hearts');
+  const [giphyStickers, setGiphyStickers] = useState<GiphySticker[]>([]);
+  const [giphyQuery, setGiphyQuery] = useState('');
+  const [giphyLoading, setGiphyLoading] = useState(false);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordSecs, setRecordSecs] = useState(0);
@@ -410,6 +420,7 @@ export default function DiscussionScreen() {
     if (partner.data) {
       setPartnerId(partner.data.id);
       setPartnerName(partner.data.name);
+      setPartnerAvatar(partner.data.avatar_url);
     }
     setLoading(false);
   }, []);
@@ -516,6 +527,28 @@ export default function DiscussionScreen() {
     },
     [replyTo, insertMessage],
   );
+
+  // GIPHY stickers: load trending when the tab opens, search on demand.
+  const loadGiphyTrending = useCallback(async () => {
+    if (!giphyConfigured()) return;
+    setGiphyLoading(true);
+    const stickers = await trendingStickers();
+    setGiphyStickers(stickers);
+    setGiphyLoading(false);
+  }, []);
+
+  const onGiphySearch = useCallback(async () => {
+    setGiphyLoading(true);
+    const stickers = await searchStickers(giphyQuery);
+    setGiphyStickers(stickers);
+    setGiphyLoading(false);
+  }, [giphyQuery]);
+
+  const openStickerPicker = useCallback(() => {
+    setStickerTab('hearts');
+    setStickerOpen(true);
+    if (giphyConfigured()) void loadGiphyTrending();
+  }, [loadGiphyTrending]);
 
   const onPickImage = useCallback(async () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -679,24 +712,61 @@ export default function DiscussionScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
     >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={[styles.backText, { color: tokens.primary }]}>Back</Text>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: tokens.card,
+            borderBottomColor: tokens.border,
+            paddingTop: insets.top + 8,
+          },
+        ]}
+      >
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          hitSlop={12}
+        >
+          <RichIcon name="chevron-back" size={22} tokens={tokens} variant="plain" />
         </Pressable>
-        <View style={styles.headerCenter}>
-          <Text style={[styles.title, { color: tokens.ink }]}>{partnerName}</Text>
-          {partnerTypingVisible ? (
-            <Text style={[styles.typing, { color: tokens.primary }]}>
-              typing…
+        {partnerAvatar ? (
+          <Image source={{ uri: partnerAvatar }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatarFallback, { backgroundColor: tokens.primaryTint }]}>
+            <Text style={[styles.avatarLetter, { color: tokens.primary }]}>
+              {partnerName.charAt(0).toUpperCase()}
             </Text>
-          ) : null}
+          </View>
+        )}
+        <View style={styles.headerInfo}>
+          <Text style={[styles.title, { color: tokens.ink }]} numberOfLines={1}>
+            {partnerName}
+          </Text>
+          <Text style={[styles.status, { color: partnerTypingVisible ? tokens.primary : tokens.muted }]} numberOfLines={1}>
+            {partnerTypingVisible ? 'typing…' : 'online'}
+          </Text>
         </View>
-        <View style={styles.backButton} />
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            style={styles.headerIconButton}
+            hitSlop={12}
+          >
+            <RichIcon name="phone" size={22} tokens={tokens} variant="plain" />
+          </Pressable>
+          <Pressable
+            onPress={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            style={styles.headerIconButton}
+            hitSlop={12}
+          >
+            <RichIcon name="video" size={22} tokens={tokens} variant="plain" />
+          </Pressable>
+        </View>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <LoadingHeart tokens={tokens} message="Loading chat…" />
+          <LoadingHeart tokens={tokens} size={56} message="Loading chat…" />
         </View>
       ) : error && messages.length === 0 ? (
         <View style={styles.center}>
@@ -797,7 +867,7 @@ export default function DiscussionScreen() {
             returnKeyType="send"
             onSubmitEditing={() => void onSend()}
           />
-          <SpringPress onPress={() => setStickerOpen(true)}>
+          <SpringPress onPress={() => openStickerPicker()}>
             <View style={[styles.iconButton, { backgroundColor: tokens.primaryTint }]}>
               <RichIcon name="sticker" size={20} tokens={tokens} variant="plain" />
             </View>
@@ -912,13 +982,79 @@ export default function DiscussionScreen() {
         <Pressable style={styles.modalBg} onPress={() => setStickerOpen(false)}>
           <View style={[styles.stickerSheet, { backgroundColor: tokens.card }]}>
             <Text style={[styles.actionTitle, { color: tokens.ink }]}>Stickers</Text>
-            <View style={styles.stickerGrid}>
-              {STICKERS.map((s) => (
-                <Pressable key={s.name} onPress={() => void onSendSticker(s.name)}>
-                  <Image source={s.source} style={styles.stickerOption} resizeMode="contain" />
+            {giphyConfigured() ? (
+              <View style={styles.tabRow}>
+                <Pressable
+                  onPress={() => setStickerTab('hearts')}
+                  style={[
+                    styles.tab,
+                    stickerTab === 'hearts' && { backgroundColor: tokens.primaryTint },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      { color: stickerTab === 'hearts' ? tokens.primary : tokens.muted },
+                    ]}
+                  >
+                    Hearts
+                  </Text>
                 </Pressable>
-              ))}
-            </View>
+                <Pressable
+                  onPress={() => setStickerTab('giphy')}
+                  style={[
+                    styles.tab,
+                    stickerTab === 'giphy' && { backgroundColor: tokens.primaryTint },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      { color: stickerTab === 'giphy' ? tokens.primary : tokens.muted },
+                    ]}
+                  >
+                    GIPHY
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+            {stickerTab === 'hearts' || !giphyConfigured() ? (
+              <View style={styles.stickerGrid}>
+                {STICKERS.map((s) => (
+                  <Pressable key={s.name} onPress={() => void onSendSticker(s.name)}>
+                    <Image source={s.source} style={styles.stickerOption} resizeMode="contain" />
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View>
+                <View style={[styles.searchRow, { borderColor: tokens.border }]}>
+                  <TextInput
+                    value={giphyQuery}
+                    onChangeText={setGiphyQuery}
+                    placeholder="Search stickers…"
+                    placeholderTextColor={tokens.muted}
+                    style={[styles.searchInput, { color: tokens.ink }]}
+                    onSubmitEditing={() => void onGiphySearch()}
+                    returnKeyType="search"
+                  />
+                  <Pressable onPress={() => void onGiphySearch()} style={styles.searchBtn}>
+                    <Text style={[styles.searchBtnText, { color: tokens.primary }]}>Search</Text>
+                  </Pressable>
+                </View>
+                {giphyLoading ? (
+                  <LoadingHeart tokens={tokens} size={40} />
+                ) : (
+                  <View style={styles.stickerGrid}>
+                    {giphyStickers.map((s) => (
+                      <Pressable key={s.id} onPress={() => void onSendSticker(s.fullUrl)}>
+                        <Image source={{ uri: s.previewUrl }} style={styles.stickerOption} resizeMode="contain" />
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         </Pressable>
       </Modal>
@@ -941,15 +1077,32 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 14,
+    paddingHorizontal: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    // Subtle shadow for separation.
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  backButton: { minWidth: 64 },
-  backText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
-  headerCenter: { alignItems: 'center' },
-  title: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
-  typing: { fontFamily: FONTS.body, fontSize: 12, fontStyle: 'italic' },
+  backButton: { padding: 8 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginLeft: 4 },
+  avatarFallback: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginLeft: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarLetter: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
+  headerInfo: { flex: 1, marginLeft: 10, justifyContent: 'center' },
+  title: { fontFamily: FONTS.heading, fontSize: 16, fontWeight: '800' },
+  status: { fontFamily: FONTS.body, fontSize: 12, marginTop: 1 },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  headerIconButton: { padding: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 12 },
   retryButton: { borderWidth: 1.5, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
@@ -1055,9 +1208,23 @@ const styles = StyleSheet.create({
   actionRow: { paddingVertical: 12, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)' },
   actionText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
   reactSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32 },
-  stickerSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32, maxHeight: '60%' },
+  stickerSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32, maxHeight: '70%' },
   stickerGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', gap: 12 },
   stickerOption: { width: 88, height: 88 },
+  tabRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+  tabText: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '700' },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  searchInput: { flex: 1, fontFamily: FONTS.body, fontSize: 15, paddingVertical: 10 },
+  searchBtn: { paddingVertical: 10, paddingLeft: 8 },
+  searchBtnText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '700' },
   viewerBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center' },
   viewerImage: { width: '92%', height: '75%' },
   viewerHint: { color: '#fff', fontFamily: FONTS.body, fontSize: 13, marginTop: 16, opacity: 0.7 },

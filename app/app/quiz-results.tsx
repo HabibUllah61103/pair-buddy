@@ -77,7 +77,7 @@ export default function QuizResultsScreen() {
       <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
       <Text style={[styles.header, { color: tokens.ink }]}>{packTitle(category ?? '')} — Results</Text>
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Calculating results…" />
+        <LoadingHeart tokens={tokens} size={56} message="Calculating results…" />
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>

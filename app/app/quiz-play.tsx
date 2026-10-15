@@ -95,7 +95,7 @@ export default function QuizPlayScreen() {
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Text style={[styles.packName, { color: tokens.ink }]}>{packTitle(category ?? '')}</Text>
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Loading quiz…" />
+        <LoadingHeart tokens={tokens} size={56} message="Loading quiz…" />
       ) : error && questions.length === 0 ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>

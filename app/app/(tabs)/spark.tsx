@@ -125,7 +125,7 @@ export default function SparkScreen() {
   if (phase === 'loading') {
     return (
       <View style={[styles.center, { backgroundColor: tokens.background }]}>
-        <LoadingHeart tokens={tokens} message="Loading today\u2019s spark\u2026" />
+        <LoadingHeart tokens={tokens} size={56} message="Loading today's spark…" />
       </View>
     );
   }
