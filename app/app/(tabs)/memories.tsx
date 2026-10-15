@@ -146,14 +146,9 @@ export default function MemoriesScreen() {
             onPress={() => void pickPhoto()}
             accessibilityLabel="Add a memory"
           >
-            <LinearGradient
-              colors={tokens.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.addButton}
-            >
-              <RichIcon name="add" size={26} tokens={tokens} variant="plain" color="#FFFFFF" />
-            </LinearGradient>
+            <View style={[styles.addButton, { backgroundColor: tokens.primary, borderColor: '#FFFFFF' }]}>
+              <RichIcon name="add" size={24} tokens={tokens} variant="plain" color="#FFFFFF" />
+            </View>
           </SpringPress>
         }
       />
@@ -312,11 +307,17 @@ const styles = StyleSheet.create({
   },
   itemWrap: { flex: 1 },
   addButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   loader: { marginTop: 40 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
