@@ -35,6 +35,7 @@ import {
   sendRichMessage,
   sendTyping,
   subscribeMessages,
+  subscribePresence,
   subscribeTyping,
   toggleReaction,
   uploadChatMedia,
@@ -392,6 +393,7 @@ export default function DiscussionScreen() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [onlineIds, setOnlineIds] = useState<string[]>([]);
   const [replyTo, setReplyTo] = useState<DiscussionMessage | null>(null);
   const [actionMessage, setActionMessage] = useState<DiscussionMessage | null>(null);
   const [reactMessage, setReactMessage] = useState<DiscussionMessage | null>(null);
@@ -441,6 +443,7 @@ export default function DiscussionScreen() {
     void load();
     let unsubscribe: (() => void) | null = null;
     let unsubTyping: (() => void) | null = null;
+    let unsubPresence: (() => void) | null = null;
 
     void subscribeMessages(
       (incoming) => {
@@ -477,9 +480,16 @@ export default function DiscussionScreen() {
       if (res.data) unsubTyping = res.data;
     });
 
+    void subscribePresence((ids) => {
+      setOnlineIds(ids);
+    }).then((res) => {
+      if (res.data) unsubPresence = res.data;
+    });
+
     return () => {
       unsubscribe?.();
       unsubTyping?.();
+      unsubPresence?.();
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, [load]);
@@ -750,6 +760,9 @@ export default function DiscussionScreen() {
   }, [editingMessage, editText]);
 
   const partnerTypingVisible = typing;
+  const partnerOnline = !!partnerId && onlineIds.includes(partnerId);
+  const statusText = partnerTypingVisible ? 'typing…' : partnerOnline ? 'online' : 'last seen recently';
+  const statusColor = partnerTypingVisible ? tokens.primary : partnerOnline ? tokens.success : tokens.muted;
 
   // Ticks for my messages: read when partner's uid is in read_by
   const isReadByPartner = useCallback(
@@ -785,21 +798,26 @@ export default function DiscussionScreen() {
           onPress={() => router.push('/partner-profile')}
           accessibilityLabel="View partner profile"
         >
-          {partnerAvatar ? (
-            <Image source={{ uri: partnerAvatar }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatarFallback, { backgroundColor: tokens.primaryTint }]}>
-              <Text style={[styles.avatarLetter, { color: tokens.primary }]}>
-                {partnerName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
+          <View style={styles.avatarWrap}>
+            {partnerAvatar ? (
+              <Image source={{ uri: partnerAvatar }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatarFallback, { backgroundColor: tokens.primaryTint }]}>
+                <Text style={[styles.avatarLetter, { color: tokens.primary }]}>
+                  {partnerName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+            {partnerOnline ? (
+              <View style={[styles.onlineDot, { backgroundColor: tokens.success, borderColor: tokens.card }]} />
+            ) : null}
+          </View>
           <View style={styles.headerInfo}>
             <Text style={[styles.title, { color: tokens.ink }]} numberOfLines={1}>
               {partnerName}
             </Text>
-            <Text style={[styles.status, { color: partnerTypingVisible ? tokens.primary : tokens.muted }]} numberOfLines={1}>
-              {partnerTypingVisible ? 'typing…' : 'online'}
+            <Text style={[styles.status, { color: statusColor }]} numberOfLines={1}>
+              {statusText}
             </Text>
           </View>
         </Pressable>
@@ -1208,14 +1226,23 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   backButton: { padding: 8 },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginLeft: 4 },
+  avatarWrap: { position: 'relative', marginLeft: 4 },
+  avatar: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginLeft: 4,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  onlineDot: {
+    position: 'absolute',
+    right: -1,
+    bottom: -1,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    borderWidth: 2.5,
   },
   avatarLetter: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
   headerInfo: { flex: 1, marginLeft: 10, justifyContent: 'center' },
