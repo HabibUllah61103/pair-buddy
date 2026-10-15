@@ -63,7 +63,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   blur: {
-    flex: 1,
+    // No flex:1 here — the wrap's height is determined by content.
+    // flex:1 with an unconstrained parent collapses the header to zero height.
   },
   content: {
     flexDirection: 'row',
