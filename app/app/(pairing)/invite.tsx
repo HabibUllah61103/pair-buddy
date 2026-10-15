@@ -22,6 +22,7 @@ import { getCoupleMemberCount } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { CelebrationBurst } from '../../src/components/celebration';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { CoupleIllustration } from '../../src/components/couple-illustration';
 import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
@@ -129,6 +130,9 @@ export default function InviteScreen() {
       ) : (
         <>
       <FadeInView delay={0} style={styles.headerWrap}>
+        <View style={styles.headerArt}>
+          <CoupleIllustration name="couple-holding-hands" variant="breathe" size={160} />
+        </View>
         <Text style={[styles.title, { color: tokens.ink }]}>Invite your partner</Text>
         <Text style={[styles.subtitle, { color: tokens.muted }]}>
           Share this code with them. It expires in 7 days and can only be used once.
@@ -235,6 +239,10 @@ const styles = StyleSheet.create({
   },
   headerWrap: {
     marginBottom: 8,
+    alignItems: 'center',
+  },
+  headerArt: {
+    marginBottom: 4,
   },
   title: {
     fontFamily: FONTS.headingBold,

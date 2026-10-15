@@ -22,6 +22,7 @@ import {
 } from '../src/lib/discussion';
 import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
+import { CoupleIllustration } from '../src/components/couple-illustration';
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -179,6 +180,7 @@ export default function DiscussionScreen() {
         </View>
       ) : messages.length === 0 ? (
         <View style={styles.center}>
+          <CoupleIllustration name="couple-embrace" variant="breathe" size={140} />
           <Text style={[styles.emptyTitle, { color: tokens.ink }]}>
             No messages yet
           </Text>
@@ -269,6 +271,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.heading,
     fontSize: 18,
     fontWeight: '700',
+    marginTop: 12,
     marginBottom: 8,
   },
   emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', lineHeight: 22 },

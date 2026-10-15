@@ -18,7 +18,7 @@ import DateTimePicker, {
 import type { OnboardingDraft } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme-provider';
 import { FadeInView, SpringPress } from '../animated';
-import { HeartsIllustration } from '../hearts-illustration';
+import { CoupleIllustration } from '../couple-illustration';
 import type { ThemeTokens } from '../../lib/tokens';
 import { FONTS } from '../../theme';
 
@@ -163,7 +163,7 @@ export function WelcomeStep({ onNext }: StepProps) {
       tokens={tokens}
     >
       <View style={styles.welcomeArt}>
-        <HeartsIllustration expression="happy" variant="entrance" size={160} />
+        <CoupleIllustration name="couple-welcome" variant="entrance" size={180} />
       </View>
     </StepShell>
   );
@@ -305,6 +305,9 @@ export function PhotoStep({ draft, update, onNext, onBack }: StepProps) {
       nextLabel={draft.avatarUri ? 'Continue' : 'Skip for now'}
       tokens={tokens}
     >
+      <View style={styles.photoArt}>
+        <CoupleIllustration name="photo-playful" variant="breathe" size={140} />
+      </View>
       <View style={styles.photoWrap}>
         {draft.avatarUri ? (
           <Image source={{ uri: draft.avatarUri }} style={styles.photo} />
@@ -719,6 +722,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     fontSize: 14,
     marginTop: 12,
+  },
+  photoArt: {
+    alignItems: 'center',
+    marginBottom: 4,
   },
   photoWrap: {
     alignItems: 'center',
