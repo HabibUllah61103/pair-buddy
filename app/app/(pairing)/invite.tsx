@@ -218,55 +218,11 @@ export default function InviteScreen() {
       )}
         </>
       )}
-      {paired && (
-        <>
-          <CelebrationBurst trigger={paired} colors={tokens.gradient} />
-          <View style={styles.pairedLayer} pointerEvents="none">
-            <RewardPop visible={paired}>
-              <View style={[styles.pairedCard, { backgroundColor: tokens.card }]}>
-                <Text style={[styles.pairedTitle, { color: tokens.ink }]}>
-                  Partner joined!
-                </Text>
-                <Text style={[styles.pairedSub, { color: tokens.muted }]}>
-                  Taking you to your space…
-                </Text>
-              </View>
-            </RewardPop>
-          </View>
-        </>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  pairedLayer: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  pairedCard: {
-    borderRadius: 24,
-    padding: 28,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  pairedTitle: {
-    fontFamily: FONTS.headingBold,
-    fontSize: 24,
-    textAlign: 'center',
-  },
-  pairedSub: {
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
-  },
   container: {
     flex: 1,
     padding: 24,
