@@ -151,7 +151,9 @@ export default function DistanceScreen() {
 
       <View style={styles.body}>
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Finding your partner\u2026" />
+        <View style={styles.loadingWrap}>
+          <LoadingHeart tokens={tokens} size={56} message="Finding your partner…" />
+        </View>
       ) : (
         <>
           <FadeInView delay={0}>
@@ -256,7 +258,8 @@ const styles = StyleSheet.create({
     opacity: 0.12,
   },
   loader: { marginTop: 40 },
-  body: { paddingTop: 20 },
+  body: { flex: 1, paddingTop: 20 },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   card: {
     borderRadius: 24,
     padding: 20,
