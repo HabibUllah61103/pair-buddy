@@ -35,7 +35,6 @@ import {
   sendRichMessage,
   sendTyping,
   subscribeMessages,
-  subscribePresence,
   subscribeTyping,
   toggleReaction,
   uploadChatMedia,
@@ -44,6 +43,7 @@ import {
 } from '../src/lib/discussion';
 import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
+import { usePresence } from '../src/lib/presence-provider';
 import { giphyConfigured, searchStickers, trendingStickers, type GiphySticker } from '../src/lib/giphy';
 import { CoupleIllustration } from '../src/components/couple-illustration';
 import { LoadingHeart } from '../src/components/loading-heart';
@@ -393,7 +393,9 @@ export default function DiscussionScreen() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState(false);
-  const [onlineIds, setOnlineIds] = useState<string[]>([]);
+  // Partner online status comes from the app-wide PresenceProvider (tracks
+  // whenever the app is open and in the foreground, on any screen).
+  const { onlineIds } = usePresence();
   const [replyTo, setReplyTo] = useState<DiscussionMessage | null>(null);
   const [actionMessage, setActionMessage] = useState<DiscussionMessage | null>(null);
   const [reactMessage, setReactMessage] = useState<DiscussionMessage | null>(null);
@@ -443,7 +445,6 @@ export default function DiscussionScreen() {
     void load();
     let unsubscribe: (() => void) | null = null;
     let unsubTyping: (() => void) | null = null;
-    let unsubPresence: (() => void) | null = null;
 
     void subscribeMessages(
       (incoming) => {
@@ -480,16 +481,9 @@ export default function DiscussionScreen() {
       if (res.data) unsubTyping = res.data;
     });
 
-    void subscribePresence((ids) => {
-      setOnlineIds(ids);
-    }).then((res) => {
-      if (res.data) unsubPresence = res.data;
-    });
-
     return () => {
       unsubscribe?.();
       unsubTyping?.();
-      unsubPresence?.();
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, [load]);

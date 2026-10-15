@@ -22,6 +22,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AuthProvider, useAuth } from '../src/lib/auth';
+import { PresenceProvider } from '../src/lib/presence-provider';
 import { ThemeProvider, useTheme } from '../src/lib/theme-provider';
 import {
   extractInviteCode,
@@ -189,6 +190,7 @@ export default function RootLayout() {
       <ThemedStatusBar />
       <AuthProvider>
         <AuthGuard>
+          <PresenceProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
@@ -204,6 +206,7 @@ export default function RootLayout() {
             <Stack.Screen name="quiz-results" />
             <Stack.Screen name="widget-settings" />
           </Stack>
+          </PresenceProvider>
         </AuthGuard>
       </AuthProvider>
       {showSplash ? (
