@@ -20,6 +20,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import {
   deleteMessage,
+  editMessage,
   getMessages,
   getMyUserId,
   getPartner,
@@ -301,6 +302,25 @@ function MessageBubble({
     ([, uids]) => uids.length > 0,
   );
 
+  // Soft-deleted messages show a placeholder instead of content.
+  if (message.deleted_at) {
+    return (
+      <View style={[styles.bubbleRow, mine ? styles.bubbleRowMine : null]}>
+        <View
+          style={[
+            styles.bubble,
+            styles.bubbleDeleted,
+            { backgroundColor: tokens.card, borderColor: tokens.border },
+          ]}
+        >
+          <Text style={[styles.bubbleText, styles.deletedText, { color: tokens.muted }]}>
+            🚫 This message was deleted
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.bubbleRow, mine ? styles.bubbleRowMine : null]}>
       <Pressable
@@ -327,6 +347,7 @@ function MessageBubble({
               ]}
             >
               {formatTime(message.created_at)}
+              {message.edited_at ? ' · edited' : ''}
             </Text>
             {mine ? (
               <Ticks read={partnerRead} color={timeColor} />
@@ -690,13 +711,53 @@ export default function DiscussionScreen() {
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            setMessages((prev) => prev.filter((m) => m.id !== message.id));
-            await deleteMessage(message.id);
+            const now = new Date().toISOString();
+            // Optimistic: mark as deleted in place (shows placeholder).
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === message.id ? { ...m, deleted_at: now } : m,
+              ),
+            );
+            const res = await deleteMessage(message.id);
+            if (res.error) {
+              // Roll back on failure.
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === message.id ? { ...m, deleted_at: null } : m,
+                ),
+              );
+            }
           })();
         },
       },
     ]);
   }, []);
+
+  const [editingMessage, setEditingMessage] = useState<DiscussionMessage | null>(null);
+  const [editText, setEditText] = useState('');
+
+  const startEdit = useCallback((message: DiscussionMessage) => {
+    setActionMessage(null);
+    setEditingMessage(message);
+    setEditText(message.body);
+  }, []);
+
+  const saveEdit = useCallback(async () => {
+    if (!editingMessage) return;
+    const trimmed = editText.trim();
+    if (!trimmed) return;
+    const now = new Date().toISOString();
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === editingMessage.id
+          ? { ...m, body: trimmed, edited_at: now }
+          : m,
+      ),
+    );
+    setEditingMessage(null);
+    setEditText('');
+    await editMessage(editingMessage.id, trimmed);
+  }, [editingMessage, editText]);
 
   const partnerTypingVisible = typing;
 
@@ -729,23 +790,29 @@ export default function DiscussionScreen() {
         >
           <RichIcon name="chevron-back" size={22} tokens={tokens} variant="plain" />
         </Pressable>
-        {partnerAvatar ? (
-          <Image source={{ uri: partnerAvatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatarFallback, { backgroundColor: tokens.primaryTint }]}>
-            <Text style={[styles.avatarLetter, { color: tokens.primary }]}>
-              {partnerName.charAt(0).toUpperCase()}
+        <Pressable
+          style={styles.headerProfile}
+          onPress={() => router.push('/partner-profile')}
+          accessibilityLabel="View partner profile"
+        >
+          {partnerAvatar ? (
+            <Image source={{ uri: partnerAvatar }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatarFallback, { backgroundColor: tokens.primaryTint }]}>
+              <Text style={[styles.avatarLetter, { color: tokens.primary }]}>
+                {partnerName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <View style={styles.headerInfo}>
+            <Text style={[styles.title, { color: tokens.ink }]} numberOfLines={1}>
+              {partnerName}
+            </Text>
+            <Text style={[styles.status, { color: partnerTypingVisible ? tokens.primary : tokens.muted }]} numberOfLines={1}>
+              {partnerTypingVisible ? 'typing…' : 'online'}
             </Text>
           </View>
-        )}
-        <View style={styles.headerInfo}>
-          <Text style={[styles.title, { color: tokens.ink }]} numberOfLines={1}>
-            {partnerName}
-          </Text>
-          <Text style={[styles.status, { color: partnerTypingVisible ? tokens.primary : tokens.muted }]} numberOfLines={1}>
-            {partnerTypingVisible ? 'typing…' : 'online'}
-          </Text>
-        </View>
+        </Pressable>
         <View style={styles.headerActions}>
           <Pressable
             onPress={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
@@ -942,12 +1009,24 @@ export default function DiscussionScreen() {
                   <Text style={[styles.actionText, { color: tokens.ink }]}>😊 React</Text>
                 </Pressable>
                 {actionMessage.sender_id === myId ? (
-                  <Pressable
-                    style={styles.actionRow}
-                    onPress={() => void onDelete(actionMessage)}
-                  >
-                    <Text style={[styles.actionText, { color: tokens.danger }]}>🗑 Delete</Text>
-                  </Pressable>
+                  <>
+                    {actionMessage.message_type === 'text' && !actionMessage.deleted_at ? (
+                      <Pressable
+                        style={styles.actionRow}
+                        onPress={() => void startEdit(actionMessage)}
+                      >
+                        <Text style={[styles.actionText, { color: tokens.ink }]}>✏️ Edit</Text>
+                      </Pressable>
+                    ) : null}
+                    {!actionMessage.deleted_at ? (
+                      <Pressable
+                        style={styles.actionRow}
+                        onPress={() => void onDelete(actionMessage)}
+                      >
+                        <Text style={[styles.actionText, { color: tokens.danger }]}>🗑 Delete</Text>
+                      </Pressable>
+                    ) : null}
+                  </>
                 ) : null}
               </>
             ) : null}
@@ -1068,6 +1147,57 @@ export default function DiscussionScreen() {
           <Text style={styles.viewerHint}>Tap to close</Text>
         </Pressable>
       </Modal>
+
+      {/* Edit message sheet */}
+      <Modal visible={!!editingMessage} transparent animationType="slide">
+        <Pressable
+          style={styles.modalBg}
+          onPress={() => {
+            setEditingMessage(null);
+            setEditText('');
+          }}
+        >
+          <Pressable
+            style={[styles.editSheet, { backgroundColor: tokens.card }]}
+            onPress={() => undefined}
+          >
+            <Text style={[styles.editTitle, { color: tokens.ink }]}>Edit message</Text>
+            <TextInput
+              style={[
+                styles.editInput,
+                {
+                  backgroundColor: tokens.background,
+                  color: tokens.ink,
+                  borderColor: tokens.border,
+                },
+              ]}
+              value={editText}
+              onChangeText={setEditText}
+              multiline
+              autoFocus
+              maxLength={2000}
+              placeholderTextColor={tokens.muted}
+            />
+            <View style={styles.editActions}>
+              <Pressable
+                style={styles.editCancel}
+                onPress={() => {
+                  setEditingMessage(null);
+                  setEditText('');
+                }}
+              >
+                <Text style={[styles.editCancelText, { color: tokens.muted }]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.editSave, { backgroundColor: tokens.primary }]}
+                onPress={() => void saveEdit()}
+              >
+                <Text style={[styles.editSaveText, { color: tokens.onPrimary }]}>Save</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -1099,6 +1229,7 @@ const styles = StyleSheet.create({
   },
   avatarLetter: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
   headerInfo: { flex: 1, marginLeft: 10, justifyContent: 'center' },
+  headerProfile: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   title: { fontFamily: FONTS.heading, fontSize: 16, fontWeight: '800' },
   status: { fontFamily: FONTS.body, fontSize: 12, marginTop: 1 },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
@@ -1117,6 +1248,30 @@ const styles = StyleSheet.create({
   bubbleTheirs: { borderBottomLeftRadius: 4 },
   bubbleSticker: { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0 },
   bubbleText: { fontFamily: FONTS.body, fontSize: 16, lineHeight: 22 },
+  bubbleDeleted: { borderWidth: 1, borderStyle: 'dashed', opacity: 0.8 },
+  deletedText: { fontStyle: 'italic', fontSize: 14 },
+  editedLabel: { fontFamily: FONTS.body, fontSize: 10, fontStyle: 'italic' },
+  editSheet: {
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 480,
+  },
+  editTitle: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '700', marginBottom: 12 },
+  editInput: {
+    fontFamily: FONTS.body,
+    fontSize: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  editActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16, gap: 8 },
+  editCancel: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 12 },
+  editCancelText: { fontFamily: FONTS.body, fontWeight: '700', fontSize: 15 },
+  editSave: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, minWidth: 90, alignItems: 'center' },
+  editSaveText: { fontFamily: FONTS.body, fontWeight: '700', fontSize: 15 },
   bubbleImage: { width: 200, height: 200, borderRadius: 12 },
   sticker: { width: 120, height: 120 },
   bubbleMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4, gap: 4 },

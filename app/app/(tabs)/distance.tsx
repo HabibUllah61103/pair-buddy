@@ -225,6 +225,8 @@ export default function DistanceScreen() {
                     value={sharing}
                     onValueChange={toggleSharing}
                     trackColor={{ false: tokens.border, true: tokens.primary }}
+                    thumbColor={sharing ? '#FFFFFF' : tokens.muted}
+                    ios_backgroundColor={tokens.border}
                   />
                 )}
               </View>

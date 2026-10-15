@@ -123,6 +123,7 @@ class PairWidgetProvider : AppWidgetProvider() {
             "countdown" -> "pairbuddy://date-plans"
             "spark" -> "pairbuddy://(tabs)/spark"
             "distance" -> "pairbuddy://(tabs)/distance"
+            "draw" -> "pairbuddy://(tabs)/draw"
             else -> "pairbuddy://"
         }
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink)).apply {
@@ -362,7 +363,7 @@ const WIDGET_BACKGROUND_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const WIDGET_STRINGS_XML = `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_widget_desc">Pair Buddy: your countdown, daily spark, or distance at a glance.</string>
+    <string name="pair_widget_desc">Pair Buddy: your countdown, daily spark, distance, or drawing canvas at a glance.</string>
 </resources>
 `;
 

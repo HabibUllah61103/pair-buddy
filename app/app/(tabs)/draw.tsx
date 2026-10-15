@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -20,6 +21,7 @@ import DrawingCanvas, {
   type DrawingCanvasHandle,
 } from '../../src/components/drawing-canvas';
 import {
+  deleteDrawing,
   getDrawings,
   getMyUserId,
   saveDrawing,
@@ -236,6 +238,32 @@ export default function DrawScreen() {
     setNotice(null);
   };
 
+  const confirmDeleteDrawing = (d: Drawing) => {
+    Alert.alert(
+      'Delete drawing?',
+      'This removes the drawing for both of you. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => void doDeleteDrawing(d.id),
+        },
+      ],
+    );
+  };
+
+  const doDeleteDrawing = async (id: string) => {
+    setError(null);
+    const res = await deleteDrawing(id);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    setHistory((prev) => prev.filter((d) => d.id !== id));
+    setNotice('Drawing deleted.');
+  };
+
   const latestMine = latest !== null && myId !== null && latest.created_by === myId;
 
   const renderToolButton = (t: BrushTool, icon: RichIconName, label: string) => (
@@ -448,10 +476,21 @@ export default function DrawScreen() {
                 height={180}
                 style={styles.latestArt}
               />
-              <Text style={[styles.latestMeta, { color: tokens.muted }]}>
-                {latestMine ? 'You' : latest.creator_name} ·{' '}
-                {formatWhen(latest.created_at)}
-              </Text>
+              <View style={styles.latestMetaRow}>
+                <Text style={[styles.latestMeta, { color: tokens.muted }]}>
+                  {latestMine ? 'You' : latest.creator_name} ·{' '}
+                  {formatWhen(latest.created_at)}
+                </Text>
+                {latestMine && (
+                  <Pressable
+                    onPress={() => confirmDeleteDrawing(latest)}
+                    style={styles.deleteIconBtn}
+                    accessibilityLabel="Delete drawing"
+                  >
+                    <RichIcon name="trash" size={18} tokens={tokens} variant="plain" color={tokens.danger} />
+                  </Pressable>
+                )}
+              </View>
             </>
           )}
         </View>
@@ -591,12 +630,18 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 18,
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ghostText: { fontFamily: FONTS.body, fontWeight: '700' },
   sendBtn: {
     paddingVertical: 14,
-    borderRadius: 18,
+    paddingHorizontal: 24,
+    borderRadius: 24,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
   },
   sendWrap: { flex: 1 },
   sendDisabled: { opacity: 0.6 },
@@ -615,7 +660,21 @@ const styles = StyleSheet.create({
     ...BUBBLY_SHADOW,
   },
   latestArt: { borderRadius: 8, backgroundColor: '#FFFFFF' },
-  latestMeta: { fontFamily: FONTS.body, fontSize: 13, marginTop: 8 },
+  latestMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  latestMeta: { fontFamily: FONTS.body, fontSize: 13 },
+  deleteIconBtn: {
+    padding: 8,
+    borderRadius: 12,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   historyHint: { fontFamily: FONTS.body, fontSize: 13, marginBottom: 8 },
   historyRow: { gap: 10, paddingBottom: 4 },
   historyCard: {

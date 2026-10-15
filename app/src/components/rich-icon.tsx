@@ -47,6 +47,7 @@ import {
   StackIcon,
   StarIcon,
   StickerIcon,
+  TrashIcon,
   UserPlusIcon,
   type Icon,
   type IconWeight,
@@ -94,6 +95,7 @@ const ICONS = {
   phone: PhoneIcon,
   video: VideoCameraIcon,
   'chevron-back': CaretLeftIcon,
+  trash: TrashIcon,
 } satisfies Record<string, Icon>;
 
 export type RichIconName = keyof typeof ICONS;
