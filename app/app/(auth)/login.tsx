@@ -15,6 +15,7 @@ import type { AuthResult } from '../../src/lib/auth';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
 import { FadeInView, SpringPress } from '../../src/components/animated';
+import { CoupleIllustration } from '../../src/components/couple-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
@@ -119,6 +120,9 @@ export default function LoginScreen() {
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
       <View style={styles.inner}>
         <FadeInView delay={0}>
+          <View style={styles.heroWrap}>
+            <CoupleIllustration name="login-hero" variant="breathe" size={160} />
+          </View>
           <View style={styles.logoWrap}>
             <RichIcon name="heart" size={28} tokens={tokens} variant="gradient" />
           </View>
@@ -211,6 +215,10 @@ const styles = StyleSheet.create({
   logoWrap: {
     alignSelf: 'center',
     marginBottom: 16,
+  },
+  heroWrap: {
+    alignSelf: 'center',
+    marginBottom: 8,
   },
   title: {
     fontFamily: FONTS.headingBold,

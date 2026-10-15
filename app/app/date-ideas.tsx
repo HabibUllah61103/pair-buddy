@@ -18,6 +18,7 @@ import {
 } from '../src/lib/dates';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { CoupleIllustration } from '../src/components/couple-illustration';
 
 const CATEGORIES: Array<string | null> = [null, ...DATE_CATEGORIES];
 
@@ -155,6 +156,7 @@ export default function DateIdeasScreen() {
           )}
           ListEmptyComponent={
             <View style={styles.center}>
+              <CoupleIllustration name="couple-picnic" variant="breathe" size={140} />
               <Text style={[styles.empty, { color: tokens.muted }]}>No ideas in this category yet.</Text>
             </View>
           }
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
   cardDesc: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 20 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 12 },
-  empty: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center' },
+  empty: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginTop: 12 },
   retry: {
     borderRadius: 12,
     paddingVertical: 10,
