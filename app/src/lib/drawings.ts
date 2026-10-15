@@ -20,6 +20,7 @@ export type Drawing = {
   created_by: string;
   created_at: string;
   creator_name: string;
+  deleted_at: string | null;
 };
 
 type DrawingRow = {
@@ -28,6 +29,7 @@ type DrawingRow = {
   image_url: string;
   created_by: string;
   created_at: string;
+  deleted_at: string | null;
   profiles: { name: string } | { name: string }[] | null;
 };
 
@@ -72,11 +74,12 @@ function toDrawing(row: DrawingRow): Drawing {
     created_by: row.created_by,
     created_at: row.created_at,
     creator_name: creatorName(row),
+    deleted_at: row.deleted_at ?? null,
   };
 }
 
 const SELECT =
-  'id,couple_id,image_url,created_by,created_at,profiles(name)';
+  'id,couple_id,image_url,created_by,created_at,deleted_at,profiles(name)';
 
 /** Save the canvas as a new drawing for my couple. */
 export async function saveDrawing(
@@ -123,6 +126,7 @@ export async function getLatestDrawing(): Promise<PairResult<Drawing>> {
       .from('drawings')
       .select(SELECT)
       .eq('couple_id', couple.data)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -148,6 +152,7 @@ export async function getDrawings(
       .from('drawings')
       .select(SELECT)
       .eq('couple_id', couple.data)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(limit);
     if (error) throw error;
@@ -204,6 +209,7 @@ export async function subscribeDrawings(
             created_at: row.created_at,
             creator_name:
               (data as { name: string } | null)?.name ?? 'Partner',
+            deleted_at: null,
           });
         },
       )
@@ -219,12 +225,15 @@ export async function subscribeDrawings(
   }
 }
 
-/** Delete one of my own drawings (RLS allows authors only). */
+/** Soft-delete one of my own drawings (sets deleted_at; RLS allows authors only). */
 export async function deleteDrawing(id: string): Promise<PairResult<null>> {
   const client = getClient();
   if (!client) return { data: null, error: NOT_CONFIGURED };
   try {
-    const { error } = await client.from('drawings').delete().eq('id', id);
+    const { error } = await client
+      .from('drawings')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
     if (error) throw error;
     return { data: null, error: null };
   } catch (e) {
