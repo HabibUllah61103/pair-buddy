@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { getPacks, getPackProgress, type QuizPack } from '../../src/lib/quiz';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
@@ -28,6 +28,7 @@ const PACK_COLORS: Record<string, string> = {
 type PackWithProgress = QuizPack & { answeredBoth: number };
 
 export default function QuizzesScreen() {
+  const router = useRouter();
   const { tokens, mode } = useTheme();
   const [packs, setPacks] = useState<PackWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
