@@ -75,6 +75,19 @@ export async function getOnboardingComplete(): Promise<boolean> {
   }
 }
 
+/**
+ * Persist the local onboarding-complete flag without touching the server.
+ * Used when the server already has a profile (e.g. existing user signing in
+ * on a fresh install) so the local flag catches up.
+ */
+export async function markOnboardingComplete(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(COMPLETE_KEY, '1');
+  } catch {
+    // Non-fatal: the next launch re-checks the server.
+  }
+}
+
 let cachedClient: SupabaseClient | null | undefined;
 
 /** Lazy Supabase access — never throws at import time when unconfigured. */
