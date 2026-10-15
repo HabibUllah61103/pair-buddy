@@ -27,7 +27,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <LoadingHeart tokens={tokens} message="Signing you in…" />
+      <LoadingHeart tokens={tokens} size={56} message="Signing you in…" />
     </View>
   );
 }
