@@ -47,7 +47,8 @@
         }
       ],
       "./plugins/withPairWidgets",
-      "./plugins/withPairWidgetsIOS"
+      "./plugins/withPairWidgetsIOS",
+      "expo-audio"
     ],
     "scheme": "pairbuddy",
     "slug": "pair-buddy",
