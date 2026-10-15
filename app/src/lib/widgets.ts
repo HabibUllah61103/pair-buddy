@@ -16,19 +16,21 @@ import {
 // Metro/Babel resolve this at runtime; declared here for TypeScript.
 declare function require(name: string): any;
 
-export const WIDGET_TYPES = ['countdown', 'spark', 'distance'] as const;
+export const WIDGET_TYPES = ['countdown', 'spark', 'distance', 'draw'] as const;
 export type WidgetType = (typeof WIDGET_TYPES)[number];
 
 export const WIDGET_LABELS: Record<WidgetType, string> = {
   countdown: 'Countdown',
   spark: 'Daily Spark',
   distance: 'Distance',
+  draw: 'Draw',
 };
 
 export const WIDGET_DESCRIPTIONS: Record<WidgetType, string> = {
   countdown: 'Days left until your next planned date.',
   spark: "Today's Daily Spark question at a glance.",
   distance: 'How far apart you and your partner are right now.',
+  draw: 'Jump straight into the drawing canvas together.',
 };
 
 /** The payload the native widget binds into its views (Android RemoteViews / iOS WidgetKit). */
@@ -236,8 +238,17 @@ async function buildSparkPayload(): Promise<WidgetPayload> {
   };
 }
 
-async function buildDistancePayload(): Promise<WidgetPayload> {
-  const fallback: WidgetPayload = {
+async function buildDrawPayload(): Promise<WidgetPayload> {
+  return {
+    type: 'draw',
+    title: 'Draw together',
+    line1: 'Sketch something sweet',
+    line2: 'Tap to open the canvas',
+    updatedAt: Date.now(),
+  };
+}
+
+async function buildDistancePayload(): Promise<WidgetPayload> {  const fallback: WidgetPayload = {
     type: 'distance',
     title: 'Distance',
     line1: 'Location not shared',
@@ -279,6 +290,7 @@ export async function refreshWidgets(): Promise<PairResult<null>> {
   let payload: WidgetPayload;
   if (type === 'spark') payload = await buildSparkPayload();
   else if (type === 'distance') payload = await buildDistancePayload();
+  else if (type === 'draw') payload = await buildDrawPayload();
   else payload = await buildCountdownPayload();
   return setWidgetData(payload);
 }
