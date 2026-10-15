@@ -159,7 +159,7 @@ export default function MemoriesScreen() {
       />
 
       {phase === 'loading' ? (
-        <LoadingHeart tokens={tokens} message="Loading memories\u2026" />
+        <LoadingHeart tokens={tokens} size={56} message="Loading memories…" />
       ) : phase === 'error' ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
