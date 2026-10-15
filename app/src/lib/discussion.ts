@@ -634,6 +634,55 @@ export async function sendTyping(): Promise<void> {
 }
 
 /**
+ * Track and watch partner online presence via Supabase Realtime presence.
+ * Tracks this device as online on a dedicated couple channel and calls
+ * onChange with the list of currently-online user ids whenever presence
+ * syncs, joins, or leaves. Best-effort: never throws, never surfaces errors.
+ * Returns an unsubscribe function.
+ */
+export async function subscribePresence(
+  onChange: (onlineUserIds: string[]) => void,
+): Promise<PairResult<() => void>> {
+  const client = getClient();
+  if (!client) return { data: null, error: NOT_CONFIGURED };
+  try {
+    const couple = await getMyCoupleId();
+    if (couple.error || !couple.data) {
+      return { data: null, error: couple.error ?? 'No couple found.' };
+    }
+    const uid = await getUserId(client);
+    if (!uid) return { data: null, error: 'Not signed in.' };
+    const channel: RealtimeChannel = client.channel(`chat-presence:${couple.data}`, {
+      config: { presence: { key: uid } },
+    });
+    const emit = () => {
+      try {
+        onChange(Object.keys(channel.presenceState()));
+      } catch {
+        // Presence state reads are best-effort.
+      }
+    };
+    channel
+      .on('presence', { event: 'sync' }, emit)
+      .on('presence', { event: 'join' }, emit)
+      .on('presence', { event: 'leave' }, emit)
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+    return {
+      data: () => {
+        client.removeChannel(channel);
+      },
+      error: null,
+    };
+  } catch (e) {
+    return { data: null, error: toMessage(e, 'Could not watch presence.') };
+  }
+}
+
+/**
  * Subscribe to partner typing events. Returns an unsubscribe function.
  * Uses a dedicated broadcast channel for the couple.
  */
