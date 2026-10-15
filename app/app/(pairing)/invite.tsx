@@ -40,7 +40,6 @@ export default function InviteScreen() {
     mode === 'dark'
       ? require('../../assets/bg-night-stars.png')
       : require('../../assets/bg-hearts-dreamy.png');
->>>>>>> origin/main
 
   const load = useCallback(async () => {
     setLoading(true);
