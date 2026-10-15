@@ -15,7 +15,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Audio } from 'expo-av';
+import {
+  AudioRecorder,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+} from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import {
@@ -117,54 +124,38 @@ function VoiceBubble({
   mine: boolean;
 }) {
   const { tokens } = useTheme();
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [position, setPosition] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const player = useAudioPlayer(
+    message.media_url ? { uri: message.media_url } : undefined,
+  );
+  const status = useAudioPlayerStatus(player);
   const iconColor = mine ? tokens.onPrimary : tokens.primary;
   const waveColor = mine ? tokens.onPrimary : tokens.primary;
 
-  useEffect(() => {
-    return () => {
-      void sound?.unloadAsync();
-    };
-  }, [sound]);
+  const playing = status.playing ?? false;
+  // expo-audio reports seconds; the UI works in millis like before.
+  const position = (status.currentTime ?? 0) * 1000;
+  const duration = (status.duration ?? 0) * 1000;
 
-  const togglePlay = useCallback(async () => {
+  // Reset to the start once playback finishes, matching the old behavior.
+  useEffect(() => {
+    if (status.didJustFinish) {
+      void player.seekTo(0);
+    }
+  }, [status.didJustFinish, player]);
+
+  const togglePlay = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      if (playing && sound) {
-        await sound.pauseAsync();
-        setPlaying(false);
+      if (playing) {
+        player.pause();
         return;
       }
-      if (sound) {
-        await sound.playAsync();
-        setPlaying(true);
-        return;
-      }
-      if (!message.media_url) return;
-      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: message.media_url },
-        { shouldPlay: true },
-      );
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (!status.isLoaded) return;
-        setPosition(status.positionMillis ?? 0);
-        setDuration(status.durationMillis ?? 0);
-        if (status.didJustFinish) {
-          setPlaying(false);
-          setPosition(0);
-          void newSound.setPositionAsync(0);
-        }
-      });
-      setSound(newSound);
-      setPlaying(true);
+      void setAudioModeAsync({ playsInSilentMode: true });
+      player.play();
     } catch {
       // Playback failed; stay paused.
     }
-  }, [playing, sound, message.media_url]);
+  }, [playing, player]);
 
   const progress = duration > 0 ? position / duration : 0;
 
@@ -410,7 +401,7 @@ export default function DiscussionScreen() {
   const [giphyQuery, setGiphyQuery] = useState('');
   const [giphyLoading, setGiphyLoading] = useState(false);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recorder, setRecorder] = useState<AudioRecorder | null>(null);
   const [recordSecs, setRecordSecs] = useState(0);
   const [uploading, setUploading] = useState(false);
   const listRef = useRef<FlatList<DiscussionMessage>>(null);
@@ -607,21 +598,19 @@ export default function DiscussionScreen() {
 
   const startRecording = useCallback(async () => {
     try {
-      const perm = await Audio.requestPermissionsAsync();
+      const perm = await requestRecordingPermissionsAsync();
       if (!perm.granted) {
         setError('Microphone access is needed for voice messages.');
         return;
       }
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
-      const rec = new Audio.Recording();
-      await rec.prepareToRecordAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-      );
-      await rec.startAsync();
-      setRecording(rec);
+      const rec = new AudioRecorder(RecordingPresets.HIGH_QUALITY);
+      await rec.prepareToRecordAsync();
+      rec.record();
+      setRecorder(rec);
       setRecordSecs(0);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       recordTimer.current = setInterval(() => {
@@ -638,17 +627,18 @@ export default function DiscussionScreen() {
         clearInterval(recordTimer.current);
         recordTimer.current = null;
       }
-      const rec = recording;
-      setRecording(null);
+      const rec = recorder;
+      setRecorder(null);
+      const secs = recordSecs;
       setRecordSecs(0);
       if (!rec) return;
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       try {
-        await rec.stopAndUnloadAsync();
-        const uri = rec.getURI();
-        const status = await rec.getStatusAsync().catch(() => null);
+        await rec.stop();
+        const uri = rec.uri;
+        const recStatus = rec.getStatus();
         // Discard accidental taps (under 1 second)
-        const durationMs = status && 'durationMillis' in status ? (status.durationMillis ?? 0) : recordSecs * 1000;
+        const durationMs = recStatus?.durationMillis ?? secs * 1000;
         if (send && uri && durationMs >= 1000) {
           setUploading(true);
           const up = await uploadChatMedia(uri, 'voice');
@@ -675,7 +665,7 @@ export default function DiscussionScreen() {
         setError('Could not finish recording.');
       }
     },
-    [recording, replyTo, insertMessage],
+    [recorder, recordSecs, replyTo, insertMessage],
   );
 
   const onReact = useCallback(
@@ -898,7 +888,7 @@ export default function DiscussionScreen() {
         </View>
       ) : null}
 
-      {recording ? (
+      {recorder ? (
         <View style={[styles.recordingBar, { backgroundColor: tokens.card }]}>
           <View style={[styles.recDot, { backgroundColor: tokens.danger }]} />
           <Text style={[styles.recTime, { color: tokens.ink }]}>
