@@ -19,6 +19,7 @@ import {
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
 import { CoupleIllustration } from '../src/components/couple-illustration';
+import { LoadingHeart } from '../src/components/loading-heart';
 
 const CATEGORIES: Array<string | null> = [null, ...DATE_CATEGORIES];
 
@@ -132,7 +133,7 @@ export default function DateIdeasScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Finding date ideas…" />
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
