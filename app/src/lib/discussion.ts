@@ -120,7 +120,7 @@ export async function getMyUserId(): Promise<string | null> {
 
 /** The other member of my couple (id + display name), or null unpaired. */
 export async function getPartner(): Promise<
-  PairResult<{ id: string; name: string } | null>
+  PairResult<{ id: string; name: string; avatar_url: string | null } | null>
 > {
   const client = getClient();
   if (!client) return { data: null, error: NOT_CONFIGURED };
@@ -133,16 +133,18 @@ export async function getPartner(): Promise<
     if (!uid) return { data: null, error: 'You are not signed in.' };
     const { data, error } = await client
       .from('couple_members')
-      .select('user_id,profiles(name)')
+      .select('user_id,profiles(name,avatar_url)')
       .eq('couple_id', couple.data)
       .neq('user_id', uid)
       .limit(1)
       .maybeSingle();
     if (error) throw error;
     if (!data) return { data: null, error: null };
-    const p = data.profiles as { name: string } | { name: string }[] | null;
-    const name = Array.isArray(p) ? (p[0]?.name ?? 'Partner') : (p?.name ?? 'Partner');
-    return { data: { id: data.user_id as string, name }, error: null };
+    const p = data.profiles as { name: string; avatar_url: string | null } | { name: string; avatar_url: string | null }[] | null;
+    const profile = Array.isArray(p) ? p[0] : p;
+    const name = profile?.name ?? 'Partner';
+    const avatar_url = profile?.avatar_url ?? null;
+    return { data: { id: data.user_id as string, name, avatar_url }, error: null };
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not find your partner.') };
   }
