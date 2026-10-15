@@ -22,7 +22,6 @@ import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { CelebrationBurst } from '../../src/components/celebration';
-import { AnimatedCheck } from '../../src/components/success-check';
 import { HeartsIllustration } from '../../src/components/hearts-illustration';
 import { LoadingHeart } from '../../src/components/loading-heart';
 
@@ -267,16 +266,16 @@ export default function SparkScreen() {
               </FadeInView>
             );
           })}
+          {celebrate && (
+            <View style={styles.celebrationRow}>
+              <HeartsIllustration expression="excited" variant="celebrate" size={120} />
+            </View>
+          )}
         </View>
       )}
     </ScrollView>
       {phase === 'results' && (
-        <>
-          <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
-          <View style={styles.checkLayer} pointerEvents="none">
-            <AnimatedCheck visible={celebrate} color={tokens.success} size={84} />
-          </View>
-        </>
+        <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
       )}
     </View>
   );
@@ -292,10 +291,11 @@ const BUBBLY_SHADOW = {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  checkLayer: {
-    ...StyleSheet.absoluteFillObject,
+  celebrationRow: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
   bg: {
     ...StyleSheet.absoluteFillObject,
