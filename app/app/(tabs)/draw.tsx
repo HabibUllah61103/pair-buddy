@@ -543,8 +543,8 @@ const styles = StyleSheet.create({
     ...BUBBLY_SHADOW,
   },
   toolRow: { gap: 4, alignItems: 'center', paddingHorizontal: 6 },
-  toolBtn: { alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, minWidth: 56 },
-  toolLabel: { fontFamily: FONTS.body, fontSize: 11, fontWeight: '700', marginTop: 4 },
+  toolBtn: { alignItems: 'center', paddingHorizontal: 8, paddingVertical: 10, minWidth: 56, minHeight: 44 },
+  toolLabel: { fontFamily: FONTS.body, fontSize: 11, fontWeight: '700', marginTop: 6 },
   toolDivider: { width: 1, height: 40, marginHorizontal: 6, borderRadius: 1 },
   swatchRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
   swatch: {
