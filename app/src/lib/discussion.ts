@@ -35,6 +35,10 @@ export type DiscussionMessage = {
   reply_to_id: string | null;
   /** Emoji -> uids that reacted. */
   reactions: Record<string, string[]>;
+  /** Soft-delete timestamp; null when not deleted. */
+  deleted_at: string | null;
+  /** Last edit timestamp; null when never edited. */
+  edited_at: string | null;
   /** Populated client-side for quoted replies. */
   reply_to?: {
     id: string;
@@ -55,6 +59,8 @@ type MessageRow = {
   media_url: string | null;
   reply_to_id: string | null;
   reactions: Record<string, string[]> | null;
+  deleted_at: string | null;
+  edited_at: string | null;
   profiles: { name: string } | { name: string }[] | null;
 };
 
@@ -105,11 +111,13 @@ function toDiscussionMessage(row: MessageRow): DiscussionMessage {
     media_url: row.media_url ?? null,
     reply_to_id: row.reply_to_id ?? null,
     reactions: row.reactions ?? {},
+    deleted_at: row.deleted_at ?? null,
+    edited_at: row.edited_at ?? null,
   };
 }
 
 const SELECT =
-  'id,couple_id,sender_id,body,read_by,created_at,message_type,media_url,reply_to_id,reactions,profiles(name)';
+  'id,couple_id,sender_id,body,read_by,created_at,message_type,media_url,reply_to_id,reactions,deleted_at,edited_at,profiles(name)';
 
 /** The signed-in user's id, for "is this mine" checks in the UI. */
 export async function getMyUserId(): Promise<string | null> {
@@ -118,9 +126,16 @@ export async function getMyUserId(): Promise<string | null> {
   return getUserId(client);
 }
 
-/** The other member of my couple (id + display name), or null unpaired. */
+/** The other member of my couple (full profile), or null unpaired. */
 export async function getPartner(): Promise<
-  PairResult<{ id: string; name: string; avatar_url: string | null } | null>
+  PairResult<{
+    id: string;
+    name: string;
+    avatar_url: string | null;
+    birthdate: string | null;
+    gender: string | null;
+    locale: string | null;
+  } | null>
 > {
   const client = getClient();
   if (!client) return { data: null, error: NOT_CONFIGURED };
@@ -133,18 +148,40 @@ export async function getPartner(): Promise<
     if (!uid) return { data: null, error: 'You are not signed in.' };
     const { data, error } = await client
       .from('couple_members')
-      .select('user_id,profiles(name,avatar_url)')
+      .select('user_id,profiles(name,avatar_url,birthdate,gender,locale)')
       .eq('couple_id', couple.data)
       .neq('user_id', uid)
       .limit(1)
       .maybeSingle();
     if (error) throw error;
     if (!data) return { data: null, error: null };
-    const p = data.profiles as { name: string; avatar_url: string | null } | { name: string; avatar_url: string | null }[] | null;
+    const p = data.profiles as {
+      name: string;
+      avatar_url: string | null;
+      birthdate: string | null;
+      gender: string | null;
+      locale: string | null;
+    } | {
+      name: string;
+      avatar_url: string | null;
+      birthdate: string | null;
+      gender: string | null;
+      locale: string | null;
+    }[] | null;
     const profile = Array.isArray(p) ? p[0] : p;
     const name = profile?.name ?? 'Partner';
     const avatar_url = profile?.avatar_url ?? null;
-    return { data: { id: data.user_id as string, name, avatar_url }, error: null };
+    return {
+      data: {
+        id: data.user_id as string,
+        name,
+        avatar_url,
+        birthdate: profile?.birthdate ?? null,
+        gender: profile?.gender ?? null,
+        locale: profile?.locale ?? null,
+      },
+      error: null,
+    };
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not find your partner.') };
   }
@@ -358,7 +395,8 @@ export async function toggleReaction(
 }
 
 /**
- * Delete a message. Senders can delete their own messages.
+ * Soft-delete a message (sets deleted_at). Senders can delete their own messages.
+ * The message remains in history as a "deleted" placeholder.
  */
 export async function deleteMessage(
   messageId: string,
@@ -368,12 +406,36 @@ export async function deleteMessage(
   try {
     const { error } = await client
       .from('discussion_messages')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', messageId);
     if (error) throw error;
     return { data: null, error: null };
   } catch (e) {
     return { data: null, error: toMessage(e, 'Could not delete message.') };
+  }
+}
+
+/**
+ * Edit a text message's body. Senders can edit their own messages.
+ * Sets edited_at so the UI can show an "edited" indicator.
+ */
+export async function editMessage(
+  messageId: string,
+  body: string,
+): Promise<PairResult<null>> {
+  const client = getClient();
+  if (!client) return { data: null, error: NOT_CONFIGURED };
+  try {
+    const trimmed = body.trim();
+    if (!trimmed) return { data: null, error: 'Message cannot be empty.' };
+    const { error } = await client
+      .from('discussion_messages')
+      .update({ body: trimmed, edited_at: new Date().toISOString() })
+      .eq('id', messageId);
+    if (error) throw error;
+    return { data: null, error: null };
+  } catch (e) {
+    return { data: null, error: toMessage(e, 'Could not edit message.') };
   }
 }
 
@@ -416,6 +478,8 @@ function rowToMessage(
     media_url?: string | null;
     reply_to_id?: string | null;
     reactions?: Record<string, string[]> | null;
+    deleted_at?: string | null;
+    edited_at?: string | null;
   },
   coupleId: string,
   sender_name: string,
@@ -432,6 +496,8 @@ function rowToMessage(
     media_url: row.media_url ?? null,
     reply_to_id: row.reply_to_id ?? null,
     reactions: row.reactions ?? {},
+    deleted_at: row.deleted_at ?? null,
+    edited_at: row.edited_at ?? null,
   };
 }
 
