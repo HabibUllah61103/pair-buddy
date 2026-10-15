@@ -133,7 +133,7 @@ export default function DateIdeasScreen() {
       </View>
 
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Finding date ideas…" />
+        <LoadingHeart tokens={tokens} size={56} message="Finding date ideas…" />
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>
