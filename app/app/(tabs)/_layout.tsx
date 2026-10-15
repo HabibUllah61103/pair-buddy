@@ -11,8 +11,22 @@ export default function TabsLayout() {
         tabBarActiveTintColor: tokens.primary,
         tabBarInactiveTintColor: tokens.muted,
         tabBarStyle: {
-          backgroundColor: tokens.background,
+          backgroundColor: tokens.card,
           borderTopColor: tokens.border,
+          borderTopWidth: 1,
+          elevation: 12,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          height: 68,
+          paddingBottom: 10,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '700',
+          marginTop: 2,
         },
       }}
     >
@@ -20,10 +34,10 @@ export default function TabsLayout() {
         name="spark"
         options={{
           title: 'Spark',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="sparkles"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
@@ -36,10 +50,10 @@ export default function TabsLayout() {
         name="quizzes"
         options={{
           title: 'Quizzes',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="albums"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
@@ -52,10 +66,10 @@ export default function TabsLayout() {
         name="memories"
         options={{
           title: 'Memories',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="images"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
@@ -68,10 +82,10 @@ export default function TabsLayout() {
         name="draw"
         options={{
           title: 'Draw',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="pencil"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
@@ -84,10 +98,10 @@ export default function TabsLayout() {
         name="distance"
         options={{
           title: 'Distance',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="location"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
@@ -100,10 +114,10 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: 'More',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <RichIcon
               name="ellipsis-horizontal"
-              size={size}
+              size={26}
               tokens={tokens}
               variant="plain"
               color={color}
