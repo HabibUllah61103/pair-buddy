@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import { useEffect } from 'react';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useOnboarding } from '../../src/lib/onboarding';
 import type { StepProps } from '../../src/components/onboarding/steps';
 import {
@@ -34,6 +34,7 @@ const STEP_COMPONENTS: Record<string, (props: StepProps) => JSX.Element> = {
 };
 
 export default function OnboardingScreen() {
+  const router = useRouter();
   const {
     step,
     draft,

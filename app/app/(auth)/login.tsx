@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../src/lib/auth';
 import type { AuthResult } from '../../src/lib/auth';
@@ -21,6 +21,7 @@ import { RichIcon } from '../../src/components/rich-icon';
 type Action = 'google' | 'apple' | 'phone';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { tokens, mode } = useTheme();
   const { signInWithGoogle, signInWithApple, signInWithPhone } = useAuth();
   const [showPhoneInput, setShowPhoneInput] = useState(false);

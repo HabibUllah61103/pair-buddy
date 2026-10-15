@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   generateDatePlan,
@@ -32,6 +32,7 @@ function toIsoDate(d: Date): string {
 }
 
 export default function DateAiScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const [mood, setMood] = useState<string | null>(null);
   const [budget, setBudget] = useState<string | null>(null);

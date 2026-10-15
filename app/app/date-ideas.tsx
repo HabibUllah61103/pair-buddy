@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   DATE_CATEGORIES,
@@ -33,6 +33,7 @@ function toIsoDate(d: Date): string {
 }
 
 export default function DateIdeasScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const [category, setCategory] = useState<string | null>(null);
   const [ideas, setIdeas] = useState<DateIdea[]>([]);

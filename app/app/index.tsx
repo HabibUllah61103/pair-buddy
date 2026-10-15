@@ -1,17 +1,35 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '../src/lib/auth';
-import { getOnboardingComplete } from '../src/lib/onboarding';
+import { getOnboardingComplete, markOnboardingComplete } from '../src/lib/onboarding';
 import { getMyCoupleId, NOT_CONFIGURED } from '../src/lib/pairing';
 import { getCoupleMemberCount } from '../src/lib/sparks';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
 import { LoadingHeart } from '../src/components/loading-heart';
 
+// Metro/Babel resolve this at runtime; declared here for TypeScript.
+declare function require(name: string): any;
+
+let cachedClient: SupabaseClient | null | undefined;
+
+/** Lazy Supabase access — never throws at import time when unconfigured. */
+function getClient(): SupabaseClient | null {
+  if (cachedClient !== undefined) return cachedClient;
+  try {
+    cachedClient = require('../src/lib/supabase').supabase ?? null;
+  } catch {
+    cachedClient = null;
+  }
+  return cachedClient ?? null;
+}
+
 export default function HomeScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
-  const { session, loading: authLoading } = useAuth();
+  const { session, user, loading: authLoading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [unconfigured, setUnconfigured] = useState(false);
 
@@ -26,8 +44,36 @@ export default function HomeScreen() {
     void (async () => {
       const done = await getOnboardingComplete();
       if (!done) {
-        router.replace('/(onboarding)');
-        return;
+        // The local flag may be missing on a fresh install even for existing
+        // users — check the server before sending them through onboarding.
+        const client = getClient();
+        const userId = user?.id;
+        if (client && userId) {
+          try {
+            const { data } = await client
+              .from('profiles')
+              .select('id')
+              .eq('id', userId)
+              .limit(1)
+              .maybeSingle();
+            if (data) {
+              // Profile exists: onboarding was completed on another device.
+              // Sync the local flag and continue to the couple check.
+              await markOnboardingComplete();
+            } else {
+              router.replace('/(onboarding)');
+              return;
+            }
+          } catch {
+            // Server unreachable — fall through to onboarding, which handles
+            // the offline path itself.
+            router.replace('/(onboarding)');
+            return;
+          }
+        } else {
+          router.replace('/(onboarding)');
+          return;
+        }
       }
       const couple = await getMyCoupleId();
       if (couple.error === NOT_CONFIGURED) {
@@ -46,7 +92,7 @@ export default function HomeScreen() {
       }
       router.replace('/(tabs)/spark');
     })();
-  }, [session, authLoading]);
+  }, [session, user, authLoading]);
 
   if (authLoading || checking) {
     return (

@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import {
   getMessages,
   getMyUserId,
@@ -74,6 +74,7 @@ function MessageBubble({
 }
 
 export default function DiscussionScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const [messages, setMessages] = useState<DiscussionMessage[]>([]);
   const [myId, setMyId] = useState<string | null>(null);

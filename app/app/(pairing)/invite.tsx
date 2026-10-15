@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   createInvite,
@@ -27,6 +27,7 @@ import { LoadingHeart } from '../../src/components/loading-heart';
 import { RichIcon } from '../../src/components/rich-icon';
 
 export default function InviteScreen() {
+  const router = useRouter();
   const { tokens, mode } = useTheme();
   const [code, setCode] = useState<string | null>(null);
   const [coupleId, setCoupleId] = useState<string | null>(null);

@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   deletePlan,
@@ -50,6 +50,7 @@ function splitPlans(plans: DatePlan[]): {
 }
 
 export default function DatePlansScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const [plans, setPlans] = useState<DatePlan[]>([]);
   const [loading, setLoading] = useState(true);

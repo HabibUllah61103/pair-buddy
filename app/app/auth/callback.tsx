@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { useTheme } from '../../src/lib/theme-provider';
 
@@ -14,6 +14,7 @@ import { useTheme } from '../../src/lib/theme-provider';
  * is ready.
  */
 export default function AuthCallbackScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const { session, loading } = useAuth();
 
