@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   WIDGET_DESCRIPTIONS,
@@ -13,6 +13,7 @@ import {
 } from '../src/lib/widgets';
 import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
+import { LoadingHeart } from '../src/components/loading-heart';
 
 export default function WidgetSettingsScreen() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function WidgetSettingsScreen() {
       </Text>
 
       {loading ? (
-        <ActivityIndicator color={tokens.primary} />
+        <LoadingHeart tokens={tokens} message="Loading widgets…" />
       ) : (
         WIDGET_TYPES.map((type) => (
           <Pressable

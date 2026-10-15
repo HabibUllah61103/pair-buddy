@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { answersMatch, getPackResults, packTitle, type QuestionResult } from '../src/lib/quiz';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { LoadingHeart } from '../src/components/loading-heart';
 import { CelebrationBurst } from '../src/components/celebration';
 import { HeartsIllustration } from '../src/components/hearts-illustration';
 
@@ -77,7 +77,7 @@ export default function QuizResultsScreen() {
       <CelebrationBurst trigger={celebrate} colors={tokens.gradient} />
       <Text style={[styles.header, { color: tokens.ink }]}>{packTitle(category ?? '')} — Results</Text>
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Calculating results…" />
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>

@@ -43,9 +43,9 @@ export function mix(hexA: string, hexB: string, weight: number): string {
   });
 }
 
-/** Mix a color toward white. `amount` 0..1. */
+/** Mix a color toward white. `amount` 0..1 (proportion of the original color kept). */
 export function tint(hex: string, amount: number): string {
-  return mix('#FFFFFF', hex, amount);
+  return mix(hex, '#FFFFFF', amount);
 }
 
 /** Mix a color toward black. `amount` 0..1. */

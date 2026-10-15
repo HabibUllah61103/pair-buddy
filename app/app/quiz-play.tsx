@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,6 +17,7 @@ import {
 } from '../src/lib/quiz';
 import { useTheme } from '../src/lib/theme-provider';
 import { FONTS } from '../src/theme';
+import { LoadingHeart } from '../src/components/loading-heart';
 
 export default function QuizPlayScreen() {
   const { tokens } = useTheme();
@@ -95,7 +95,7 @@ export default function QuizPlayScreen() {
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
       <Text style={[styles.packName, { color: tokens.ink }]}>{packTitle(category ?? '')}</Text>
       {loading ? (
-        <ActivityIndicator color={tokens.primary} style={styles.loader} />
+        <LoadingHeart tokens={tokens} message="Loading quiz…" />
       ) : error && questions.length === 0 ? (
         <View style={styles.center}>
           <Text style={[styles.error, { color: tokens.danger }]}>{error}</Text>

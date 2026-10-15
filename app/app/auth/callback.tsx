@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { useTheme } from '../../src/lib/theme-provider';
+import { LoadingHeart } from '../../src/components/loading-heart';
 
 /**
  * OAuth callback route: catches the `pairbuddy://auth/callback` deep link
@@ -26,7 +27,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
-      <ActivityIndicator color={tokens.primary} />
+      <LoadingHeart tokens={tokens} message="Signing you in…" />
     </View>
   );
 }
