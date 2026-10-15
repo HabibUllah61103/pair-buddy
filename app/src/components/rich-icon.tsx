@@ -16,6 +16,7 @@ import {
   ArrowRightIcon,
   CalendarIcon,
   CameraIcon,
+  CaretLeftIcon,
   CaretRightIcon,
   ChatCircleIcon,
   CheckIcon,
@@ -35,6 +36,8 @@ import {
   PaintBrushIcon,
   PaperPlaneTiltIcon,
   PauseIcon,
+  PhoneIcon,
+  VideoCameraIcon,
   PencilSimpleIcon,
   PlayIcon,
   PlusIcon,
@@ -88,6 +91,9 @@ const ICONS = {
   mic: MicrophoneIcon,
   sticker: StickerIcon,
   pause: PauseIcon,
+  phone: PhoneIcon,
+  video: VideoCameraIcon,
+  'chevron-back': CaretLeftIcon,
 } satisfies Record<string, Icon>;
 
 export type RichIconName = keyof typeof ICONS;
