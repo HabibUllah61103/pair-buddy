@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -11,18 +14,48 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
+import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 import {
+  deleteMessage,
   getMessages,
   getMyUserId,
   getPartner,
   markRead,
-  sendMessage,
+  sendRichMessage,
+  sendTyping,
   subscribeMessages,
+  subscribeTyping,
+  toggleReaction,
+  uploadChatMedia,
   type DiscussionMessage,
+  type MessageType,
 } from '../src/lib/discussion';
 import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
 import { CoupleIllustration } from '../src/components/couple-illustration';
+import { LoadingHeart } from '../src/components/loading-heart';
+import { RichIcon } from '../src/components/rich-icon';
+import { SpringPress } from '../src/components/animated';
+
+const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🙏', '👍'];
+
+const STICKERS = [
+  { name: 'happy', source: require('../assets/hearts-happy.png') },
+  { name: 'excited', source: require('../assets/hearts-excited.png') },
+  { name: 'inlove', source: require('../assets/hearts-inlove.png') },
+  { name: 'laughing', source: require('../assets/hearts-laughing.png') },
+  { name: 'wink', source: require('../assets/hearts-wink.png') },
+  { name: 'surprised', source: require('../assets/hearts-surprised.png') },
+  { name: 'curious', source: require('../assets/hearts-curious.png') },
+  { name: 'proud', source: require('../assets/hearts-proud.png') },
+  { name: 'sleepy', source: require('../assets/hearts-sleepy.png') },
+] as const;
+
+function stickerSource(name: string) {
+  return STICKERS.find((s) => s.name === name)?.source ?? STICKERS[0].source;
+}
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -33,7 +66,45 @@ function formatTime(iso: string): string {
   return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${time}`;
 }
 
-function MessageBubble({
+function formatDuration(ms: number): string {
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/** Read receipt ticks: ✓ sent, ✓✓ read (blue). */
+function Ticks({ read, color }: { read: boolean; color: string }) {
+  return (
+    <Text style={[styles.ticks, { color: read ? '#4FC3F7' : color }]}>
+      {read ? '✓✓' : '✓'}
+    </Text>
+  );
+}
+
+/** Fake waveform bars for voice messages (deterministic by message id). */
+function Waveform({ seed, color, progress }: { seed: string; color: string; progress: number }) {
+  const bars = [];
+  let h = 0;
+  for (let i = 0; i < 24; i++) {
+    h = (h * 31 + seed.charCodeAt(i % seed.length) * 17 + i * 13) % 100;
+    const height = 6 + (h % 22);
+    bars.push(
+      <View
+        key={i}
+        style={[
+          styles.waveBar,
+          {
+            height,
+            backgroundColor: color,
+            opacity: i / 24 <= progress ? 1 : 0.35,
+          },
+        ]}
+      />,
+    );
+  }
+  return <View style={styles.waveform}>{bars}</View>;
+}
+
+function VoiceBubble({
   message,
   mine,
 }: {
@@ -41,35 +112,252 @@ function MessageBubble({
   mine: boolean;
 }) {
   const { tokens } = useTheme();
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const iconColor = mine ? tokens.onPrimary : tokens.primary;
+  const waveColor = mine ? tokens.onPrimary : tokens.primary;
+
+  useEffect(() => {
+    return () => {
+      void sound?.unloadAsync();
+    };
+  }, [sound]);
+
+  const togglePlay = useCallback(async () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      if (playing && sound) {
+        await sound.pauseAsync();
+        setPlaying(false);
+        return;
+      }
+      if (sound) {
+        await sound.playAsync();
+        setPlaying(true);
+        return;
+      }
+      if (!message.media_url) return;
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: message.media_url },
+        { shouldPlay: true },
+      );
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (!status.isLoaded) return;
+        setPosition(status.positionMillis ?? 0);
+        setDuration(status.durationMillis ?? 0);
+        if (status.didJustFinish) {
+          setPlaying(false);
+          setPosition(0);
+          void newSound.setPositionAsync(0);
+        }
+      });
+      setSound(newSound);
+      setPlaying(true);
+    } catch {
+      // Playback failed; stay paused.
+    }
+  }, [playing, sound, message.media_url]);
+
+  const progress = duration > 0 ? position / duration : 0;
+
   return (
-    <View style={[styles.bubbleRow, mine ? styles.bubbleRowMine : null]}>
-      <View
+    <View style={styles.voiceRow}>
+      <Pressable
+        onPress={() => void togglePlay()}
         style={[
-          styles.bubble,
-          mine
-            ? [styles.bubbleMine, { backgroundColor: tokens.primary }]
-            : [styles.bubbleTheirs, { backgroundColor: tokens.card }],
+          styles.voiceButton,
+          { backgroundColor: mine ? 'rgba(255,255,255,0.25)' : tokens.primaryTint },
         ]}
       >
-        <Text
-          style={[
-            styles.bubbleText,
-            { color: mine ? tokens.onPrimary : tokens.ink },
-          ]}
-        >
-          {message.body}
-        </Text>
-        <Text
-          style={[
-            styles.bubbleTime,
-            mine
-              ? [styles.bubbleTimeMine, { color: tokens.onPrimary }]
-              : { color: tokens.muted },
-          ]}
-        >
-          {formatTime(message.created_at)}
+        <RichIcon
+          name={playing ? 'pause' : 'play'}
+          size={16}
+          tokens={tokens}
+          variant="plain"
+          color={iconColor}
+        />
+      </Pressable>
+      <View style={styles.voiceWave}>
+        <Waveform seed={message.id} color={waveColor} progress={progress} />
+        <Text style={[styles.voiceDuration, { color: iconColor, opacity: 0.8 }]}>
+          {formatDuration(duration > 0 ? (playing ? position : duration) : 0)}
         </Text>
       </View>
+    </View>
+  );
+}
+
+function ReplyQuote({
+  reply,
+  mine,
+}: {
+  reply: NonNullable<DiscussionMessage['reply_to']>;
+  mine: boolean;
+}) {
+  const { tokens } = useTheme();
+  const preview =
+    reply.message_type === 'image'
+      ? '📷 Photo'
+      : reply.message_type === 'voice'
+        ? '🎤 Voice message'
+        : reply.message_type === 'sticker'
+          ? '💌 Sticker'
+          : reply.body;
+  return (
+    <View
+      style={[
+        styles.replyQuote,
+        {
+          borderLeftColor: mine ? tokens.onPrimary : tokens.primary,
+          backgroundColor: mine ? 'rgba(255,255,255,0.15)' : tokens.primaryTint,
+        },
+      ]}
+    >
+      <Text
+        style={[
+          styles.replyName,
+          { color: mine ? tokens.onPrimary : tokens.primary },
+        ]}
+        numberOfLines={1}
+      >
+        {reply.sender_name}
+      </Text>
+      <Text
+        style={[
+          styles.replyBody,
+          { color: mine ? tokens.onPrimary : tokens.muted },
+        ]}
+        numberOfLines={2}
+      >
+        {preview}
+      </Text>
+    </View>
+  );
+}
+
+function MessageBubble({
+  message,
+  mine,
+  myId,
+  partnerRead,
+  onLongPress,
+  onImagePress,
+}: {
+  message: DiscussionMessage;
+  mine: boolean;
+  myId: string | null;
+  partnerRead: boolean;
+  onLongPress: (message: DiscussionMessage) => void;
+  onImagePress: (url: string) => void;
+}) {
+  const { tokens } = useTheme();
+  const bubbleStyle = mine
+    ? [styles.bubbleMine, { backgroundColor: tokens.primary }]
+    : [styles.bubbleTheirs, { backgroundColor: tokens.card }];
+  const textColor = mine ? tokens.onPrimary : tokens.ink;
+  const timeColor = mine ? tokens.onPrimary : tokens.muted;
+
+  const renderContent = () => {
+    switch (message.message_type) {
+      case 'image':
+        return message.media_url ? (
+          <Pressable onPress={() => onImagePress(message.media_url as string)}>
+            <Image
+              source={{ uri: message.media_url }}
+              style={styles.bubbleImage}
+              resizeMode="cover"
+            />
+          </Pressable>
+        ) : (
+          <Text style={[styles.bubbleText, { color: textColor }]}>📷 Photo</Text>
+        );
+      case 'voice':
+        return <VoiceBubble message={message} mine={mine} />;
+      case 'sticker':
+        return (
+          <Image
+            source={stickerSource(message.body)}
+            style={styles.sticker}
+            resizeMode="contain"
+          />
+        );
+      default:
+        return (
+          <Text style={[styles.bubbleText, { color: textColor }]}>
+            {message.body}
+          </Text>
+        );
+    }
+  };
+
+  const reactionEntries = Object.entries(message.reactions).filter(
+    ([, uids]) => uids.length > 0,
+  );
+
+  return (
+    <View style={[styles.bubbleRow, mine ? styles.bubbleRowMine : null]}>
+      <Pressable
+        onLongPress={() => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          onLongPress(message);
+        }}
+        delayLongPress={400}
+        style={[
+          styles.bubble,
+          ...bubbleStyle,
+          message.message_type === 'sticker' ? styles.bubbleSticker : null,
+        ]}
+      >
+        {message.reply_to ? <ReplyQuote reply={message.reply_to} mine={mine} /> : null}
+        {renderContent()}
+        {message.message_type !== 'sticker' ? (
+          <View style={styles.bubbleMeta}>
+            <Text
+              style={[
+                styles.bubbleTime,
+                { color: timeColor },
+                mine ? styles.bubbleTimeMine : null,
+              ]}
+            >
+              {formatTime(message.created_at)}
+            </Text>
+            {mine ? (
+              <Ticks read={partnerRead} color={timeColor} />
+            ) : null}
+          </View>
+        ) : null}
+      </Pressable>
+      {reactionEntries.length > 0 ? (
+        <View
+          style={[
+            styles.reactionsRow,
+            mine ? styles.reactionsRowMine : null,
+          ]}
+        >
+          {reactionEntries.map(([emoji, uids]) => (
+            <View
+              key={emoji}
+              style={[
+                styles.reactionChip,
+                {
+                  backgroundColor: tokens.card,
+                  borderColor: uids.includes(myId ?? '')
+                    ? tokens.primary
+                    : tokens.border,
+                },
+              ]}
+            >
+              <Text style={styles.reactionEmoji}>{emoji}</Text>
+              <Text style={[styles.reactionCount, { color: tokens.muted }]}>
+                {uids.length}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -80,15 +368,27 @@ export default function DiscussionScreen() {
   const [messages, setMessages] = useState<DiscussionMessage[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [partnerName, setPartnerName] = useState('Partner');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [replyTo, setReplyTo] = useState<DiscussionMessage | null>(null);
+  const [actionMessage, setActionMessage] = useState<DiscussionMessage | null>(null);
+  const [reactMessage, setReactMessage] = useState<DiscussionMessage | null>(null);
+  const [stickerOpen, setStickerOpen] = useState(false);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recordSecs, setRecordSecs] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const listRef = useRef<FlatList<DiscussionMessage>>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSent = useRef(0);
+  const recordTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const applyMessages = useCallback((next: DiscussionMessage[]) => {
     setMessages(next);
-    // Best-effort read receipts: marking read never blocks the UI.
     void markRead(next);
   }, []);
 
@@ -107,48 +407,271 @@ export default function DiscussionScreen() {
       void markRead(msgs.data);
     }
     setMyId(uid);
-    if (partner.data) setPartnerId(partner.data.id);
+    if (partner.data) {
+      setPartnerId(partner.data.id);
+      setPartnerName(partner.data.name);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void load();
     let unsubscribe: (() => void) | null = null;
-    void subscribeMessages((incoming) => {
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === incoming.id)) return prev;
-        const next = [incoming, ...prev];
-        void markRead(next);
-        return next;
-      });
-    }).then((res) => {
+    let unsubTyping: (() => void) | null = null;
+
+    void subscribeMessages(
+      (incoming) => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === incoming.id)) return prev;
+          const next = [incoming, ...prev];
+          void markRead(next);
+          return next;
+        });
+      },
+      (updated) => {
+        // Reaction or read-receipt update
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === updated.id
+              ? { ...m, reactions: updated.reactions, read_by: updated.read_by }
+              : m,
+          ),
+        );
+      },
+      (deletedId) => {
+        setMessages((prev) => prev.filter((m) => m.id !== deletedId));
+      },
+    ).then((res) => {
       if (res.data) unsubscribe = res.data;
     });
+
+    void subscribeTyping((uid) => {
+      // Only show for the partner, not my own events
+      setTyping(true);
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = setTimeout(() => setTyping(false), 3000);
+    }).then((res) => {
+      if (res.data) unsubTyping = res.data;
+    });
+
     return () => {
       unsubscribe?.();
+      unsubTyping?.();
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, [load]);
+
+  const onDraftChange = useCallback(
+    (text: string) => {
+      setDraft(text);
+      // Throttle typing events to one per 2s
+      const now = Date.now();
+      if (now - lastTypingSent.current > 2000 && text.length > 0) {
+        lastTypingSent.current = now;
+        void sendTyping();
+      }
+    },
+    [],
+  );
+
+  const insertMessage = useCallback((msg: DiscussionMessage) => {
+    setMessages((prev) => [msg, ...prev]);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
 
   const onSend = useCallback(async () => {
     if (sending || !draft.trim()) return;
     setSending(true);
-    const res = await sendMessage(draft);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const res = await sendRichMessage({
+      body: draft,
+      message_type: 'text',
+      reply_to_id: replyTo?.id ?? null,
+    });
     setSending(false);
     if (res.error || !res.data) {
       setError(res.error ?? 'Could not send your message.');
       return;
     }
     setDraft('');
-    setMessages((prev) => [res.data as DiscussionMessage, ...prev]);
-    listRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, [draft, sending]);
+    setReplyTo(null);
+    insertMessage(res.data);
+  }, [draft, sending, replyTo, insertMessage]);
 
-  // Newest message I sent: "Seen" when the partner has opened the chat.
-  const myLastMessage = messages.find((m) => m.sender_id === myId);
-  const seen =
-    !!partnerId &&
-    !!myLastMessage &&
-    myLastMessage.read_by.includes(partnerId);
+  const onSendSticker = useCallback(
+    async (name: string) => {
+      setStickerOpen(false);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const res = await sendRichMessage({
+        body: name,
+        message_type: 'sticker',
+        reply_to_id: replyTo?.id ?? null,
+      });
+      if (res.error || !res.data) {
+        setError(res.error ?? 'Could not send sticker.');
+        return;
+      }
+      setReplyTo(null);
+      insertMessage(res.data);
+    },
+    [replyTo, insertMessage],
+  );
+
+  const onPickImage = useCallback(async () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setError('Photo access is needed to share pictures.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    setUploading(true);
+    const up = await uploadChatMedia(result.assets[0].uri, 'image');
+    if (up.error || !up.data) {
+      setUploading(false);
+      setError(up.error ?? 'Could not upload photo.');
+      return;
+    }
+    const res = await sendRichMessage({
+      body: '📷 Photo',
+      message_type: 'image',
+      media_url: up.data,
+      reply_to_id: replyTo?.id ?? null,
+    });
+    setUploading(false);
+    if (res.error || !res.data) {
+      setError(res.error ?? 'Could not send photo.');
+      return;
+    }
+    setReplyTo(null);
+    insertMessage(res.data);
+  }, [replyTo, insertMessage]);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const perm = await Audio.requestPermissionsAsync();
+      if (!perm.granted) {
+        setError('Microphone access is needed for voice messages.');
+        return;
+      }
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const rec = new Audio.Recording();
+      await rec.prepareToRecordAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+      );
+      await rec.startAsync();
+      setRecording(rec);
+      setRecordSecs(0);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      recordTimer.current = setInterval(() => {
+        setRecordSecs((s) => s + 1);
+      }, 1000);
+    } catch {
+      setError('Could not start recording.');
+    }
+  }, []);
+
+  const stopRecording = useCallback(
+    async (send: boolean) => {
+      if (recordTimer.current) {
+        clearInterval(recordTimer.current);
+        recordTimer.current = null;
+      }
+      const rec = recording;
+      setRecording(null);
+      setRecordSecs(0);
+      if (!rec) return;
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await rec.stopAndUnloadAsync();
+        const uri = rec.getURI();
+        const status = await rec.getStatusAsync().catch(() => null);
+        // Discard accidental taps (under 1 second)
+        const durationMs = status && 'durationMillis' in status ? (status.durationMillis ?? 0) : recordSecs * 1000;
+        if (send && uri && durationMs >= 1000) {
+          setUploading(true);
+          const up = await uploadChatMedia(uri, 'voice');
+          if (up.error || !up.data) {
+            setUploading(false);
+            setError(up.error ?? 'Could not upload voice message.');
+            return;
+          }
+          const res = await sendRichMessage({
+            body: '🎤 Voice message',
+            message_type: 'voice',
+            media_url: up.data,
+            reply_to_id: replyTo?.id ?? null,
+          });
+          setUploading(false);
+          if (res.error || !res.data) {
+            setError(res.error ?? 'Could not send voice message.');
+            return;
+          }
+          setReplyTo(null);
+          insertMessage(res.data);
+        }
+      } catch {
+        setError('Could not finish recording.');
+      }
+    },
+    [recording, replyTo, insertMessage],
+  );
+
+  const onReact = useCallback(
+    async (message: DiscussionMessage, emoji: string) => {
+      setReactMessage(null);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      // Optimistic update
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== message.id) return m;
+          const list = m.reactions[emoji] ?? [];
+          const next = { ...m.reactions };
+          if (list.includes(myId ?? '')) {
+            next[emoji] = list.filter((id) => id !== myId);
+            if (next[emoji].length === 0) delete next[emoji];
+          } else {
+            next[emoji] = [...list, myId ?? ''];
+          }
+          return { ...m, reactions: next };
+        }),
+      );
+      await toggleReaction(message.id, emoji);
+    },
+    [myId],
+  );
+
+  const onDelete = useCallback(async (message: DiscussionMessage) => {
+    setActionMessage(null);
+    Alert.alert('Delete message?', 'This removes it for both of you.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            setMessages((prev) => prev.filter((m) => m.id !== message.id));
+            await deleteMessage(message.id);
+          })();
+        },
+      },
+    ]);
+  }, []);
+
+  const partnerTypingVisible = typing;
+
+  // Ticks for my messages: read when partner's uid is in read_by
+  const isReadByPartner = useCallback(
+    (m: DiscussionMessage) => !!partnerId && m.read_by.includes(partnerId),
+    [partnerId],
+  );
 
   return (
     <KeyboardAvoidingView
@@ -160,13 +683,20 @@ export default function DiscussionScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Text style={[styles.backText, { color: tokens.primary }]}>Back</Text>
         </Pressable>
-        <Text style={[styles.title, { color: tokens.ink }]}>Discussion</Text>
+        <View style={styles.headerCenter}>
+          <Text style={[styles.title, { color: tokens.ink }]}>{partnerName}</Text>
+          {partnerTypingVisible ? (
+            <Text style={[styles.typing, { color: tokens.primary }]}>
+              typing…
+            </Text>
+          ) : null}
+        </View>
         <View style={styles.backButton} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.primary} />
+          <LoadingHeart tokens={tokens} message="Loading chat…" />
         </View>
       ) : error && messages.length === 0 ? (
         <View style={styles.center}>
@@ -196,47 +726,212 @@ export default function DiscussionScreen() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <MessageBubble message={item} mine={item.sender_id === myId} />
+            <MessageBubble
+              message={item}
+              mine={item.sender_id === myId}
+              myId={myId}
+              partnerRead={isReadByPartner(item)}
+              onLongPress={setActionMessage}
+              onImagePress={setViewerUrl}
+            />
           )}
         />
       )}
 
-      {seen ? <Text style={[styles.seen, { color: tokens.muted }]}>Seen</Text> : null}
+      {replyTo ? (
+        <View style={[styles.replyBar, { backgroundColor: tokens.card, borderColor: tokens.border }]}>
+          <View style={[styles.replyBarLine, { backgroundColor: tokens.primary }]} />
+          <View style={styles.replyBarText}>
+            <Text style={[styles.replyName, { color: tokens.primary }]}>
+              Replying to {replyTo.sender_id === myId ? 'yourself' : replyTo.sender_name}
+            </Text>
+            <Text style={[styles.replyBody, { color: tokens.muted }]} numberOfLines={1}>
+              {replyTo.message_type === 'text'
+                ? replyTo.body
+                : replyTo.message_type === 'image'
+                  ? '📷 Photo'
+                  : replyTo.message_type === 'voice'
+                    ? '🎤 Voice message'
+                    : '💌 Sticker'}
+            </Text>
+          </View>
+          <Pressable onPress={() => setReplyTo(null)} style={styles.replyClose}>
+            <Text style={[styles.replyCloseText, { color: tokens.muted }]}>✕</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
-      <View style={styles.composer}>
-        <TextInput
-          style={[
-            styles.input,
-            { backgroundColor: tokens.card, color: tokens.ink },
-          ]}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Write a message"
-          placeholderTextColor={tokens.muted}
-          multiline
-          maxLength={1000}
-          returnKeyType="send"
-          onSubmitEditing={() => void onSend()}
-        />
-        <Pressable
-          style={[
-            styles.sendButton,
-            { backgroundColor: tokens.primary },
-            !draft.trim() || sending ? styles.sendButtonDisabled : null,
-          ]}
-          onPress={() => void onSend()}
-          disabled={!draft.trim() || sending}
-        >
-          {sending ? (
-            <ActivityIndicator color={tokens.onPrimary} size="small" />
+      {recording ? (
+        <View style={[styles.recordingBar, { backgroundColor: tokens.card }]}>
+          <View style={[styles.recDot, { backgroundColor: tokens.danger }]} />
+          <Text style={[styles.recTime, { color: tokens.ink }]}>
+            {formatDuration(recordSecs * 1000)} recording…
+          </Text>
+          <Pressable
+            onPress={() => void stopRecording(false)}
+            style={styles.recCancel}
+          >
+            <Text style={[styles.recCancelText, { color: tokens.danger }]}>Cancel</Text>
+          </Pressable>
+          <SpringPress onPress={() => void stopRecording(true)}>
+            <View style={[styles.recSend, { backgroundColor: tokens.primary }]}>
+              <RichIcon name="send" size={18} tokens={tokens} variant="plain" color={tokens.onPrimary} />
+            </View>
+          </SpringPress>
+        </View>
+      ) : (
+        <View style={styles.composer}>
+          <SpringPress onPress={() => void onPickImage()}>
+            <View style={[styles.iconButton, { backgroundColor: tokens.primaryTint }]}>
+              <RichIcon name="image-outline" size={20} tokens={tokens} variant="plain" />
+            </View>
+          </SpringPress>
+          <TextInput
+            style={[styles.input, { backgroundColor: tokens.card, color: tokens.ink }]}
+            value={draft}
+            onChangeText={onDraftChange}
+            placeholder="Write a message"
+            placeholderTextColor={tokens.muted}
+            multiline
+            maxLength={1000}
+            returnKeyType="send"
+            onSubmitEditing={() => void onSend()}
+          />
+          <SpringPress onPress={() => setStickerOpen(true)}>
+            <View style={[styles.iconButton, { backgroundColor: tokens.primaryTint }]}>
+              <RichIcon name="sticker" size={20} tokens={tokens} variant="plain" />
+            </View>
+          </SpringPress>
+          {draft.trim() ? (
+            <SpringPress onPress={() => void onSend()}>
+              <View style={[styles.sendButton, { backgroundColor: tokens.primary }]}>
+                {sending || uploading ? (
+                  <ActivityIndicator color={tokens.onPrimary} size="small" />
+                ) : (
+                  <RichIcon name="send" size={18} tokens={tokens} variant="plain" color={tokens.onPrimary} />
+                )}
+              </View>
+            </SpringPress>
           ) : (
-            <Text style={[styles.sendText, { color: tokens.onPrimary }]}>Send</Text>
+            <Pressable
+              onPressIn={() => void startRecording()}
+              onPressOut={() => void stopRecording(true)}
+              delayLongPress={150}
+              style={[styles.micButton, { backgroundColor: tokens.primary }]}
+            >
+              <RichIcon name="mic" size={20} tokens={tokens} variant="plain" color={tokens.onPrimary} />
+            </Pressable>
           )}
-        </Pressable>
-      </View>
+        </View>
+      )}
       {error && messages.length > 0 ? (
         <Text style={[styles.inlineError, { color: tokens.danger }]}>{error}</Text>
       ) : null}
+
+      {/* Long-press action menu */}
+      <Modal visible={!!actionMessage} transparent animationType="fade">
+        <Pressable style={styles.modalBg} onPress={() => setActionMessage(null)}>
+          <View style={[styles.actionSheet, { backgroundColor: tokens.card }]}>
+            {actionMessage ? (
+              <>
+                <Text style={[styles.actionTitle, { color: tokens.ink }]} numberOfLines={1}>
+                  {actionMessage.message_type === 'text'
+                    ? actionMessage.body
+                    : `${actionMessage.message_type[0].toUpperCase()}${actionMessage.message_type.slice(1)} message`}
+                </Text>
+                <View style={styles.quickReacts}>
+                  {QUICK_REACTIONS.map((e) => (
+                    <Pressable
+                      key={e}
+                      onPress={() => {
+                        setActionMessage(null);
+                        void onReact(actionMessage, e);
+                      }}
+                      style={styles.quickReact}
+                    >
+                      <Text style={styles.quickReactText}>{e}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Pressable
+                  style={styles.actionRow}
+                  onPress={() => {
+                    setReplyTo(actionMessage);
+                    setActionMessage(null);
+                  }}
+                >
+                  <Text style={[styles.actionText, { color: tokens.ink }]}>↩ Reply</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.actionRow}
+                  onPress={() => {
+                    setReactMessage(actionMessage);
+                    setActionMessage(null);
+                  }}
+                >
+                  <Text style={[styles.actionText, { color: tokens.ink }]}>😊 React</Text>
+                </Pressable>
+                {actionMessage.sender_id === myId ? (
+                  <Pressable
+                    style={styles.actionRow}
+                    onPress={() => void onDelete(actionMessage)}
+                  >
+                    <Text style={[styles.actionText, { color: tokens.danger }]}>🗑 Delete</Text>
+                  </Pressable>
+                ) : null}
+              </>
+            ) : null}
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Full reaction picker */}
+      <Modal visible={!!reactMessage} transparent animationType="fade">
+        <Pressable style={styles.modalBg} onPress={() => setReactMessage(null)}>
+          <View style={[styles.reactSheet, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.actionTitle, { color: tokens.ink }]}>React</Text>
+            <View style={styles.quickReacts}>
+              {QUICK_REACTIONS.map((e) => (
+                <Pressable
+                  key={e}
+                  onPress={() => {
+                    if (reactMessage) void onReact(reactMessage, e);
+                  }}
+                  style={styles.quickReact}
+                >
+                  <Text style={styles.quickReactText}>{e}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Sticker picker */}
+      <Modal visible={stickerOpen} transparent animationType="slide">
+        <Pressable style={styles.modalBg} onPress={() => setStickerOpen(false)}>
+          <View style={[styles.stickerSheet, { backgroundColor: tokens.card }]}>
+            <Text style={[styles.actionTitle, { color: tokens.ink }]}>Stickers</Text>
+            <View style={styles.stickerGrid}>
+              {STICKERS.map((s) => (
+                <Pressable key={s.name} onPress={() => void onSendSticker(s.name)}>
+                  <Image source={s.source} style={styles.stickerOption} resizeMode="contain" />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Fullscreen image viewer */}
+      <Modal visible={!!viewerUrl} transparent animationType="fade">
+        <Pressable style={styles.viewerBg} onPress={() => setViewerUrl(null)}>
+          {viewerUrl ? (
+            <Image source={{ uri: viewerUrl }} style={styles.viewerImage} resizeMode="contain" />
+          ) : null}
+          <Text style={styles.viewerHint}>Tap to close</Text>
+        </Pressable>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -252,57 +947,88 @@ const styles = StyleSheet.create({
   },
   backButton: { minWidth: 64 },
   backText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  headerCenter: { alignItems: 'center' },
   title: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '800' },
+  typing: { fontFamily: FONTS.body, fontSize: 12, fontStyle: 'italic' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: {
-    fontFamily: FONTS.body,
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  retryButton: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
+  error: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', marginBottom: 12 },
+  retryButton: { borderWidth: 1.5, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
   retryText: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600' },
-  emptyTitle: {
-    fontFamily: FONTS.heading,
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 12,
-    marginBottom: 8,
-  },
+  emptyTitle: { fontFamily: FONTS.heading, fontSize: 18, fontWeight: '700', marginTop: 12, marginBottom: 8 },
   emptyHint: { fontFamily: FONTS.body, fontSize: 15, textAlign: 'center', lineHeight: 22 },
   list: { paddingHorizontal: 16, paddingVertical: 12 },
-  bubbleRow: { flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 8 },
-  bubbleRowMine: { justifyContent: 'flex-end' },
-  bubble: {
-    maxWidth: '78%',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
+  bubbleRow: { marginBottom: 8 },
+  bubbleRowMine: { alignItems: 'flex-end' },
+  bubble: { maxWidth: '78%', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
   bubbleMine: { borderBottomRightRadius: 4 },
   bubbleTheirs: { borderBottomLeftRadius: 4 },
+  bubbleSticker: { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0 },
   bubbleText: { fontFamily: FONTS.body, fontSize: 16, lineHeight: 22 },
-  bubbleTime: { fontFamily: FONTS.body, fontSize: 11, marginTop: 4 },
-  bubbleTimeMine: { textAlign: 'right', opacity: 0.75 },
-  seen: {
-    fontFamily: FONTS.body,
-    fontSize: 12,
-    textAlign: 'right',
-    paddingHorizontal: 20,
-    paddingBottom: 4,
-  },
-  composer: {
+  bubbleImage: { width: 200, height: 200, borderRadius: 12 },
+  sticker: { width: 120, height: 120 },
+  bubbleMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4, gap: 4 },
+  bubbleTime: { fontFamily: FONTS.body, fontSize: 11 },
+  bubbleTimeMine: { opacity: 0.75 },
+  ticks: { fontSize: 12, fontWeight: '700' },
+  reactionsRow: { flexDirection: 'row', marginTop: 4, gap: 4 },
+  reactionsRowMine: { justifyContent: 'flex-end' },
+  reactionChip: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    gap: 3,
   },
+  reactionEmoji: { fontSize: 14 },
+  reactionCount: { fontFamily: FONTS.body, fontSize: 12, fontWeight: '600' },
+  voiceRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 180 },
+  voiceButton: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  voiceWave: { flex: 1 },
+  waveform: { flexDirection: 'row', alignItems: 'center', gap: 2, height: 28 },
+  waveBar: { width: 3, borderRadius: 2 },
+  voiceDuration: { fontFamily: FONTS.body, fontSize: 11, marginTop: 2 },
+  replyQuote: {
+    borderLeftWidth: 3,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginBottom: 8,
+  },
+  replyName: { fontFamily: FONTS.body, fontSize: 12, fontWeight: '700' },
+  replyBody: { fontFamily: FONTS.body, fontSize: 13, marginTop: 2 },
+  replyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    gap: 10,
+  },
+  replyBarLine: { width: 3, alignSelf: 'stretch', borderRadius: 2 },
+  replyBarText: { flex: 1 },
+  replyClose: { padding: 4 },
+  replyCloseText: { fontSize: 16 },
+  recordingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+    marginBottom: 10,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  recDot: { width: 10, height: 10, borderRadius: 5 },
+  recTime: { fontFamily: FONTS.body, fontSize: 15, fontWeight: '600', flex: 1 },
+  recCancel: { paddingHorizontal: 8, paddingVertical: 4 },
+  recCancelText: { fontFamily: FONTS.body, fontSize: 14, fontWeight: '600' },
+  recSend: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  composer: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
+  iconButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   input: {
     flex: 1,
     borderRadius: 18,
@@ -312,19 +1038,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     maxHeight: 120,
   },
-  sendButton: {
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+  sendButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  micButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  inlineError: { fontFamily: FONTS.body, fontSize: 13, textAlign: 'center', paddingBottom: 8 },
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  actionSheet: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 32,
   },
-  sendButtonDisabled: { opacity: 0.4 },
-  sendText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '700' },
-  inlineError: {
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    textAlign: 'center',
-    paddingBottom: 8,
-  },
+  actionTitle: { fontFamily: FONTS.heading, fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  quickReacts: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
+  quickReact: { padding: 8 },
+  quickReactText: { fontSize: 28 },
+  actionRow: { paddingVertical: 12, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)' },
+  actionText: { fontFamily: FONTS.body, fontSize: 16, fontWeight: '600' },
+  reactSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32 },
+  stickerSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32, maxHeight: '60%' },
+  stickerGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', gap: 12 },
+  stickerOption: { width: 88, height: 88 },
+  viewerBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center' },
+  viewerImage: { width: '92%', height: '75%' },
+  viewerHint: { color: '#fff', fontFamily: FONTS.body, fontSize: 13, marginTop: 16, opacity: 0.7 },
 });

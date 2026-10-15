@@ -30,9 +30,11 @@ import {
   ImagesIcon,
   LightbulbIcon,
   MapPinIcon,
+  MicrophoneIcon,
   MoonIcon,
   PaintBrushIcon,
   PaperPlaneTiltIcon,
+  PauseIcon,
   PencilSimpleIcon,
   PlayIcon,
   PlusIcon,
@@ -41,6 +43,7 @@ import {
   SparkleIcon,
   StackIcon,
   StarIcon,
+  StickerIcon,
   UserPlusIcon,
   type Icon,
   type IconWeight,
@@ -82,6 +85,9 @@ const ICONS = {
   sliders: SlidersHorizontalIcon,
   checkmark: CheckIcon,
   play: PlayIcon,
+  mic: MicrophoneIcon,
+  sticker: StickerIcon,
+  pause: PauseIcon,
 } satisfies Record<string, Icon>;
 
 export type RichIconName = keyof typeof ICONS;
