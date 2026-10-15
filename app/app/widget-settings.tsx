@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import {
   WIDGET_DESCRIPTIONS,
   WIDGET_LABELS,
@@ -15,6 +15,7 @@ import { FONTS } from '../src/theme';
 import { useTheme } from '../src/lib/theme-provider';
 
 export default function WidgetSettingsScreen() {
+  const router = useRouter();
   const { tokens } = useTheme();
   const [selected, setSelected] = useState<WidgetType | null>(null);
   const [loading, setLoading] = useState(true);
