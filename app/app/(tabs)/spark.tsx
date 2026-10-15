@@ -18,7 +18,7 @@ import {
 } from '../../src/lib/sparks';
 import { FONTS } from '../../src/theme';
 import { useTheme } from '../../src/lib/theme-provider';
-import { GradientHeader } from '../../src/components/gradient-header';
+import GlassHeader from '../../src/components/glass-header';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FadeInView, SpringPress } from '../../src/components/animated';
 import { CelebrationBurst } from '../../src/components/celebration';
@@ -156,7 +156,7 @@ export default function SparkScreen() {
   return (
     <View style={[styles.root, { backgroundColor: tokens.background }]}>
       <Image source={bgSource} style={styles.bg} resizeMode="cover" />
-      <GradientHeader
+      <GlassHeader
         title="Daily Spark"
         subtitle="One question a day, answered together"
         tokens={tokens}
