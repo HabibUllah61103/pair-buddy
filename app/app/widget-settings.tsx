@@ -69,7 +69,7 @@ export default function WidgetSettingsScreen() {
       </Text>
 
       {loading ? (
-        <LoadingHeart tokens={tokens} message="Loading widgets…" />
+        <LoadingHeart tokens={tokens} size={56} message="Loading widgets…" />
       ) : (
         WIDGET_TYPES.map((type) => (
           <Pressable
